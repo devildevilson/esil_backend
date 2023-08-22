@@ -1,0 +1,20 @@
+{
+  "name": "esil_backend",
+  "version": "1.0.0",
+  "description": "hapi backend for uni services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@hapi/hapi": "^21.3.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.3.1",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.1",
+    "mysql2": "^3.6.0"
+  }
+}
