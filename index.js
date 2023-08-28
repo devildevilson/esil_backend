@@ -53,6 +53,13 @@ const server = hapi.server({
   // query: {
   //   parser: (query) => qs.parse(query)
   // }
+//  "routes": {
+//    "cors": {
+//       "origin": ["*"],
+//       "headers": ["Accept", "Content-Type"],
+//       "additionalHeaders": ["X-Requested-With"]
+//     }
+//  }
 });
 
 server.route({
@@ -118,6 +125,8 @@ server.route({
   method: 'GET',
   path: '/user_certs/{user_id}', 
   handler: function (request, h) {
+    // request.query.token
+
     const cert_datas = await db.get_cert_records_by_user_id(cert_id);
     if (cert_datas.length === 0) throw boom.notFound(cert_user_id_not_found_msg);
 
@@ -174,6 +183,13 @@ server.route({
 });
 
 (async () => {
+  await server.register({
+    plugin: require('hapi-cors'),
+    options: {
+      origins: ['*']
+    }
+  });
+
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
 })();
