@@ -76,7 +76,7 @@ server.route({
   handler: async function (request, h) {
     const token_data = await decode_token(request.payload.token, jwt_key);
     //const cert_type = request.payload.cert_type;
-    const role = await db.find_user_role(request.payload.user_id, "plt_student");
+    const role = await db.find_user_role(request.payload.user_id, " ");
     if (!role || role.assotiated_id === 0) throw boom.forbidden(role_not_found_msg);
     
     const plt_user_id = role.assotiated_id;
@@ -100,6 +100,14 @@ server.route({
         requested_by: joi.number(),
       })
     }
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/echo/post',
+  handler: async function (request, h) {
+    return request.payload;
   }
 });
 
@@ -165,7 +173,7 @@ server.route({
     return {
       id: user_data.id,
       name: user_data.name,
-      lastname: user_data.firstname,
+      lastname: user_data.lastname,
       middlename: user_data.middlename,
       username: user_data.username,
       token,
