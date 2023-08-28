@@ -36,6 +36,18 @@ function mysql_real_escape_string(str) {
   });
 }
 
+function good_num(num) { return num < 10 ? "0"+num : ""+num; }
+
+function format_date(date) {
+  const yyyy = good_num(date.getFullYear());
+  const mm   = good_num(date.getMonth()+1);
+  const dd   = good_num(date.getDate());
+  const hh   = good_num(date.getHours());
+  const mm   = good_num(date.getMinutes());
+  const ss   = good_num(date.getSeconds());
+  return `${yyyy}-${mm}-${dd} ${hh}:${mm}:${ss}`;
+}
+
 //const user_roles = [ "plt_student", "plt_tutor" ];
 
 const db = {
@@ -83,8 +95,12 @@ const db = {
       if (value === undefined) continue;
 
       let final_value = value;
+      if (final_value instanceof Date) final_value = format_date(final_value);
+      else if (typeof final_value === "object" && typeof final_value.toString === "function") final_value = final_value.toString();
+      else if (typeof final_value === "object") final_value = JSON.toString(final_value);
+
       if (typeof final_value === "string") final_value = `'${mysql_real_escape_string(final_value)}'`;
-      else if (final_value === null) final_value = `null`;
+      if (final_value === null) final_value = `null`;
 
       insert_columns_str.push(key);
       insert_data_str.push(final_value);
