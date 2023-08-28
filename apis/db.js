@@ -43,9 +43,9 @@ function format_date(date) {
   const mm   = good_num(date.getMonth()+1);
   const dd   = good_num(date.getDate());
   const hh   = good_num(date.getHours());
-  const mm   = good_num(date.getMinutes());
+  const MM   = good_num(date.getMinutes());
   const ss   = good_num(date.getSeconds());
-  return `${yyyy}-${mm}-${dd} ${hh}:${mm}:${ss}`;
+  return `${yyyy}-${mm}-${dd} ${hh}:${MM}:${ss}`;
 }
 
 //const user_roles = [ "plt_student", "plt_tutor" ];
