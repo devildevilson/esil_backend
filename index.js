@@ -76,7 +76,7 @@ server.route({
   handler: async function (request, h) {
     const token_data = await decode_token(request.payload.token, jwt_key);
     //const cert_type = request.payload.cert_type;
-    const role = await db.find_user_role(request.payload.user_id, " ");
+    const role = await db.find_user_role(request.payload.user_id, "plt_student");
     if (!role || role.assotiated_id === 0) throw boom.forbidden(role_not_found_msg);
     
     const plt_user_id = role.assotiated_id;
