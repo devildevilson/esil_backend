@@ -65,7 +65,7 @@ const server = hapi.server({
 server.route({
   method: 'GET',
   path: '/',
-  handler: function (request, h) {
+  handler: async function (request, h) {
     return "Hello, world";
   }
 });
@@ -73,7 +73,7 @@ server.route({
 server.route({
   method: 'POST',
   path: '/cert/prepare',
-  handler: function (request, h) {
+  handler: async function (request, h) {
     const token_data = await decode_token(request.payload.token, jwt_key);
     //const cert_type = request.payload.cert_type;
     const role = await db.find_user_role(request.payload.user_id, "plt_student");
@@ -106,7 +106,7 @@ server.route({
 server.route({
   method: 'GET',
   path: '/cert/{cert_id}', 
-  handler: function (request, h) {
+  handler: async function (request, h) {
     const cert_data = await db.find_cert_record(request.params.cert_id);
     if (!cert_data) throw boom.notFound(cert_id_not_found_msg);
 
@@ -124,7 +124,7 @@ server.route({
 server.route({
   method: 'GET',
   path: '/user_certs/{user_id}', 
-  handler: function (request, h) {
+  handler: async function (request, h) {
     // request.query.token
 
     const cert_datas = await db.get_cert_records_by_user_id(cert_id);
