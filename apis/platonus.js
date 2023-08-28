@@ -24,9 +24,9 @@ const db = {
   find_student_data_for_certificate: async (student_id) => {
     const query_str = `
       SELECT 
-        s.firstname,
+        s.firstname AS name,
         s.lastname,
-        s.patronymic,
+        s.patronymic AS middlename,
         s.iinplt AS iin,
         s.StartDate AS start_date,
         s.BirthDate AS birth_date,
@@ -38,11 +38,18 @@ const db = {
         spec.namekz AS specialization_name_kz,
         s.grant_type AS grant_type,
         sf.courseCount AS course_count,
-        s.CourseNumber AS course_number
+        s.CourseNumber AS course_number,
+        c.cafedraNameRU AS cafedra_ru,
+        f.facultyNameRU AS dekanat_ru,
+        c.cafedraNameKZ AS cafedra_kz,
+        f.facultyNameKZ AS dekanat_kz
       FROM students s
       JOIN studyforms sf ON sf.Id = s.StudyFormID
       JOIN specializations spec ON spec.id = s.specializationID
-      WHERE StudentID = ${student_id};
+      JOIN profession_cafedra pc ON spec.prof_caf_id = pc.id
+      JOIN cafedras c ON pc.cafedraID = c.cafedraID
+      JOIN faculties f ON c.FacultyID = f.FacultyID
+      WHERE s.StudentID = ${student_id} AND s.isStudent = 1;
     `;
 
     const [ res ] = await pool.query(query_str);
