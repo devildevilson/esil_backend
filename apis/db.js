@@ -50,6 +50,19 @@ function format_date(date) {
 
 //const user_roles = [ "plt_student", "plt_tutor" ];
 
+const query_f = (str) => pool.query(str);
+const transaction_f = async (callback) => {
+  const con = await pool.getConnection();
+  await con.beginTransaction();
+  const out = await callback(con);
+  await con.commit();
+  con.release();
+  return out;
+};
+
+const last_insert_id_f = async (con) => { const [ [ { id } ] ] = await con.query("SELECT LAST_INSERT_ID() AS id"); return id; }
+const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("SELECT ROW_COUNT() AS id"); return count; }
+
 const db = {
   close: async () => {
 
@@ -57,31 +70,31 @@ const db = {
 
   find_user_by_username: async (username) => {
     const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${username}';`;
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
 
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res;
   },
 
   find_user_role: async (user_id, role) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role = '${role}';`;
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res[0];
   },
 
   find_cert_record: async (cert_id) => {
     const query_str = `SELECT * FROM cert_records WHERE id = ${cert_id};`;
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res[0];
   },
 
   get_cert_records_by_user_id: async (user_id) => {
     const query_str = `SELECT * FROM cert_records WHERE user_id = ${user_id};`;
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res;
   },
 
@@ -95,7 +108,7 @@ const db = {
       if (value === undefined) continue;
 
       let final_value = value;
-      if (final_value instanceof Date) final_value = format_date(final_value);
+      if (final_value instanceof Date && !isNaN(final_value)) final_value = format_date(final_value);
       else if (typeof final_value === "object" && typeof final_value.toString === "function") final_value = final_value.toString();
       else if (typeof final_value === "object") final_value = JSON.toString(final_value);
 
@@ -108,15 +121,12 @@ const db = {
 
     const insert_str = `INSERT INTO ${table_name} (${insert_columns_str.join(",")}) VALUES (${insert_data_str.join(",")});`;
 
-    await pool.query(insert_str);
-    const con = await pool.getConnection();
-    await con.beginTransaction();
-    await con.query(insert_str);
-    const [ [ { id } ] ] = await con.query("SELECT ROW_COUNT() AS id;");
-    await con.commit();
-    con.release();
+    return transaction_f(async (con) => {
+      await con.query(insert_str);
+      return last_insert_id_f(con);
+    });
 
-    return id;
+    //return id;
   },
 };
 

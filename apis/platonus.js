@@ -16,6 +16,19 @@ const connection_config = {
 // как закрыть то елы палы
 const pool = mysql.createPool(connection_config);
 
+const query_f = (str) => pool.query(str);
+const transaction_f = async (callback) => {
+  const con = await pool.getConnection();
+  await con.beginTransaction();
+  const out = await callback(con);
+  await con.commit();
+  con.release();
+  return out;
+};
+
+const last_insert_id_f = async (con) => { const [ [ { id } ] ] = await con.query("SELECT LAST_INSERT_ID() AS id"); return id; }
+const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("SELECT ROW_COUNT() AS count"); return count; }
+
 const db = {
   close: async () => {
 
@@ -52,7 +65,7 @@ const db = {
       WHERE s.StudentID = ${student_id} AND s.isStudent = 1;
     `;
 
-    const [ res ] = await pool.query(query_str);
+    const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
 
