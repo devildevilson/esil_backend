@@ -7,9 +7,13 @@ function make_routes(routes, path, name) {
     for (let route of routes) {
       if (!route.path || route.path === "") {
         route.path = `${path}/${name}`;
+      } else if (!route.path || route.path === "/") {
+        route.path = `${path}`;
       } else {
         route.path = `${path}${route.path}`;
       }
+
+      route.path = route.path !== "" ? route.path : "/";
     }
 
     return routes;
@@ -17,9 +21,13 @@ function make_routes(routes, path, name) {
     let route = routes;
     if (!route.path || route.path === "") {
       route.path = `${path}/${name}`;
+    } else if (!route.path || route.path === "/") {
+      route.path = `${path}`;
     } else {
       route.path = `${path}${route.path}`;
     }
+
+    route.path = route.path !== "" ? route.path : "/";
 
     return [ route ];
   }

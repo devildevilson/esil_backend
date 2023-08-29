@@ -4,19 +4,19 @@ const jwt = require("jsonwebtoken");
 const jwt_key = "uguoncnvneuovpdsdavbpinrbpbnmbobuoyokqasqeqpbrjbrorrewhrggkjreijvqpiv";
 
 const common = {
-  sign_token: async (data, key, options) => {
+  sign_token: async (data, options) => {
     return new Promise((resolve,reject) =>
-      jwt.sign(data, key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
+      jwt.sign(data, jwt_key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
     );
   },
 
-  verify_token: async (token, key, options) => {
+  verify_token: async (token, options) => {
     return new Promise((resolve,reject) => 
-      jwt.verify(token, key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
+      jwt.verify(token, jwt_key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
     );
   },
 
-  decode_token: async (token, key, options) => {
+  decode_token: async (token, options) => {
     try {
       return await verify_token(token, jwt_key, options);
     } catch (e) {

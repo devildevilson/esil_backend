@@ -15,7 +15,7 @@ module.exports = [
   {
     method: 'POST',
     handler: async function (request, h) {
-      const token_data = await common.decode_token(request.payload.token, jwt_key);
+      const token_data = await common.decode_token(request.payload.token);
       //const cert_type = request.payload.cert_type;
       const role = await db.find_user_role(request.payload.user_id, "plt_student");
       if (!role || role.assotiated_id === 0) throw boom.forbidden(role_not_found_msg);

@@ -24,6 +24,7 @@ module.exports = [
     handler: async function (request, h) {
       const payload = request.payload;
 
+      try {
       const user_data = await db.find_user_by_username(payload.username.trim().toLowerCase());
       if (!user_data) throw boom.unauthorized(auth_error_msg);
 
@@ -33,7 +34,7 @@ module.exports = [
 
       // пароль?
       const min_data = { id: user_data.id, username: user_data.username };
-      const token = await common.sign_token(min_data, jwt_key);
+      const token = await common.sign_token(min_data);
       
       return {
         id: user_data.id,
@@ -42,8 +43,10 @@ module.exports = [
         middlename: user_data.middlename,
         username: user_data.username,
         token,
-        timestamp: common.human_date(),
+        timestamp: common.human_date(new Date()),
       };
+
+      } catch (e) { console.log(e); }
     },
     options: {
       validate: {
