@@ -1,8 +1,5 @@
 require('module-alias/register');
-const boom = require("@hapi/boom");
-const joi = require("joi");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const db = require("@apis/db");
 const plt = require("@apis/platonus");
 const common = require("@core/common");
@@ -21,16 +18,16 @@ module.exports = [
   {
     method: 'POST',
     path: '/',
-    handler: async function (request, h) {
-      const payload = request.payload;
+    handler: async (request, reply) => {
+      const payload = request.body;
 
-      try {
+      //try {
       const user_data = await db.find_user_by_username(payload.username.trim().toLowerCase());
-      if (!user_data) throw boom.unauthorized(auth_error_msg);
+      if (!user_data) return reply.unauthorized(auth_error_msg);
 
       //const match = await bcrypt.compare(payload.password, user_data.password);
       const match = payload.password === user_data.password;
-      if (!match) throw boom.unauthorized(auth_error_msg);
+      if (!match) return reply.unauthorized(auth_error_msg);
 
       // пароль?
       const min_data = { id: user_data.id, username: user_data.username };
@@ -46,14 +43,16 @@ module.exports = [
         timestamp: common.human_date(new Date()),
       };
 
-      } catch (e) { console.log(e); }
+      //} catch (e) { console.log(e); }
     },
-    options: {
-      validate: {
-        payload: joi.object({
-          username: joi.string().min(4).max(128).required(),
-          password: joi.string().min(4).required()
-        })
+    schema: {
+      body: {
+        type: "object",
+        required: [ "username", "password" ],
+        properties: {
+          username: { type: "string", minLength: 4, maxLength: 128 },
+          password: { type: "string", minLength: 4 },
+        }
       }
     }
   }

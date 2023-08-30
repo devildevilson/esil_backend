@@ -2,52 +2,68 @@
 
 require("dotenv").config();
 require('module-alias/register');
-const hapi = require("@hapi/hapi");
-const boom = require("@hapi/boom");
-const joi = require("joi");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const db = require("@apis/db");
-const plt = require("@apis/platonus");
+const fastify = require("fastify")({ logger: true });
 const routing = require("@core/routes");
-//const qs = require("qs");
 
-process.on("unhandledRejection", (err) => {
-  console.log(err);
-  process.exit(1);
+fastify.register(require('@fastify/sensible'));
+
+fastify.register(require('@fastify/cors'), {
+  origin: "*"
 });
+
+// process.on("unhandledRejection", (err) => {
+//   console.log(err);
+//   process.exit(1);
+// });
 
 const routes = routing(`${__dirname}/routes`);
 console.log("Server paths:");
 for (const route of routes) {
   console.log(route.method, route.path);
+  fastify.route(route);
 }
 
-const server = hapi.server({
-  port: process.env.SERVER_PORT,
-  host: process.env.SERVER_HOST,
-  // query: {
-  //   parser: (query) => qs.parse(query)
-  // }
-//  "routes": {
-//    "cors": {
-//       "origin": ["*"],
-//       "headers": ["Accept", "Content-Type"],
-//       "additionalHeaders": ["X-Requested-With"]
-//     }
-//  }
-});
+// fastify.get('/', async (request, reply) => {
+//   return { hello: 'world' }
+// });
 
-server.route(routes);
+// fastify.route(
+// // {
+// //   method: 'GET',
+// //   url: '/',
+// //   schema: {
+// //     querystring: {
+// //       name: { type: 'string' },
+// //       excitement: { type: 'integer' }
+// //     },
+// //   },
+// //   handler: async (request, reply) => {
+// //     return { hello: 'world' };
+// //   },
+// // },
+// {
+//   method: 'GET',
+//   url: '/',
+//   schema: {
+//     querystring: {
+//       name: { type: 'string' },
+//       excitement: { type: 'integer' }
+//     },
+//   },
+//   handler: async (request, reply) => {
+//     return { hello: 'world' };
+//   },
+// }
+// );
 
 (async () => {
-  await server.register({
-    plugin: require('hapi-cors'),
-    options: {
-      origins: ['*']
-    }
-  });
-
-  await server.start();
-  console.log(`Server running on ${server.info.uri}`);
+  try {
+    await fastify.listen({ 
+      port: process.env.SERVER_PORT,
+      host: process.env.SERVER_HOST, 
+    });
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
 })();
