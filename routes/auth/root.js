@@ -49,7 +49,7 @@ module.exports = [
         await db.create_row("roles", role_data);
       }
 
-      let user_data = await db.find_user_by_username(iin);
+      user_data = await db.find_user_by_username(iin);
       if (!user_data) return reply.unauthorized(auth_error_msg);
 
       //const match = await bcrypt.compare(payload.password, user_data.password);
