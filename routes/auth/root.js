@@ -21,12 +21,40 @@ module.exports = [
     handler: async (request, reply) => {
       const payload = request.body;
 
+      const iin = payload.username.trim().toLowerCase();
       //try {
-      const user_data = await db.find_user_by_username(payload.username.trim().toLowerCase());
+      let user_data = await db.find_user_by_username(iin);
+      if (!user_data) {
+        // найдем пользователя в платонусе
+        const plt_data = await plt.find_student_by_iin(iin);
+        if (!plt_data) return reply.unauthorized(auth_error_msg);
+
+        const password_hash = await common.hash_password(iin);
+
+        const user_data = {
+          name: plt_data.name,
+          lastname: plt_data.lastname,
+          middlename: plt_data.middlename,
+          username: iin,
+          password: password_hash,
+        };
+
+        const user_id = await db.create_row("users", user_data);
+
+        const role_data = {
+          user_id,
+          role: "plt_student",
+          assotiated_id: plt_data.student_id
+        };
+        await db.create_row("roles", role_data);
+      }
+
+      let user_data = await db.find_user_by_username(iin);
       if (!user_data) return reply.unauthorized(auth_error_msg);
 
       //const match = await bcrypt.compare(payload.password, user_data.password);
-      const match = payload.password === user_data.password;
+      //const match = payload.password === user_data.password;
+      const match = await common.compare_passwords(payload.password, user_data.password);
       if (!match) return reply.unauthorized(auth_error_msg);
 
       // пароль?

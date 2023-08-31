@@ -7,6 +7,8 @@ const verify = createVerifier({ key: async () => jwt_key });
 
 const auth_error_msg = "Authorization failed";
 
+const salt_rounds = 10;
+
 const common = {
   sign_token: async (data, options) => {
     // return new Promise((resolve,reject) =>
@@ -36,6 +38,9 @@ const common = {
       // if (e.name === "NotBeforeError") throw boom.unauthorized(auth_error_msg);
     }
   },
+
+  hash_password: (password) => bcrypt.hash(iin, salt_rounds),
+  compare_passwords: (passwordA, passwordB) => bcrypt.compare(passwordA, passwordB),
 
   good_num: (num) => num < 10 ? "0"+num : ""+num,
 

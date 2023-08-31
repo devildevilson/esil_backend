@@ -4,6 +4,8 @@ require("dotenv").config();
 require('module-alias/register');
 const fastify = require("fastify")({ logger: true });
 const routing = require("@core/routes");
+const db = require("@apis/db");
+const platonus = require("@apis/platonus");
 
 fastify.register(require('@fastify/sensible'));
 
@@ -29,6 +31,8 @@ for (const route of routes) {
     });
   } catch (err) {
     fastify.log.error(err);
+    await db.close();
+    await platonus.close();
     process.exit(1);
   }
 })();

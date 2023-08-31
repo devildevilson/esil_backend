@@ -12,7 +12,7 @@ module.exports = [
   {
     method: 'GET',
     path: '/:cert_id', 
-    handler: async function (request, h) {
+    handler: async function (request, reply) {
       const cert_data = await db.find_cert_record(request.params.cert_id);
       if (!cert_data) return reply.notFound(cert_id_not_found_msg);
 
@@ -31,8 +31,21 @@ module.exports = [
   {
     method: 'GET',
     path: '/list/:user_id', 
-    handler: async function (request, h) {
-      // request.query.token
+    handler: async function (request, reply) {
+      const token_data = await common.decode_token(request.query.token);
+      if (token_data.error) return reply.forbidden(token_data.error);
+
+      if (token_data.id === request.params.user_id) {
+        const role = await db.find_user_role(request.params.user_id, "plt_student");
+        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+      } else {
+        // должна быть роль просмотра справок
+        const adm_role = await db.find_user_role(token_data.id, "admin");
+        if (!adm_role) return reply.forbidden(role_not_found_msg);
+
+        const role = await db.find_user_role(request.params.user_id, "plt_student");
+        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+      }
 
       const cert_datas = await db.get_cert_records_by_user_id(request.params.user_id);
       if (cert_datas.length === 0) return reply.notFound(cert_user_id_not_found_msg);
@@ -45,6 +58,13 @@ module.exports = [
         required: [ "user_id" ],
         properties: {
           user_id: { type: "number" }
+        } 
+      },
+      querystring: {
+        type: "object",
+        required: [ "token" ],
+        properties: {
+          token: { type: "string" }
         } 
       }
     }

@@ -61,11 +61,11 @@ const transaction_f = async (callback) => {
 };
 
 const last_insert_id_f = async (con) => { const [ [ { id } ] ] = await con.query("SELECT LAST_INSERT_ID() AS id"); return id; }
-const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("SELECT ROW_COUNT() AS id"); return count; }
+const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("SELECT ROW_COUNT() AS count"); return count; }
 
 const db = {
   close: async () => {
-
+    await pool.end();
   },
 
   find_user_by_username: async (username) => {
@@ -76,6 +76,12 @@ const db = {
 
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+
+  get_user_roles_specific: async (user_id, roles) => {
+    const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role IN ('${roles.join("','")}');`;
     const [ res ] = await query_f(query_str);
     return res;
   },

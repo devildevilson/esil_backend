@@ -15,11 +15,25 @@ module.exports = [
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.body.token);
       if (token_data.error) return reply.forbidden(token_data.error);
-      if (token_data.id !== request.body.user_id) return reply.forbidden(auth_error_msg);
+
+      let plt_user_id = 0;
+      if (token_data.id === request.body.user_id) {
+        const role = await db.find_user_role(request.body.user_id, "plt_student");
+        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        plt_user_id = role.assotiated_id;
+      } else {
+        // должна быть роль создателя справок
+        const adm_role = await db.find_user_role(token_data.id, "admin");
+        if (!adm_role) return reply.forbidden(role_not_found_msg);
+
+        const role = await db.find_user_role(request.body.user_id, "plt_student");
+        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        plt_user_id = role.assotiated_id;
+      }
+
+      if (plt_user_id === 0) return reply.forbidden(role_not_found_msg);
 
       //const cert_type = request.body.cert_type;
-      const role = await db.find_user_role(request.body.user_id, "plt_student");
-      if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
       
       const plt_user_id = role.assotiated_id;
       let cert_data = await plt.find_student_data_for_certificate(plt_user_id);

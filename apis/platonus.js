@@ -31,7 +31,7 @@ const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("
 
 const db = {
   close: async () => {
-
+    await pool.end();
   },
 
   find_student_data_for_certificate: async (student_id) => {
@@ -69,7 +69,11 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
 
-
+  find_student_by_iin: async (inn) => {
+    const query_str = `SELECT StudentID AS student_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND s.isStudent = 1;`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
 };
 
 module.exports = db;
