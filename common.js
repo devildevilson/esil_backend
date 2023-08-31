@@ -39,7 +39,7 @@ const common = {
     }
   },
 
-  hash_password: (password) => bcrypt.hash(iin, salt_rounds),
+  hash_password: (password) => bcrypt.hash(password, salt_rounds),
   compare_passwords: (passwordA, passwordB) => bcrypt.compare(passwordA, passwordB),
 
   good_num: (num) => num < 10 ? "0"+num : ""+num,
