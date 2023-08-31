@@ -13,7 +13,8 @@ fastify.register(require('@fastify/sensible'));
 fastify.register(require('@fastify/cors'), {
   origin: "http://localhost:5173",
   credenticals: true,
-  methods: [ "GET", "POST", "PUT", "DELETE" ]
+  methods: [ "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH" ],
+  allowedHeaders: [ "Authorization", "Accept","Origin","DNT","X-CustomHeader","Keep-Alive","User-Agent","X-Requested-With","If-Modified-Since","Cache-Control","Content-Type","Content-Range","Range" ]
 });
 
 const routes = routing(`${__dirname}/routes`);
