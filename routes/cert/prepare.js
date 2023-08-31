@@ -35,7 +35,7 @@ module.exports = [
 
       //const cert_type = request.body.cert_type;
       
-      const plt_user_id = role.assotiated_id;
+      //const plt_user_id = role.assotiated_id;
       let cert_data = await plt.find_student_data_for_certificate(plt_user_id);
       if (!cert_data) return reply.methodNotAllowed(could_not_get_cert_data_msg);
 
