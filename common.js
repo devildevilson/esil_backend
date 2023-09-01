@@ -31,7 +31,7 @@ const common = {
     //   jwt.sign(data, jwt_key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
     // );
     if (data.error) throw "Data must not provide error field for signing";
-    return sign(data);
+    return jwt.sign(data);
   },
 
   verify_token: async (token, options) => {
@@ -39,7 +39,7 @@ const common = {
     //   jwt.verify(token, jwt_key, options, (err, decoded) => err ? reject(err) : resolve(decoded))
     // );
 
-    return verify(token);
+    return jwt.verify(token);
   },
 
   decode_token: async (token, options) => {
