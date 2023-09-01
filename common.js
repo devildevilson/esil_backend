@@ -1,9 +1,25 @@
+const fs = require("fs");
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const schedule = require('node-schedule');
 const { createSigner, createDecoder, createVerifier } = require("fast-jwt");
 
-const jwt_key = "uguoncnvneuovpdsdavbpinrbpbnmbobuoyokqasqeqpbrjbrorrewhrggkjreijvqpiv";
-const sign = createSigner({ key: async () => jwt_key, expiresIn: "7d" });
-const verify = createVerifier({ key: async () => jwt_key });
+const secure_str_storage = "./secure_str";
+const get_secure_str = () => {
+  try {
+    const content = fs.readFileSync(secure_str_storage, "utf8");
+    return content;
+  } catch (e) {
+    return "2e4a47fec32c2299a89f4cbc4a992cc4b76a6594f0e07ad07828102ce330b5cd702c89f6368994c321524edd903a695d";
+  }
+};
+
+//console.log(get_secure_str());
+
+let jwt = {
+  sign: createSigner({ key: async () => get_secure_str(), expiresIn: "7d" }),
+  verify: createVerifier({ key: async () => get_secure_str() })
+};
 
 const auth_error_msg = "Authorization failed";
 
@@ -64,6 +80,24 @@ const common = {
     const MM   = common.good_num(date.getMinutes());
     const ss   = common.good_num(date.getSeconds());
     return `${yyyy}-${mm}-${dd} ${hh}:${MM}:${ss}`;
+  },
+
+  generate_random_string: async (count = 48) => {
+    const buffer = await crypto.randomBytes(count);
+    return buffer.toString("hex");
+  },
+
+  write_secure_str: (str) => {
+    fs.writeFileSync(secure_str_storage, str, { encoding: "utf8", flag: "w" });
+  },
+
+  create_jwt_key_gen_job: () => {
+    return schedule.scheduleJob('00 00 01 Jan,Apr,Jul,Oct *', async () => {
+      const secure_str = await common.generate_random_string(64);
+      common.write_secure_str(secure_str);
+      jwt.sign = createSigner({ key: async () => secure_str, expiresIn: "7d" });
+      jwt.verify = createVerifier({ key: async () => secure_str });
+    });
   },
 };
 
