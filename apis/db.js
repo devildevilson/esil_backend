@@ -113,12 +113,16 @@ const db = {
       if (key === "created") continue;
       if (value === undefined) continue;
 
-      let final_value = value;
-      if (final_value instanceof Date && !isNaN(final_value)) final_value = format_date(final_value);
-      else if (typeof final_value === "object" && typeof final_value.toString === "function") final_value = final_value.toString();
-      else if (typeof final_value === "object") final_value = JSON.toString(final_value);
+      if (value === null) {
+        console.log(key,value);
+      }
 
-      if (typeof final_value === "string") final_value = `'${mysql_real_escape_string(final_value)}'`;
+      let final_value = value;
+      if (final_value && final_value instanceof Date && !isNaN(final_value)) final_value = format_date(final_value);
+      else if (final_value && typeof final_value === "object" && typeof final_value.toString === "function") final_value = final_value.toString();
+      else if (final_value && typeof final_value === "object") final_value = JSON.toString(final_value);
+
+      if (final_value && typeof final_value === "string") final_value = `'${mysql_real_escape_string(final_value)}'`;
       if (final_value === null) final_value = `null`;
 
       insert_columns_str.push(key);
