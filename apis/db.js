@@ -132,9 +132,9 @@ const db = {
 
     const insert_str = `INSERT INTO ${table_name} (${insert_columns_str.join(",")}) VALUES (${insert_data_str.join(",")});`;
 
-    return transaction_f(async (con) => {
+    return await transaction_f(async (con) => {
       await con.query(insert_str);
-      return last_insert_id_f(con);
+      return await last_insert_id_f(con);
     });
 
     //return id;

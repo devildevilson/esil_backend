@@ -37,9 +37,9 @@ const db = {
   find_student_data_for_certificate: async (student_id) => {
     const query_str = `
       SELECT 
-        s.firstname,
+        s.firstname AS name,
         s.lastname,
-        s.patronymic,
+        s.patronymic AS middlename,
         s.iinplt AS iin,
         s.StartDate AS start_date,
         s.BirthDate AS birth_date,
