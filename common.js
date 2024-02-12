@@ -1,6 +1,6 @@
 const fs = require("fs");
 const crypto = require("crypto");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const schedule = require('node-schedule');
 const { createSigner, createDecoder, createVerifier } = require("fast-jwt");
 

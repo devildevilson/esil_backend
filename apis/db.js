@@ -2,6 +2,9 @@
 
 require("dotenv").config();
 const mysql = require("mysql2/promise");
+const { get_kpi_score_by_iin } = require("./platonus");
+const { parse } = require("dotenv");
+const plt = require("@apis/platonus");
 
 const connection_config = {
   host     : process.env.CLOUD_DATABASE_HOST,
@@ -68,8 +71,51 @@ const db = {
     await pool.end();
   },
 
+  update_kpi_for_user: async (user_id) => {
+    let query_str = `select username as 'iin' from users
+    join roles on users.id = roles.user_id
+    where roles.user_id=${user_id};`;
+    let [ iin_res ] = await query_f(query_str);
+    let iin=iin_res[0].iin;
+    let kpiscore_plt = await plt.get_kpi_score_by_iin(iin);
+    let kpiscore_cloud = await db.count_kpi_score_by_iin(iin);
+    let kpi_overall = 0;
+    kpi_overall = parseInt(kpiscore_plt)+parseInt(kpiscore_cloud);
+    console.log(`kpiscore for ${user_id}`,kpi_overall);
+    query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
+    let [ res ] = await query_f(query_str);
+    if(res.length===0){
+      const file_data = {
+        userid: user_id,
+        score: kpi_overall,
+      };
+      const file = await db.create_row("kpi_scores", file_data);
+    }
+    else{
+      query_str = `update kpi_scores set score=${kpi_overall} where userid=${user_id};`;
+      let [ res ] = await query_f(query_str);
+      return res;
+    }
+    return res;
+  },
   find_user_by_username: async (username) => {
     const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${username}';`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+
+  get_kpiscore_by_userid: async (user_id) => {
+    const query_str = `SELECT score from kpi_scores where userid = ${user_id};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  get_role_by_iin: async (inn) => {
+    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.username = ${inn};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  get_user_id_by_iin: async (inn) => {
+    const query_str = `SELECT id from users where username = ${inn};`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -91,19 +137,73 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
-
+  get_tutors_by_cafedra_id: async (cafedraid) => {
+    const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
+    join kpi_scores ks on u.id = ks.userid
+    where ks.cafedra = ${cafedraid} order by ks.score;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  get_cafedra_stats: async () => {
+    const query_str = `SELECT c.id, c.cafedraNameRU, sum(score) as scoresum, count(*) tutorcount from kpi_scores ks
+    join cafedras c on ks.cafedra = c.id
+    group by ks.cafedra
+    order by scoresum desc;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   find_cert_record: async (cert_id) => {
     const query_str = `SELECT * FROM cert_records WHERE id = ${cert_id};`;
     const [ res ] = await query_f(query_str);
     return res[0];
   },
-
+  check_upload_eligibility: async (activityid, user_id) =>{
+    const query_str = `select * from files f
+      join kpi_activities ka on f.activityid = ka.id
+      where f.activityid = ${activityid}
+      and ka.isunique=1
+      and f.userid=${user_id};`
+    const [ res ] = await query_f(query_str);
+    return res.length === 0;
+  },
   get_cert_records_by_user_id: async (user_id) => {
     const query_str = `SELECT * FROM cert_records WHERE user_id = ${user_id};`;
     const [ res ] = await query_f(query_str);
     return res;
   },
+  get_file_records_by_user_id: async (user_id) => {
+    const query_str = `select f.id, ka.name, f.file_path, f.extradata1, f.filename, f.upload_date, ka.primaryscore from files f
+    join kpi_activities ka on f.activityid=ka.id
+    where f.userid = ${user_id} 
+    order by f.id desc;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  delete_file_by_filename: async (filename) => {
+    const query_str = `delete from files where filename = '${filename}';`;
+    const [ res]  = await query_f(query_str);
+    return res;
+  },
 
+  get_activities_by_category: async (categoryid) => {
+    const query_str = `select * from kpi_activities where categoryid=${categoryid};`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+
+  count_kpi_score_by_iin: async (iin) => {
+    const query_str = `select ka.primaryscore from files f
+    join kpi_activities ka on f.activityid=ka.id
+    join users u on f.userid = u.id
+    where u.username = ${iin};`;
+    const [ res ] = await query_f(query_str);
+    //console.log(res[1].primaryscore);
+    let score=0;
+    for(let i=0; i<res.length; i++){
+      score+=res[i].primaryscore;
+    }
+    return score;
+  },
   create_row: async (table_name, data) => {
     let insert_columns_str = [];
     let insert_data_str = [];

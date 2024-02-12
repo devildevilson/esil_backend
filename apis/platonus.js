@@ -72,12 +72,109 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-
+  get_tutor_cafedra_by_iin: async (iin) => {
+    const query_str = `SELECT c.cafedraid, c.cafedraNameRU
+    FROM tutors t 
+    JOIN tutor_cafedra tc ON t.TutorID = tc.tutorID
+    JOIN cafedras c ON tc.cafedraid = c.cafedraID
+    WHERE t.deleted = 0 and t.iinplt=${iin};`
+    const [ res ] = await query_f(query_str);  
+    return res.length !== 0 ? res[0] : undefined;
+  },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS student_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+
+  find_tutor_by_iin: async (inn) => {
+    const query_str = `SELECT tutorid AS tutor_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1;`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+
+  get_kpi_score_by_iin: async (inn) =>{
+    let query_str = `SELECT tutorid as tutor_id from tutors where iinplt='${inn}' AND has_access=1;`;
+    let [res] = await query_f(query_str);
+    let tutor_id = res.length !== 0 ? res[0].tutor_id : undefined;
+    console.log('tutorid:',tutor_id); 
+    query_str = `
+    SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor' FROM tutorpubs tp 
+    JOIN tutors t ON t.TutorID = tp.TutorID
+    JOIN publication_type pt ON tp.publication_type = pt.id
+    JOIN publication_level pl ON tp.publication_level = pl.id
+    WHERE tp.tutorid = ${tutor_id};
+    `;
+    let [res_pub] = await query_f(query_str);
+    console.log('publications parsed');
+    let KPICounter = 0;
+    if (res_pub.length > 0) {
+        for (let i = 0; i < res_pub.length; i++) {
+          if (res_pub[i].pubtype == "Научные статьи") {
+              if (res_pub[i].publevel == "Международного уровня") {
+                  KPICounter += 3;
+              }
+              else if (res_pub[i].publevel == "Республиканского уровня") {
+                  KPICounter += 7;
+              }
+              if (res_pub[i].impact_factor != null && parseFloat(res_pub[i].impact_factor) > 0) {
+                  KPICounter += 10;
+              }
+          }
+          if (res_pub[i].pubtype == "Тезисы(конференция)") {
+              if (res_pub[i].publevel == "Международного уровня") {
+                  KPICounter += 3;
+              }
+              else if (res_pub[i].publevel == "Республиканского уровня") {
+                  KPICounter += 7;
+              }
+          }
+          if (res_pub[i].pubtype == "Научные монографии") {
+              if (res_pub[i].publevel == "Международного уровня") {
+                  KPICounter += 3;
+              }
+              else if (res_pub[i].publevel == "Республиканского уровня") {
+                  KPICounter += 7;
+              }
+          }
+          if (res_pub[i].pubtype == "Научные рекомендации") {
+              if (res_pub[i].publevel == "Международного уровня") {
+                  KPICounter += 3;
+              }
+              else if (res_pub[i].publevel == "Республиканского уровня") {
+                  KPICounter += 7;
+              }
+          }
+          if (res_pub[i].pubtype == "Учебное пособие") {
+              if (res_pub[i].publevel == "Международного уровня") {
+                  KPICounter += 3;
+              }
+              else if (res_pub[i].publevel == "Республиканского уровня") {
+                  KPICounter += 7;
+              }
+          }
+        }        
+        
+    }
+    query_str = `
+    SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
+    WHERE tia.tutorid = ${tutor_id};
+    `;
+    let [res_inv] = await query_f(query_str);
+    if(res_inv.length>0){
+      KPICounter =KPICounter + parseInt(res_inv[0]["total"])*20;
+    }
+    query_str = `
+    SELECT COUNT(*) as 'total' FROM nirs n
+    WHERE n.personid = ${tutor_id};
+    `;
+    let [res_nirs] = await query_f(query_str);
+    if(res_nirs.length>0){
+      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
+    }
+    return KPICounter;
+  }
+
 };
 
 module.exports = db;

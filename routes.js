@@ -36,7 +36,7 @@ function make_routes(routes, path, name) {
 function find_routes_recursive(dirname, cur_link = "") {
   let routes = [];
   fs.readdirSync(dirname)
-    //.filter(file => file !== 'index.js')
+    .filter(dirname => dirname !== 'userfiles')
     .forEach(file => {
       const file_name = path.parse(file).name;
       const final_path = `${dirname}/${file}`;
