@@ -144,6 +144,15 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res;
   },
+  get_top_ten_tutors_by_score: async () => {
+    const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score from users u
+    join kpi_scores ks on u.id = ks.userid
+    join cafedras c on ks.cafedra = c.id
+    order by ks.score desc
+    limit 10`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   get_cafedra_stats: async () => {
     const query_str = `SELECT c.id, c.cafedraNameRU, sum(score) as scoresum, count(*) tutorcount from kpi_scores ks
     join cafedras c on ks.cafedra = c.id

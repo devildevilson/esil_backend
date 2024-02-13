@@ -196,4 +196,12 @@ module.exports = [
         return tutors;
       },
     },
+    {
+      method: 'GET',
+      path: '/gettopten',
+      handler: async function (request,reply){
+        const tutors = await db.get_top_ten_tutors_by_score();
+        return tutors;
+      },
+    },
 ];
