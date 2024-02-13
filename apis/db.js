@@ -140,7 +140,7 @@ const db = {
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
     join kpi_scores ks on u.id = ks.userid
-    where ks.cafedra = ${cafedraid} order by ks.score;`;
+    where ks.cafedra = ${cafedraid} order by ks.score desc;`;
     const [ res ] = await query_f(query_str);
     return res;
   },
