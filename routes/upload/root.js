@@ -9,7 +9,7 @@ const ROOT_PATH = process.env.ROOT_PATH;
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
 const file_user_id_not_found_msg = "Could not find files by user id";
-const cant_upload_unique_activity = "Этот показатель уже загружен";
+const cant_upload_unique_activity = "Этот показатель нельзя добавить дважды";
 const successful_upload="Файл был загружен";
 
 // function abc() {
