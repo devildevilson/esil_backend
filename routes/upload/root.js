@@ -116,7 +116,23 @@ module.exports = [
         },
       }
     },
-    
+    {
+      method: 'GET',
+      path: '/getcategoryscore/:user_id', 
+      handler: async function (request, reply) {
+        const file_datas = await db.get_total_scores_for_userid(request.params.user_id);
+        return file_datas;
+      },
+      schema: {
+        params: {
+          type: "object",
+          required: [ "user_id" ],
+          properties: {
+            user_id: { type: "number" }
+          } 
+        },
+      }
+    },
     {
       method: 'GET',
       path: '/download/:filename', 
