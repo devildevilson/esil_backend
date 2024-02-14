@@ -94,6 +94,9 @@ const db = {
   },
 
   get_kpi_score_by_iin: async (inn) =>{
+    const max_year_gap = 5;
+    const today = new Date();
+    const current_year = today.getFullYear()
     let query_str = `SELECT tutorid as tutor_id from tutors where iinplt='${inn}' AND has_access=1;`;
     let [res] = await query_f(query_str);
     let tutor_id = res.length !== 0 ? res[0].tutor_id : undefined;
@@ -103,7 +106,7 @@ const db = {
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    WHERE tp.tutorid = ${tutor_id};
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>(${current_year-max_year_gap});
     `;
     let [res_pub] = await query_f(query_str);
     console.log('publications parsed');
