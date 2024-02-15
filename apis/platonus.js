@@ -92,7 +92,27 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-
+  get_h_index: async(inn) =>{
+    const query_str = `select hi.h_index_scopus as hscopus, hi.h_index_wos as hwos from hirsch_index hi
+    join tutors t on t.TutorID = hi.tutorID
+    where t.iinplt=${inn}`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : 0;
+  },
+  get_pub_count_by_iin_and_edition_index: async (inn,edition_index_db) =>{
+    const max_year_gap = 5;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    const query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
+    JOIN tutors t ON t.TutorID = tp.TutorID
+    JOIN publication_type pt ON tp.publication_type = pt.id
+    JOIN publication_level pl ON tp.publication_level = pl.id
+    where tp.edition_year>(${current_year-max_year_gap})
+    and tp.edition_index_db='${edition_index_db}'
+    and t.iinplt=${inn};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : 0;
+  },
   get_kpi_score_by_iin: async (inn) =>{
     const max_year_gap = 5;
     const today = new Date();

@@ -79,6 +79,13 @@ const db = {
     let iin=iin_res[0].iin;
     let kpiscore_plt = await plt.get_kpi_score_by_iin(iin);
     let kpiscore_cloud = await db.count_kpi_score_by_iin(iin);
+    let kpi_kkson_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)');
+    let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Scopus');
+    let kpi_wos_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Web of Science');
+    let h_index = await plt.get_h_index(iin);
+    console.log('trying to get hirsch index');
+    let hindex_scopus = h_index.hscopus;
+    let hindex_wos = h_index.hwos;
     let kpi_overall = 0;
     kpi_overall = parseInt(kpiscore_plt)+parseInt(kpiscore_cloud);
     console.log(`kpiscore for ${user_id}`,kpi_overall);
@@ -88,11 +95,16 @@ const db = {
       const file_data = {
         userid: user_id,
         score: kpi_overall,
+        kkson_count: kpi_kkson_count,
+        scopus_count: kpi_scopus_count,
+        wos_count: kpi_wos_count,
+        h_index_scopus: hindex_scopus,
+        h_index_wos: hindex_wos
       };
       const file = await db.create_row("kpi_scores", file_data);
     }
     else{
-      query_str = `update kpi_scores set score=${kpi_overall} where userid=${user_id};`;
+      query_str = `update kpi_scores set score=${kpi_overall},kkson_count=${kpi_kkson_count.pubcount},scopus_count=${kpi_scopus_count.pubcount},wos_count=${kpi_wos_count.pubcount},h_index_scopus=${hindex_scopus},h_index_wos=${hindex_wos} where userid=${user_id};`;
       let [ res ] = await query_f(query_str);
       return res;
     }
@@ -155,7 +167,7 @@ const db = {
     return res;
   },
   get_top_ten_tutors_by_score: async () => {
-    const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score from users u
+    const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.h_index_scopus, ks.h_index_wos from users u
     join kpi_scores ks on u.id = ks.userid
     join cafedras c on ks.cafedra = c.id
     order by ks.score desc
@@ -223,6 +235,9 @@ const db = {
     }
     return score;
   },
+
+  // get faculty stats
+
   create_row: async (table_name, data) => {
     let insert_columns_str = [];
     let insert_data_str = [];
