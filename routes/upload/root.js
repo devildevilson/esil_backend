@@ -3,7 +3,7 @@ const common = require('@core/common');
 const db = require('@apis/db');
 const fs = require('fs').promises;
 
-const FILE_PATH = process.env.FILE_PATH;
+const FILE_PATH = process.env.ROOT_PATH;
 
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
