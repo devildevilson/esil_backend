@@ -83,7 +83,6 @@ const db = {
     let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Scopus');
     let kpi_wos_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Web of Science');
     let h_index = await plt.get_h_index(iin);
-    console.log('trying to get hirsch index');
     let hindex_scopus = h_index.hscopus;
     let hindex_wos = h_index.hwos;
     let kpi_overall = 0;
@@ -236,7 +235,43 @@ const db = {
     return score;
   },
 
-  // get faculty stats
+  get_faculty_stats: async () =>{
+    let query_str = `SELECT sum(score) as scoresum, count(*) tutorcount from kpi_scores ks
+    join cafedras c on ks.cafedra = c.id
+    where c.facultyNameRU like '%Прикладных%'
+    group by ks.cafedra;`;
+    let [ res ] = await query_f(query_str);
+    let scoreAppliedSciences=0;
+    let tutorsAppliedSciences=0;
+    for(let i=0; i<res.length; i++){
+      scoreAppliedSciences+=parseInt(res[i].scoresum);
+      tutorsAppliedSciences+=res[i].tutorcount;
+    }
+     query_str = `SELECT sum(score) as scoresum, count(*) tutorcount from kpi_scores ks
+    join cafedras c on ks.cafedra = c.id
+    where c.facultyNameRU like '%Бизнес%'
+    group by ks.cafedra;`;
+    [ res ] = await query_f(query_str);
+    let scoreBusinessAndManagement=0;
+    let tutorsBusinessAndManagement=0;
+    for(let i=0; i<res.length; i++){
+      scoreBusinessAndManagement+=parseInt(res[i].scoresum);
+      tutorsBusinessAndManagement+=res[i].tutorcount;
+    }
+    let data = [{
+        id: 1,
+        facultyname: 'Факультет прикладных наук',
+        scoresum: scoreAppliedSciences,
+        tutorcount: tutorsAppliedSciences},
+      {
+        id: 2,
+        facultyname: 'Факультет бизнеса и управления',
+        scoresum: scoreBusinessAndManagement,
+        tutorcount: tutorsBusinessAndManagement
+      }
+    ]
+    return data;
+  },
 
   create_row: async (table_name, data) => {
     let insert_columns_str = [];

@@ -3,13 +3,12 @@ const common = require('@core/common');
 const db = require('@apis/db');
 const fs = require('fs').promises;
 
-process.env.ROOT_PATH = '/usr/share/kpi_files/userfiles/';
-const ROOT_PATH = process.env.ROOT_PATH;
+const FILE_PATH = process.env.FILE_PATH;
 
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
 const file_user_id_not_found_msg = "Could not find files by user id";
-const cant_upload_unique_activity = "Этот показатель нельзя добавить дважды";
+const cant_upload_unique_activity = "Этот показатель уже загружен";
 const successful_upload="Файл был загружен";
 
 // function abc() {
@@ -22,7 +21,7 @@ const successful_upload="Файл был загружен";
 
 var storage = Multer.diskStorage({
     destination: function(req,file,cb){
-        cb(null, ROOT_PATH)
+        cb(null, FILE_PATH)
     },
     filename: function(req,file,cb){
         cb(null, Date.now()+'-'+file.originalname.replace(/\s+/g, '-'));
@@ -37,7 +36,7 @@ var upload = Multer({
 async function deleteFile(filename) {
   if (filename != '') {
     try {
-      await fs.unlink(ROOT_PATH + filename);
+      await fs.unlink(FILE_PATH + filename);
       console.log(`File ${filename} has been deleted.`);
     } catch (err) {
       console.log(err);
@@ -64,7 +63,7 @@ module.exports = [
             userid: req.body.user_id,
             activityid: req.body.activity_id,
             extradata1: req.body.info,
-            file_path: ROOT_PATH+cleared_filename,
+            file_path: FILE_PATH+cleared_filename,
             filename: cleared_filename,
             upload_date: common.human_date(new Date()),
           };
@@ -208,8 +207,16 @@ module.exports = [
       method: 'GET',
       path: '/getstats',
       handler: async function (request,reply){
-        const tutors = await db.get_cafedra_stats();
-        return tutors;
+        const stats = await db.get_cafedra_stats();
+        return stats;
+      },
+    },
+    {
+      method: 'GET',
+      path: '/getfacultystats',
+      handler: async function (request,reply){
+        const stats = await db.get_faculty_stats();
+        return stats;
       },
     },
     {
