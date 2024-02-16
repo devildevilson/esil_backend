@@ -134,26 +134,18 @@ const db = {
     let KPICounter = 0;
     if (res_pub.length > 0) {
         for (let i = 0; i < res_pub.length; i++) {
-          if (res_pub[i].pubtype == "Научные статьи") {
-              if (res_pub[i].publevel == "Международного уровня") {
-                  KPICounter += 3;
-              }
-              else if (res_pub[i].publevel == "Республиканского уровня") {
-                  KPICounter += 7;
-              }
-              if (res_pub[i].impact_factor != null && parseFloat(res_pub[i].impact_factor) > 0) {
-                  KPICounter += 10;
-              }
-          }
+          if (res_pub[i].pubtype == "Научные статьи" || res_pub[i].pubtype == "Научные монографии") {
+            if (res_pub[i].publevel == "Международного уровня") {
+                KPICounter += 3;
+            }
+            else if (res_pub[i].publevel == "Республиканского уровня" && res_pub[i].edition_index_db=='Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+                KPICounter += 7;
+            }
+            if ((res_pub[i].impact_factor != null && parseFloat(res_pub[i].impact_factor) > 0) &&res_pub[i].edition_index_db != null && (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science")) {
+                KPICounter += 10;
+            }
+        }
           if (res_pub[i].pubtype == "Тезисы(конференция)") {
-              if (res_pub[i].publevel == "Международного уровня") {
-                  KPICounter += 3;
-              }
-              else if (res_pub[i].publevel == "Республиканского уровня") {
-                  KPICounter += 7;
-              }
-          }
-          if (res_pub[i].pubtype == "Научные монографии") {
               if (res_pub[i].publevel == "Международного уровня") {
                   KPICounter += 3;
               }
