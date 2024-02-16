@@ -107,7 +107,7 @@ const db = {
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    where tp.edition_year>(${current_year-max_year_gap})
+    where tp.edition_year>=(${current_year-max_year_gap})
     and tp.edition_index_db='${edition_index_db}'
     and t.iinplt=${inn};`;
     const [ res ] = await query_f(query_str);
@@ -127,7 +127,7 @@ const db = {
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>(${current_year-max_year_gap_pub});
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_pub});
     `;
     let [res_pub] = await query_f(query_str);
     console.log('publications parsed');
@@ -192,7 +192,7 @@ const db = {
   SELECT COUNT(*) as 'total' FROM nirs n
     WHERE n.personid = ${tutor_id}
     and n.manager like '%${res_lastname.lastname}%'
-    and n.startdate>'${current_year-max_year_gap_nir}-01-01';
+    and n.startdate>='${current_year-max_year_gap_nir}-01-01';
   `;
   let [res_nirs] = await query_f(query_str);
   if(res_nirs.length>0){
