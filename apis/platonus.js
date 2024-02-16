@@ -186,7 +186,7 @@ const db = {
     `;
     let [res_inv] = await query_f(query_str);
     if(res_inv.length>0){
-      KPICounter =KPICounter + parseInt(res_inv[0]["total"])*20;
+      KPICounter =KPICounter + parseInt(res_inv[0]["total"])*5;
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM nirs n
