@@ -87,6 +87,7 @@ const db = {
     let hindex_wos = h_index.hwos;
     let kpi_overall = 0;
     kpi_overall = parseInt(kpiscore_plt)+parseInt(kpiscore_cloud);
+    if(hindex_scopus!=0 || h_index.hwos!=0) kpi_overall+=5;
     console.log(`kpiscore for ${user_id}`,kpi_overall);
     query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
     let [ res ] = await query_f(query_str);
