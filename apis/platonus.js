@@ -195,7 +195,9 @@ const db = {
     `;
     let [res_nirs] = await query_f(query_str);
     if(res_nirs.length>0){
-      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
+      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*20;
+      // has to be redone to match the 'manager' row in table nitro.nirs
+      // this is a temporary solution
     }
     return KPICounter;
   }
