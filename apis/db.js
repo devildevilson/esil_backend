@@ -194,7 +194,7 @@ const db = {
     join kpi_scores ks on u.id = ks.userid
     join cafedras c on ks.cafedra = c.id
     order by ks.score desc
-    limit 15`;
+    limit 10`;
     const [ res ] = await query_f(query_str);
     return res;
   },
