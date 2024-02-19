@@ -134,6 +134,23 @@ module.exports = [
     },
     {
       method: 'GET',
+      path: '/getpltdata/:user_id', 
+      handler: async function (request, reply) {
+        const plt_datas = await db.get_tutor_plt_data(request.params.user_id);
+        return plt_datas;
+      },
+      schema: {
+        params: {
+          type: "object",
+          required: [ "user_id" ],
+          properties: {
+            user_id: { type: "number" }
+          } 
+        },
+      }
+    },
+    {
+      method: 'GET',
       path: '/download/:filename', 
       handler: async function (request, reply) {
         
