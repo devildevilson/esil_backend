@@ -130,7 +130,6 @@ const db = {
     WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_pub});
     `;
     let [res_pub] = await query_f(query_str);
-    console.log('publications parsed');
     let KPICounter = 0;
     if (res_pub.length > 0) {
         for (let i = 0; i < res_pub.length; i++) {

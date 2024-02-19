@@ -148,7 +148,6 @@ module.exports = [
         update = await db.update_kpi_for_user(user_id);
         KPIScore = await db.get_kpiscore_by_userid(user_id);
         KPIScore = KPIScore.score;
-        console.log('KPI counted:',KPIScore);
       }
       return {
         id: user_data.id,
