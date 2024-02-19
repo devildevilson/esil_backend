@@ -120,6 +120,7 @@ const db = {
       JOIN publication_type pt ON tp.publication_type = pt.id
       JOIN publication_level pl ON tp.publication_level = pl.id
       where tp.edition_year>=(${current_year-max_year_gap_base})
+      and pt.nameru = 'Научные статьи'
       and pl.nameru='Международного уровня'
       and t.iinplt=${inn};`;
     }
