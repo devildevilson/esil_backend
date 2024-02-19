@@ -97,7 +97,7 @@ const db = {
     join tutors t on t.TutorID = hi.tutorID
     where t.iinplt=${inn}`;
     const [ res ] = await query_f(query_str);
-    return res.length !== 0 ? res[0] : 0;
+    return res.length !== 0 ? res[0] : undefined;
   },
   get_pub_count_by_iin_and_edition_index: async (inn,edition_index_db) =>{
     const max_year_gap = 5;
@@ -134,7 +134,7 @@ const db = {
     let KPICounter = 0;
     if (res_pub.length > 0) {
         for (let i = 0; i < res_pub.length; i++) {
-          if (res_pub[i].pubtype == "Научные статьи" || res_pub[i].pubtype == "Научные монографии") {
+          if (res_pub[i].pubtype == "Научные статьи") {
             if (res_pub[i].publevel == "Международного уровня") {
                 KPICounter += 3;
             }
@@ -147,7 +147,10 @@ const db = {
             if (res_pub[i].edition_index_db == "Web of Science") {
                 KPICounter += 10;
             }
-        }
+          }
+          if (res_pub[i].pubtype == "Научные монографии") {
+              KPICounter += 10;
+          }
           if (res_pub[i].pubtype == "Тезисы(конференция)") {
               if (res_pub[i].publevel == "Международного уровня") {
                   KPICounter += 3;

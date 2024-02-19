@@ -83,11 +83,14 @@ const db = {
     let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Scopus');
     let kpi_wos_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Web of Science');
     let h_index = await plt.get_h_index(iin);
-    let hindex_scopus = h_index.hscopus;
-    let hindex_wos = h_index.hwos;
+    let hindex_scopus=0, hindex_wos=0;
+    if(h_index!=undefined) {
+      if(h_index.hscopus!=undefined) hindex_scopus = h_index.hscopus;
+      if(h_index.hwos!=undefined) hindex_wos = h_index.hwos;
+    }
     let kpi_overall = 0;
     kpi_overall = parseInt(kpiscore_plt)+parseInt(kpiscore_cloud);
-    if(hindex_scopus!=0 || h_index.hwos!=0) kpi_overall+=5;
+    if(hindex_scopus!=0 || hindex_wos!=0) kpi_overall+=5;
     console.log(`kpiscore for ${user_id}`,kpi_overall);
     query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
     let [ res ] = await query_f(query_str);
