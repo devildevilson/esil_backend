@@ -174,8 +174,7 @@ const db = {
                   KPICounter += 7;
               }
           }
-        }        
-        
+        }             
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
