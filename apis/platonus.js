@@ -101,19 +101,137 @@ const db = {
   },
   get_pub_count_by_iin_and_edition_index: async (inn,edition_index_db) =>{
     const max_year_gap = 5;
+    const max_year_gap_base = 1;
     const today = new Date();
     const current_year = today.getFullYear()
-    const query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
-    JOIN tutors t ON t.TutorID = tp.TutorID
-    JOIN publication_type pt ON tp.publication_type = pt.id
-    JOIN publication_level pl ON tp.publication_level = pl.id
-    where tp.edition_year>=(${current_year-max_year_gap})
-    and tp.edition_index_db='${edition_index_db}'
-    and t.iinplt=${inn};`;
+    let query_str='';
+    if(edition_index_db=='monograph'){
+      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
+      JOIN tutors t ON t.TutorID = tp.TutorID
+      JOIN publication_type pt ON tp.publication_type = pt.id
+      JOIN publication_level pl ON tp.publication_level = pl.id
+      where tp.edition_year>=(${current_year-max_year_gap})
+      and pt.nameru='Научные монографии'
+      and t.iinplt=${inn};`;
+    }
+    if(edition_index_db=='international'){
+      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
+      JOIN tutors t ON t.TutorID = tp.TutorID
+      JOIN publication_type pt ON tp.publication_type = pt.id
+      JOIN publication_level pl ON tp.publication_level = pl.id
+      where tp.edition_year>=(${current_year-max_year_gap_base})
+      and pl.nameru='Международного уровня'
+      and t.iinplt=${inn};`;
+    }
+    if(edition_index_db=='Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)'){
+      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
+      JOIN tutors t ON t.TutorID = tp.TutorID
+      JOIN publication_type pt ON tp.publication_type = pt.id
+      JOIN publication_level pl ON tp.publication_level = pl.id
+      where tp.edition_year>=(${current_year-max_year_gap_base})
+      and pl.nameru='Республиканского уровня'
+      and tp.edition_index_db='${edition_index_db}'
+      and t.iinplt=${inn};`;
+    }
+    if(edition_index_db=='Scopus' || edition_index_db=='Web of Science'){
+      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
+      JOIN tutors t ON t.TutorID = tp.TutorID
+      JOIN publication_type pt ON tp.publication_type = pt.id
+      JOIN publication_level pl ON tp.publication_level = pl.id
+      where tp.edition_year>=(${current_year-max_year_gap})
+      and tp.edition_index_db='${edition_index_db}'
+      and t.iinplt=${inn};`;
+    }
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
   },
-  get_kpi_score_by_iin: async (inn) =>{
+  get_nirs_count_by_iin: async (inn) =>{
+    const max_year_gap_nir = 3;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    let query_str = `
+    SELECT lastname FROM tutors t
+    WHERE t.iinplt = ${inn};
+    `;
+    let [res_lastname] = await query_f(query_str);
+    query_str = `SELECT COUNT(*) as 'total' FROM nirs n
+    join tutors t on n.personID=t.TutorID
+    WHERE t.iinplt=${inn}
+    and n.manager not like '%${res_lastname.lastname}%'
+    and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : 0;
+  }, 
+  get_nirs_count_manager_by_iin: async (inn) =>{
+    const max_year_gap_nir = 3;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    let query_str = `
+    SELECT lastname FROM tutors t
+    WHERE t.iinplt = ${inn};
+    `;
+    let [res_lastname] = await query_f(query_str);
+    query_str = `SELECT COUNT(*) as 'total' FROM nirs n
+    join tutors t on n.personID=t.TutorID
+    WHERE t.iinplt=${inn}
+    and n.manager like '%${res_lastname.lastname}%'
+    and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : 0;
+  },
+  get_tia_count_by_iin: async (inn) =>{
+    let query_str = `
+    SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
+    join tutors t on tia.tutorid = t.tutorid
+    WHERE t.iinplt = ${inn};
+    `;
+    let [res_inv] = await query_f(query_str);
+    return res_inv.length !== 0 ? res_inv[0] : 0;
+  },
+  get_kpi_score_by_iin_base: async(inn) =>{
+    const max_year_gap_KKSON = 5;
+    const max_year_gap_EsU = 1;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    let query_str = `SELECT tutorid as tutor_id from tutors where iinplt='${inn}' AND has_access=1;`;
+    let [res] = await query_f(query_str);
+    let tutor_id = res.length !== 0 ? res[0].tutor_id : undefined;
+    query_str_kkson = `
+    SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor', tp.edition_index_db FROM tutorpubs tp 
+    JOIN tutors t ON t.TutorID = tp.TutorID
+    JOIN publication_type pt ON tp.publication_type = pt.id
+    JOIN publication_level pl ON tp.publication_level = pl.id
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_KKSON})
+    and publevel = 'Республиканского уровня'
+    and tp.edition_index_db = 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)';
+    `;
+    query_str_esu = `
+    SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor', tp.edition_index_db FROM tutorpubs tp 
+    JOIN tutors t ON t.TutorID = tp.TutorID
+    JOIN publication_type pt ON tp.publication_type = pt.id
+    JOIN publication_level pl ON tp.publication_level = pl.id
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_EsU})
+    and pt.nameru = 'Научные статьи'
+    and pl.nameru = 'Международного уровня';
+    `;
+    let [res_pub_kkson] = await query_f(query_str_kkson);
+    let [res_pub_esu] = await query_f(query_str_esu);
+    let KPICounter = 0;
+    if (res_pub_kkson.length > 0) {
+      for (let i = 0; i < res_pub_kkson.length; i++) {
+        KPICounter += 7;
+        console.log(`republican publication (KKSON), +7`,KPICounter);
+      }             
+    }
+    if (res_pub_esu.length > 0) {
+      for (let i = 0; i < res_pub_esu.length; i++) {
+        KPICounter += 3;
+        console.log(`international publication, +3`,KPICounter);
+      }             
+    }
+    return KPICounter;
+  },
+  get_kpi_score_by_iin_advanced: async (inn) =>{
     const max_year_gap_pub = 5;
     const max_year_gap_nir = 3;
     const today = new Date();
@@ -121,9 +239,8 @@ const db = {
     let query_str = `SELECT tutorid as tutor_id from tutors where iinplt='${inn}' AND has_access=1;`;
     let [res] = await query_f(query_str);
     let tutor_id = res.length !== 0 ? res[0].tutor_id : undefined;
-    console.log('tutorid:',tutor_id); 
     query_str = `
-    SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db FROM tutorpubs tp 
+    SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor', tp.edition_index_db FROM tutorpubs tp 
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
@@ -132,49 +249,22 @@ const db = {
     let [res_pub] = await query_f(query_str);
     let KPICounter = 0;
     if (res_pub.length > 0) {
-        for (let i = 0; i < res_pub.length; i++) {
-          if (res_pub[i].pubtype == "Научные статьи") {
-            if (res_pub[i].publevel == "Международного уровня") {
-                KPICounter += 3;
-            }
-            else if (res_pub[i].publevel == "Республиканского уровня" && res_pub[i].edition_index_db=='Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
-                KPICounter += 7;
-            }
-            if ((res_pub[i].impact_factor != null && parseFloat(res_pub[i].impact_factor) > 0) &&res_pub[i].edition_index_db != null && (res_pub[i].edition_index_db == "Scopus")) {
-                KPICounter += 10;
-            }
-            if (res_pub[i].edition_index_db == "Web of Science") {
-                KPICounter += 10;
-            }
-          }
-          if (res_pub[i].pubtype == "Научные монографии") {
+      for (let i = 0; i < res_pub.length; i++) {
+        if (res_pub[i].pubtype == "Научные статьи") {
+          if (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science") {
               KPICounter += 10;
+              console.log('scopus counted, +10', KPICounter);
           }
-          if (res_pub[i].pubtype == "Тезисы(конференция)") {
-              if (res_pub[i].publevel == "Международного уровня") {
-                  KPICounter += 3;
-              }
-              else if (res_pub[i].publevel == "Республиканского уровня") {
-                  KPICounter += 7;
-              }
+        }
+        if (res_pub[i].pubtype == "Научные монографии") {
+          KPICounter += 10;
+          console.log('monograph was counted, +10', KPICounter);
+          if (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science") {
+            KPICounter += 10;
+            console.log('..it was also a scopus/wos, +10',KPICounter);
           }
-          if (res_pub[i].pubtype == "Научные рекомендации") {
-              if (res_pub[i].publevel == "Международного уровня") {
-                  KPICounter += 3;
-              }
-              else if (res_pub[i].publevel == "Республиканского уровня") {
-                  KPICounter += 7;
-              }
-          }
-          if (res_pub[i].pubtype == "Учебное пособие") {
-              if (res_pub[i].publevel == "Международного уровня") {
-                  KPICounter += 3;
-              }
-              else if (res_pub[i].publevel == "Республиканского уровня") {
-                  KPICounter += 7;
-              }
-          }
-        }             
+        }
+      }             
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
@@ -183,33 +273,34 @@ const db = {
     let [res_inv] = await query_f(query_str);
     if(res_inv.length>0){
       KPICounter =KPICounter + parseInt(res_inv[0]["total"])*5;
+      console.log(`tia counted, +${parseInt(res_inv[0]["total"])*5}`,KPICounter);
     }
     query_str = `
-  SELECT lastname FROM tutors t
-  WHERE t.iinplt = ${inn};
-  `;
-  let [res_lastname] = await query_f(query_str);
-  query_str = `
-  SELECT COUNT(*) as 'total' FROM nirs n
-    WHERE n.personid = ${tutor_id}
-    and n.manager like '%${res_lastname.lastname}%'
-    and n.startdate>='${current_year-max_year_gap_nir}-01-01';
-  `;
-  let [res_nirs] = await query_f(query_str);
-  if(res_nirs.length>0){
-    KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
-  }
-  query_str = `
-  SELECT COUNT(*) as 'total' FROM nirs n
-    WHERE n.personid = ${tutor_id}
-    and n.manager not like '%${res_lastname.lastname}%'
-    and n.startdate>'${current_year-max_year_gap_nir}-01-01';
-  `;
-  [res_nirs] = await query_f(query_str);
+    SELECT lastname FROM tutors t
+    WHERE t.iinplt = ${inn};
+    `;
+    let [res_lastname] = await query_f(query_str);
+    query_str = `
+    SELECT COUNT(*) as 'total' FROM nirs n
+      WHERE n.personid = ${tutor_id}
+      and n.manager like '%${res_lastname.lastname}%'
+      and n.startdate>='${current_year-max_year_gap_nir}-01-01';
+    `;
+    let [res_nirs] = await query_f(query_str);
+    if(res_nirs.length>0){
+      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
+      console.log(`nirs manager counted, +${parseInt(res_nirs[0]["total"])*40}`,KPICounter);
+    }
+    query_str = `
+    SELECT COUNT(*) as 'total' FROM nirs n
+      WHERE n.personid = ${tutor_id}
+      and n.manager not like '%${res_lastname.lastname}%'
+      and n.startdate>'${current_year-max_year_gap_nir}-01-01';
+    `;
+    [res_nirs] = await query_f(query_str);
     if(res_nirs.length>0){
       KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*20;
-      // has to be redone to match the 'manager' row in table nitro.nirs
-      // this is a temporary solution
+      console.log(`nirs NOT manager counted, +${parseInt(res_nirs[0]["total"])*20}`,KPICounter);
     }
     return KPICounter;
   }

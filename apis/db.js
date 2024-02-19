@@ -77,11 +77,20 @@ const db = {
     where roles.user_id=${user_id};`;
     let [ iin_res ] = await query_f(query_str);
     let iin=iin_res[0].iin;
-    let kpiscore_plt = await plt.get_kpi_score_by_iin(iin);
-    let kpiscore_cloud = await db.count_kpi_score_by_iin(iin);
+    let kpiscore_plt_base = await plt.get_kpi_score_by_iin_base(iin);
+    let kpiscore_cloud_base = await db.count_kpi_score_by_iin_base(iin);
+    let kpiscore_plt_advanced = await plt.get_kpi_score_by_iin_advanced(iin);
+    let kpiscore_cloud_advanced = await db.count_kpi_score_by_iin_advanced(iin);
+    let kpiscore_base=kpiscore_plt_base+kpiscore_cloud_base;
+    let kpiscore_advanced=kpiscore_plt_advanced+kpiscore_cloud_advanced;
     let kpi_kkson_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)');
     let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Scopus');
     let kpi_wos_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Web of Science');
+    let kpi_nirs_count = await plt.get_nirs_count_by_iin(iin);
+    let kpi_nirs_count_manager = await plt.get_nirs_count_manager_by_iin(iin);
+    let kpi_tia_count = await plt.get_tia_count_by_iin(iin);
+    let kpi_monograph_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'monograph');
+    let kpi_international_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'international');
     let h_index = await plt.get_h_index(iin);
     let hindex_scopus=0, hindex_wos=0;
     if(h_index!=undefined) {
@@ -89,25 +98,36 @@ const db = {
       if(h_index.hwos!=undefined) hindex_wos = h_index.hwos;
     }
     let kpi_overall = 0;
-    kpi_overall = parseInt(kpiscore_plt)+parseInt(kpiscore_cloud);
-    if(hindex_scopus!=0 || hindex_wos!=0) kpi_overall+=5;
-    console.log(`kpiscore for ${user_id}`,kpi_overall);
+    kpi_overall = parseInt(kpiscore_plt_base)+parseInt(kpiscore_plt_advanced)+parseInt(kpiscore_cloud_base)+parseInt(kpiscore_cloud_advanced);
+    if(hindex_scopus!=0 || hindex_wos!=0) {
+      kpi_overall+=5;
+      kpiscore_advanced+=5;
+      console.log('also has h_index, so +5');
+    }
+    console.log(`combined kpiscore for ${user_id}`,kpi_overall);
     query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
     let [ res ] = await query_f(query_str);
     if(res.length===0){
       const file_data = {
         userid: user_id,
         score: kpi_overall,
+        score_base: kpiscore_base,
+        score_advanced: kpiscore_advanced,
         kkson_count: kpi_kkson_count,
         scopus_count: kpi_scopus_count,
         wos_count: kpi_wos_count,
+        monograph_count: kpi_monograph_count,
+        international_count: kpi_international_count,
+        nirs_count: kpi_nirs_count.total,
+        nirs_count_manager: kpi_nirs_count_manager.total,
+        tia_count: kpi_tia_count.total,
         h_index_scopus: hindex_scopus,
         h_index_wos: hindex_wos
       };
       const file = await db.create_row("kpi_scores", file_data);
     }
     else{
-      query_str = `update kpi_scores set score=${kpi_overall},kkson_count=${kpi_kkson_count.pubcount},scopus_count=${kpi_scopus_count.pubcount},wos_count=${kpi_wos_count.pubcount},h_index_scopus=${hindex_scopus},h_index_wos=${hindex_wos} where userid=${user_id};`;
+      query_str = `update kpi_scores set score=${kpi_overall}, score_base=${kpiscore_base}, score_advanced=${kpiscore_advanced}, kkson_count=${kpi_kkson_count.pubcount},scopus_count=${kpi_scopus_count.pubcount},wos_count=${kpi_wos_count.pubcount}, monograph_count=${kpi_monograph_count.pubcount}, international_count=${kpi_international_count.pubcount}, h_index_scopus=${hindex_scopus},h_index_wos=${hindex_wos},nirs_count=${kpi_nirs_count.total}, nirs_count_manager=${kpi_nirs_count_manager.total}, tia_count=${kpi_tia_count.total} where userid=${user_id};`;
       let [ res ] = await query_f(query_str);
       return res;
     }
@@ -170,11 +190,11 @@ const db = {
     return res;
   },
   get_top_ten_tutors_by_score: async () => {
-    const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.h_index_scopus, ks.h_index_wos from users u
+    const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
     join kpi_scores ks on u.id = ks.userid
     join cafedras c on ks.cafedra = c.id
     order by ks.score desc
-    limit 10`;
+    limit 15`;
     const [ res ] = await query_f(query_str);
     return res;
   },
@@ -238,7 +258,40 @@ const db = {
     }
     return score;
   },
-
+  count_kpi_score_by_iin_base: async (iin) => {
+    const max_year_gap_base = 1;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    const query_str = `select ka.primaryscore from files f
+    join kpi_activities ka on f.activityid=ka.id
+    join users u on f.userid = u.id
+    where u.username = ${iin}
+    and ka.isbase=1
+    and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00'`;
+    const [ res ] = await query_f(query_str);
+    let score=0;
+    for(let i=0; i<res.length; i++){
+      score+=res[i].primaryscore;
+    }
+    return score;
+  },
+  count_kpi_score_by_iin_advanced: async (iin) => {
+    const max_year_gap_advanced = 10;
+    const today = new Date();
+    const current_year = today.getFullYear()
+    const query_str = `select ka.primaryscore from files f
+    join kpi_activities ka on f.activityid=ka.id
+    join users u on f.userid = u.id
+    where u.username = ${iin}
+    and ka.isbase=0
+    and f.upload_date>='${current_year-max_year_gap_advanced}-09-01 00:00:00'`;
+    const [ res ] = await query_f(query_str);
+    let score=0;
+    for(let i=0; i<res.length; i++){
+      score+=res[i].primaryscore;
+    }
+    return score;
+  },
   get_faculty_stats: async () =>{
     let query_str = `SELECT sum(score) as scoresum, count(*) tutorcount from kpi_scores ks
     join cafedras c on ks.cafedra = c.id
