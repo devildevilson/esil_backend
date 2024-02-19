@@ -128,7 +128,7 @@ const db = {
       JOIN tutors t ON t.TutorID = tp.TutorID
       JOIN publication_type pt ON tp.publication_type = pt.id
       JOIN publication_level pl ON tp.publication_level = pl.id
-      where tp.edition_year>=(${current_year-max_year_gap_base})
+      where tp.edition_year>=(${current_year-max_year_gap})
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
       and t.iinplt=${inn};`;
@@ -196,16 +196,16 @@ const db = {
     let query_str = `SELECT tutorid as tutor_id from tutors where iinplt='${inn}' AND has_access=1;`;
     let [res] = await query_f(query_str);
     let tutor_id = res.length !== 0 ? res[0].tutor_id : undefined;
-    query_str_kkson = `
+    const query_str_kkson = `
     SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor', tp.edition_index_db FROM tutorpubs tp 
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
     WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_KKSON})
-    and publevel = 'Республиканского уровня'
+    and pl.nameru = 'Республиканского уровня'
     and tp.edition_index_db = 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)';
     `;
-    query_str_esu = `
+    const query_str_esu = `
     SELECT tp.pubID, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor', tp.edition_index_db FROM tutorpubs tp 
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id

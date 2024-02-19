@@ -194,7 +194,13 @@ const db = {
     join kpi_scores ks on u.id = ks.userid
     join cafedras c on ks.cafedra = c.id
     order by ks.score desc
-    limit 10`;
+    limit 10;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  get_tutor_plt_data: async (user_id) => {
+    const query_str = `SELECT * from kpi_scores ks
+    where ks.userid=${user_id};`;
     const [ res ] = await query_f(query_str);
     return res;
   },
