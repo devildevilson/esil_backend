@@ -11,13 +11,6 @@ const file_user_id_not_found_msg = "Could not find files by user id";
 const cant_upload_unique_activity = "Этот показатель уже загружен";
 const successful_upload="Файл был загружен";
 
-// function abc() {
-//   this.func1 = function () { console.log(typeof this.func1); };
-//   this.func2 = () => { console.log(typeof this.func1); };
-// }
-
-// const abc_obj = new abc();
-// console.log(typeof abc_obj.func1);
 
 var storage = Multer.diskStorage({
     destination: function(req,file,cb){
@@ -30,7 +23,7 @@ var storage = Multer.diskStorage({
 
 var upload = Multer({
     storage: storage,
-    limits: { fileSize: 1048576 }
+    limits: { fileSize: 10000000  }
 });
 
 async function deleteFile(filename) {
@@ -136,8 +129,8 @@ module.exports = [
       method: 'GET',
       path: '/getpltdata/:user_id', 
       handler: async function (request, reply) {
-        const plt_datas = await db.get_tutor_plt_data(request.params.user_id);
-        return plt_datas;
+        const score_datas = await db.get_tutor_plt_data(request.params.user_id);
+        return score_datas;
       },
       schema: {
         params: {
