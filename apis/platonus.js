@@ -221,13 +221,13 @@ const db = {
     if (res_pub_kkson.length > 0) {
       for (let i = 0; i < res_pub_kkson.length; i++) {
         KPICounter += 7;
-        console.log(`republican publication (KKSON), +7`,KPICounter);
+        //console.log(`republican publication (KKSON), +7`,KPICounter);
       }             
     }
     if (res_pub_esu.length > 0) {
       for (let i = 0; i < res_pub_esu.length; i++) {
         KPICounter += 3;
-        console.log(`international publication, +3`,KPICounter);
+        //console.log(`international publication, +3`,KPICounter);
       }             
     }
     return KPICounter;
@@ -254,15 +254,15 @@ const db = {
         if (res_pub[i].pubtype == "Научные статьи") {
           if (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science") {
               KPICounter += 10;
-              console.log('scopus counted, +10', KPICounter);
+              //console.log('scopus counted, +10', KPICounter);
           }
         }
         if (res_pub[i].pubtype == "Научные монографии") {
           KPICounter += 10;
-          console.log('monograph was counted, +10', KPICounter);
+          //console.log('monograph was counted, +10', KPICounter);
           if (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science") {
             KPICounter += 10;
-            console.log('..it was also a scopus/wos, +10',KPICounter);
+            //console.log('..it was also a scopus/wos, +10',KPICounter);
           }
         }
       }             
@@ -274,7 +274,7 @@ const db = {
     let [res_inv] = await query_f(query_str);
     if(res_inv.length>0){
       KPICounter =KPICounter + parseInt(res_inv[0]["total"])*5;
-      console.log(`tia counted, +${parseInt(res_inv[0]["total"])*5}`,KPICounter);
+      //console.log(`tia counted, +${parseInt(res_inv[0]["total"])*5}`,KPICounter);
     }
     query_str = `
     SELECT lastname FROM tutors t
@@ -290,7 +290,7 @@ const db = {
     let [res_nirs] = await query_f(query_str);
     if(res_nirs.length>0){
       KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
-      console.log(`nirs manager counted, +${parseInt(res_nirs[0]["total"])*40}`,KPICounter);
+      //console.log(`nirs manager counted, +${parseInt(res_nirs[0]["total"])*40}`,KPICounter);
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM nirs n
@@ -301,7 +301,7 @@ const db = {
     [res_nirs] = await query_f(query_str);
     if(res_nirs.length>0){
       KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*20;
-      console.log(`nirs NOT manager counted, +${parseInt(res_nirs[0]["total"])*20}`,KPICounter);
+      //console.log(`nirs NOT manager counted, +${parseInt(res_nirs[0]["total"])*20}`,KPICounter);
     }
     return KPICounter;
   }
