@@ -77,32 +77,29 @@ const db = {
     where roles.user_id=${user_id};`;
     let [ iin_res ] = await query_f(query_str);
     let iin=iin_res[0].iin;
-    let kpiscore_plt_base = await plt.get_kpi_score_by_iin_base(iin);
     let kpiscore_cloud_base = await db.count_kpi_score_by_iin_base(iin);
-    let kpiscore_plt_advanced = await plt.get_kpi_score_by_iin_advanced(iin);
     let kpiscore_cloud_advanced = await db.count_kpi_score_by_iin_advanced(iin);
-    let kpiscore_base=kpiscore_plt_base+kpiscore_cloud_base;
-    let kpiscore_advanced=kpiscore_plt_advanced+kpiscore_cloud_advanced;
     let kpi_kkson_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)');
     let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Scopus');
+    let kpi_monograph_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'monograph');
+    let kpi_international_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'international'); 
     let kpi_wos_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'Web of Science');
     let kpi_nirs_count = await plt.get_nirs_count_by_iin(iin);
     let kpi_nirs_count_manager = await plt.get_nirs_count_manager_by_iin(iin);
     let kpi_tia_count = await plt.get_tia_count_by_iin(iin);
-    let kpi_monograph_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'monograph');
-    let kpi_international_count = await plt.get_pub_count_by_iin_and_edition_index(iin,'international');
     let h_index = await plt.get_h_index(iin);
     let hindex_scopus=0, hindex_wos=0;
+    let kpiscore_base = kpiscore_cloud_base+kpi_kkson_count.pubcount*7+kpi_international_count.pubcount*3;
+    let kpiscore_advanced = kpiscore_cloud_advanced+kpi_scopus_count.pubcount*10+kpi_monograph_count.pubcount*10+kpi_wos_count.pubcount*10+kpi_nirs_count.total*20+kpi_nirs_count_manager.total*40+kpi_tia_count.total*5;
     if(h_index!=undefined) {
       if(h_index.hscopus!=undefined) hindex_scopus = h_index.hscopus;
       if(h_index.hwos!=undefined) hindex_wos = h_index.hwos;
     }
     let kpi_overall = 0;
-    kpi_overall = parseInt(kpiscore_plt_base)+parseInt(kpiscore_plt_advanced)+parseInt(kpiscore_cloud_base)+parseInt(kpiscore_cloud_advanced);
+    kpi_overall += kpiscore_base + kpiscore_advanced;
     if(hindex_scopus!=0 || hindex_wos!=0) {
       kpi_overall+=5;
       kpiscore_advanced+=5;
-      console.log('also has h_index, so +5');
     }
     console.log(`combined kpiscore for ${user_id}`,kpi_overall);
     query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
