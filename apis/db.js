@@ -164,6 +164,23 @@ const db = {
     return res;
   },
 
+  delete_user_by_iin: async (iin) =>{
+    try {
+      let query_str = `select * from users where username='${iin}';`;
+      const [user] = await query_f(query_str);
+      query_str = `delete from users where username='${iin}';`;
+      await query_f(query_str);
+      query_str = `delete from roles where user_id='${user.id}';`;
+      await query_f(query_str);
+      query_str = `delete from kpi_scores where userid='${user.id}';`;
+      await query_f(query_str);
+      return `${user.lastname,' ',user.name} deleted.`;
+    }
+    catch(err){
+      return 'something went wrong: ',err;
+    }
+  },
+
   find_user_role: async (user_id, role) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role = '${role}';`;
     const [ res ] = await query_f(query_str);
@@ -265,21 +282,39 @@ const db = {
     const max_year_gap_base = 1;
     const today = new Date();
     const current_year = today.getFullYear()
-    const query_str = `select ka.primaryscore from files f
+    let query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
     join users u on f.userid = u.id
     where u.username = ${iin}
     and ka.isbase=1
-    and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00'`;
-    const [ res ] = await query_f(query_str);
+    and ka.id != 26
+    and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00';`;
+    let [ res ] = await query_f(query_str);
     let score=0;
     for(let i=0; i<res.length; i++){
       score+=res[i].primaryscore;
     }
+    query_str = `select ka.primaryscore, f.extradata1 from files f
+    join kpi_activities ka on f.activityid=ka.id
+    join users u on f.userid = u.id
+    where u.username = ${iin}
+    and ka.id = 26
+    and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00';`;
+    [ res ] = await query_f(query_str);
+    if(res[0]){
+      if(res[0].extradata1!=undefined && res[0].extradata1!=null && res[0].extradata1!=''){
+        if(res[0].extradata1<=10){
+          score+=res[0].primaryscore*parseInt(res[0].extradata1);
+        }
+        else{
+          score+=res[0].primaryscore*10;
+        }
+      }
+    }
     return score;
   },
   count_kpi_score_by_iin_advanced: async (iin) => {
-    const max_year_gap_advanced = 10;
+    const max_year_gap_advanced = 5;
     const today = new Date();
     const current_year = today.getFullYear()
     const query_str = `select ka.primaryscore from files f
