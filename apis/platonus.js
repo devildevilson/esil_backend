@@ -158,7 +158,7 @@ const db = {
     query_str = `SELECT COUNT(*) as 'total' FROM nirs n
     join tutors t on n.personID=t.TutorID
     WHERE t.iinplt=${inn}
-    and n.manager not like '%${res_lastname.lastname}%'
+    and n.manager not like '%${res_lastname[0].lastname}%'
     and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
@@ -175,7 +175,7 @@ const db = {
     query_str = `SELECT COUNT(*) as 'total' FROM nirs n
     join tutors t on n.personID=t.TutorID
     WHERE t.iinplt=${inn}
-    and n.manager like '%${res_lastname.lastname}%'
+    and n.manager like '%${res_lastname[0].lastname}%'
     and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
