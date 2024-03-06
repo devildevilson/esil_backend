@@ -70,7 +70,7 @@ const db = {
   },
 
   update_kpi_for_user: async (user_id) => {
-    let query_str = `select username as 'iin' from users
+    let query_str = `select iin from users
     join roles on users.id = roles.user_id
     where roles.user_id=${user_id};`;
     let [ iin_res ] = await query_f(query_str);
@@ -140,12 +140,22 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
   get_role_by_iin: async (inn) => {
-    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.username = ${inn};`;
+    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.iin = ${inn};`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_role_by_username: async (username) => {
+    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.username = ${username};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  get_iin_by_username: async (username) => {
+    const query_str = `SELECT iin from users where username = '${username}';`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0].iin : undefined;
+  },
   get_user_id_by_iin: async (inn) => {
-    const query_str = `SELECT id from users where username = ${inn};`;
+    const query_str = `SELECT id from users where iin = ${inn};`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -164,9 +174,9 @@ const db = {
 
   delete_user_by_iin: async (iin) =>{
     try {
-      let query_str = `select * from users where username='${iin}';`;
+      let query_str = `select * from users where iin='${iin}';`;
       const [user] = await query_f(query_str);
-      query_str = `delete from users where username='${iin}';`;
+      query_str = `delete from users where iin='${iin}';`;
       await query_f(query_str);
       query_str = `delete from roles where user_id='${user.id}';`;
       await query_f(query_str);
@@ -267,7 +277,7 @@ const db = {
     const query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
     join users u on f.userid = u.id
-    where u.username = ${iin};`;
+    where u.iin = ${iin};`;
     const [ res ] = await query_f(query_str);
     //console.log(res[1].primaryscore);
     let score=0;
@@ -283,7 +293,7 @@ const db = {
     let query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
     join users u on f.userid = u.id
-    where u.username = ${iin}
+    where u.iin = ${iin}
     and ka.isbase=1
     and ka.id != 26
     and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00';`;
@@ -295,7 +305,7 @@ const db = {
     query_str = `select ka.primaryscore, f.extradata1 from files f
     join kpi_activities ka on f.activityid=ka.id
     join users u on f.userid = u.id
-    where u.username = ${iin}
+    where u.iin = ${iin}
     and ka.id = 26
     and f.upload_date>='${current_year-max_year_gap_base}-09-01 00:00:00';`;
     [ res ] = await query_f(query_str);
@@ -318,7 +328,7 @@ const db = {
     const query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
     join users u on f.userid = u.id
-    where u.username = ${iin}
+    where u.iin = ${iin}
     and ka.isbase=0
     and f.upload_date>='${current_year-max_year_gap_advanced}-09-01 00:00:00';`;
     const [ res ] = await query_f(query_str);

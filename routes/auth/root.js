@@ -21,12 +21,12 @@ module.exports = [
     handler: async (request, reply) => {
       console.log('POST started');
       const payload = request.body;
-      const iin = payload.username.trim().toLowerCase();
-      console.log('IIN: '+iin);
+      const username = payload.username.trim().toLowerCase();
+      console.log('username: '+username);
       let cafedraname = '', cafedraid='';
-      if (iin=='6172'){
-        let user_data = await db.find_user_by_username(iin);
-        let user_role = await db.get_role_by_iin(iin);
+      if (username=='6172'){
+        let user_data = await db.find_user_by_username(username);
+        let user_role = await db.get_role_by_username(username);
         const role_str = user_role.role;
         console.log(role_str);
         if (!user_data) return reply.unauthorized(auth_error_msg);
@@ -36,16 +36,7 @@ module.exports = [
 
         const min_data = { id: user_data.id, username: user_data.username };
         const token = await common.sign_token(min_data);
-        if(role_str=='plt_kpiadmin'){
-          // actions to be done when kpi administrator logs in
-          // prepare cafedra statistics, get all tutors
-          // tutors have to be found using a searchbar
-        }
-        // if(role_str=='plt_kpiadmin_cafedra'){
-        //   // IMPORTANT NOTE:
-        //   // cafedra leader has to have heightened access to see ONLY his tutors' data
-        // }
-  
+
         return {
           id: user_data.id,
           name: user_data.name,
@@ -57,17 +48,16 @@ module.exports = [
           timestamp: common.human_date(new Date()),
         };
       }
-      //try {
-      let user_data = await db.find_user_by_username(iin);
+      let user_data = await db.find_user_by_username(username);
       let plt_data;
       if (!user_data) {
         let flag_as_tutor=false;
         console.log('user is not in db, trying to create');
         // найдем пользователя в платонусе
-        plt_data = await plt.find_student_by_iin(iin);
+        plt_data = await plt.find_student_by_iin(username);
         if (!plt_data) {
           console.log('didnt find student, trying to find tutor');
-          plt_data = await plt.find_tutor_by_iin(iin);
+          plt_data = await plt.find_tutor_by_iin(username);
           if(plt_data){ 
             flag_as_tutor=true;
             console.log('found tutor');
@@ -79,13 +69,14 @@ module.exports = [
             return reply.unauthorized(auth_error_msg);
           }
         }
-        const password_hash = await common.hash_password(iin);
+        const password_hash = await common.hash_password(username);
         
         const user_data = {
           name: plt_data.name,
           lastname: plt_data.lastname,
           middlename: plt_data.middlename,
-          username: iin,
+          username: username,
+          iin: username,
           password: password_hash,
         };
 
@@ -100,7 +91,7 @@ module.exports = [
             role: "plt_tutor",
             assotiated_id: plt_data.tutor_id
           }
-          const tutorCafedra = await plt.get_tutor_cafedra_by_iin(iin);
+          const tutorCafedra = await plt.get_tutor_cafedra_by_iin(username);
           cafedraname = tutorCafedra.cafedraNameRU;
           cafedraid = tutorCafedra.cafedraid;
           console.log('cafedra name:',cafedraname);
@@ -123,7 +114,9 @@ module.exports = [
         }
         await db.create_row("roles", role_data);
       }
-      user_data = await db.find_user_by_username(iin);
+      const iin = await db.get_iin_by_username(username);
+      console.log('IIN: '+iin);
+      user_data = await db.find_user_by_username(username);
       user_role = await db.get_role_by_iin(iin);
       const role_str = user_role.role;
       console.log(role_str);
