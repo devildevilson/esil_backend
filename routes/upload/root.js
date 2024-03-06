@@ -127,6 +127,23 @@ module.exports = [
     },
     {
       method: 'GET',
+      path: '/getumkdmoodle/:user_id', 
+      handler: async function (request, reply) {
+        const file_datas = await db.get_umkd_moodle_by_userid(request.params.user_id);
+        return file_datas;
+      },
+      schema: {
+        params: {
+          type: "object",
+          required: [ "user_id" ],
+          properties: {
+            user_id: { type: "number" }
+          } 
+        },
+      }
+    },
+    {
+      method: 'GET',
       path: '/getpltdata/:user_id', 
       handler: async function (request, reply) {
         const score_datas = await db.get_tutor_plt_data(request.params.user_id);
@@ -178,6 +195,19 @@ module.exports = [
         return 'deleted';
       },
       // schema
+    },
+    {
+      method: 'DELETE',
+      path: '/deleteuser/:iin', 
+      handler: async function (request, reply) {
+        try{
+          const update = await db.delete_user_by_iin(request.params.iin);
+          return update;
+        }
+        catch(err){
+          return err;
+        }
+      },
     },
     {
       method: 'GET',

@@ -3,6 +3,7 @@ const db = require("@apis/db");
 const plt = require("@apis/platonus");
 const common = require("@core/common");
 
+const anarchy = true;
 const auth_error_msg = "Authorization failed";
 const role_not_found_msg = "Insufficient privilege";
 const could_not_get_cert_data_msg = "Сertificate data request is not possible";
