@@ -2,8 +2,6 @@
 
 require("dotenv").config();
 const mysql = require("mysql2/promise");
-const { get_kpi_score_by_iin } = require("./platonus");
-const { parse } = require("dotenv");
 const plt = require("@apis/platonus");
 
 const connection_config = {
@@ -322,7 +320,7 @@ const db = {
     join users u on f.userid = u.id
     where u.username = ${iin}
     and ka.isbase=0
-    and f.upload_date>='${current_year-max_year_gap_advanced}-09-01 00:00:00'`;
+    and f.upload_date>='${current_year-max_year_gap_advanced}-09-01 00:00:00';`;
     const [ res ] = await query_f(query_str);
     let score=0;
     for(let i=0; i<res.length; i++){

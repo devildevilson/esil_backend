@@ -106,42 +106,80 @@ const db = {
     const current_year = today.getFullYear()
     let query_str='';
     if(edition_index_db=='monograph'){
-      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
-      JOIN tutors t ON t.TutorID = tp.TutorID
-      JOIN publication_type pt ON tp.publication_type = pt.id
-      JOIN publication_level pl ON tp.publication_level = pl.id
-      where tp.edition_year>=(${current_year-max_year_gap})
+      query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+      join tutors t on t.tutorid=ip.tutorID
+      join tutorpubs tp on ip.pubID = tp.pubID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn} 
       and pt.nameru='Научные монографии'
-      and t.iinplt=${inn};`;
+      and tp.edition_year>=${current_year-max_year_gap}
+      UNION ALL
+      select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+      join tutors t on t.tutorid=tp.tutorID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn}
+      and pt.nameru='Научные монографии'
+      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
     }
     if(edition_index_db=='international'){
-      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
-      JOIN tutors t ON t.TutorID = tp.TutorID
-      JOIN publication_type pt ON tp.publication_type = pt.id
-      JOIN publication_level pl ON tp.publication_level = pl.id
-      where tp.edition_year>=(${current_year-max_year_gap_base})
+      query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+      join tutors t on t.tutorid=ip.tutorID
+      join tutorpubs tp on ip.pubID = tp.pubID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn} 
       and pt.nameru = 'Научные статьи'
-      and pl.nameru='Международного уровня'
-      and t.iinplt=${inn};`;
+      and pl.nameru = 'Международного уровня'
+      and tp.edition_year>=${current_year-max_year_gap_base}
+      UNION ALL
+      select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+      join tutors t on t.tutorid=tp.tutorID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn}
+      and pt.nameru = 'Научные статьи'
+      and pl.nameru = 'Международного уровня'
+      and tp.edition_year>=${current_year-max_year_gap_base}) as tem;`;
     }
     if(edition_index_db=='Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)'){
-      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
-      JOIN tutors t ON t.TutorID = tp.TutorID
-      JOIN publication_type pt ON tp.publication_type = pt.id
-      JOIN publication_level pl ON tp.publication_level = pl.id
-      where tp.edition_year>=(${current_year-max_year_gap})
+      query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+      join tutors t on t.tutorid=ip.tutorID
+      join tutorpubs tp on ip.pubID = tp.pubID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn} 
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
-      and t.iinplt=${inn};`;
+      and tp.edition_year>=${current_year-max_year_gap}
+      UNION ALL
+      select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+      join tutors t on t.tutorid=tp.tutorID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn} 
+      and pl.nameru='Республиканского уровня'
+      and tp.edition_index_db='${edition_index_db}'
+      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
     }
     if(edition_index_db=='Scopus' || edition_index_db=='Web of Science'){
-      query_str = `SELECT count(*) as pubcount FROM tutorpubs tp 
-      JOIN tutors t ON t.TutorID = tp.TutorID
-      JOIN publication_type pt ON tp.publication_type = pt.id
-      JOIN publication_level pl ON tp.publication_level = pl.id
-      where tp.edition_year>=(${current_year-max_year_gap})
+      query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+      join tutors t on t.tutorid=ip.tutorID
+      join tutorpubs tp on ip.pubID = tp.pubID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn}  
       and tp.edition_index_db='${edition_index_db}'
-      and t.iinplt=${inn};`;
+      and tp.edition_year>=${current_year-max_year_gap}
+      UNION ALL
+      select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+      join tutors t on t.tutorid=tp.tutorID
+      join publication_type pt ON tp.publication_type = pt.id
+      join publication_level pl ON tp.publication_level = pl.id
+      where t.iinplt = ${inn} 
+      and tp.edition_index_db='${edition_index_db}'
+      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
     }
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
