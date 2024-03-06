@@ -102,6 +102,10 @@ const db = {
     console.log(`combined kpiscore for ${user_id}`,kpi_overall);
     query_str = `SELECT userid from kpi_scores where userid=${user_id};`;
     let [ res ] = await query_f(query_str);
+    let umkd_mdl_completion = await db.get_umkd_moodle_by_userid(user_id);
+    const calculated_margin_mdl = Math.round(15/50*umkd_mdl_completion[0].umkd_mdl_completion-15);
+    kpiscore_base+=calculated_margin_mdl;
+    kpi_overall+=calculated_margin_mdl;
     if(res.length===0){
       const file_data = {
         userid: user_id,
@@ -120,6 +124,7 @@ const db = {
         h_index_wos: hindex_wos
       };
       const file = await db.create_row("kpi_scores", file_data);
+      
     }
     else{
       query_str = `update kpi_scores set score=${kpi_overall}, score_base=${kpiscore_base}, score_advanced=${kpiscore_advanced}, kkson_count=${kpi_kkson_count.pubcount},scopus_count=${kpi_scopus_count.pubcount},wos_count=${kpi_wos_count.pubcount}, monograph_count=${kpi_monograph_count.pubcount}, international_count=${kpi_international_count.pubcount}, h_index_scopus=${hindex_scopus},h_index_wos=${hindex_wos},nirs_count=${kpi_nirs_count.total}, nirs_count_manager=${kpi_nirs_count_manager.total}, tia_count=${kpi_tia_count.total} where userid=${user_id};`;
@@ -133,7 +138,7 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-
+  
   get_kpiscore_by_userid: async (user_id) => {
     const query_str = `SELECT score from kpi_scores where userid = ${user_id};`;
     const [ res ] = await query_f(query_str);
