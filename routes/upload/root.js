@@ -23,7 +23,7 @@ var storage = Multer.diskStorage({
 
 var upload = Multer({
     storage: storage,
-    limits: { fileSize: 10000000  }
+    limits: { fileSize: 20000000  }
 });
 
 async function deleteFile(filename) {
