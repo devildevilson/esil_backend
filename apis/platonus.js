@@ -72,6 +72,13 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  find_student_data_for_application: async (student_id) => {
+    const query_str = `
+    `;
+
+    // const [ res ] = await query_f(query_str);
+    // return res.length !== 0 ? res[0] : undefined;
+  },
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
     FROM tutors t 
