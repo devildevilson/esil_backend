@@ -217,11 +217,48 @@ const db = {
     join kpi_activity_categories kac on ka.categoryid = kac.id
     where f.userid=${userid}
     group by ka.categoryid
-    order by ka.categoryid desc;`;
+    order by ka.categoryid;`;
     let [ res ] = await query_f(query_str);
     return res;
   },
-  get_top_ten_tutors_by_score: async () => {
+  get_top_ten_tutors_by_score: async (toptentype) => {
+    let query_str;
+    if (toptentype==0 || toptentype==1){
+      query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
+      join kpi_scores ks on u.id = ks.userid
+      join cafedras c on ks.cafedra = c.id
+      where academicstatusid in (0,1)
+      order by ks.score desc
+      limit 10;`;
+    }
+    else if (toptentype==2 || toptentype==4){
+      query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
+      join kpi_scores ks on u.id = ks.userid
+      join cafedras c on ks.cafedra = c.id
+      where academicstatusid in (2,4)
+      order by ks.score desc
+      limit 10;`;
+    }
+    else if (toptentype==3 || toptentype==5){
+      query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
+      join kpi_scores ks on u.id = ks.userid
+      join cafedras c on ks.cafedra = c.id
+      where academicstatusid in (3,5)
+      order by ks.score desc
+      limit 10;`;
+    }
+    else{
+      query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
+      join kpi_scores ks on u.id = ks.userid
+      join cafedras c on ks.cafedra = c.id
+      where academicstatusid=${toptentype}
+      order by ks.score desc
+      limit 10;`;
+    }
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  get_top_ten_tutors_overall_by_score: async () => {
     const query_str = `SELECT ks.userid, ROW_NUMBER() over() as counter, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', c.cafedraNameRU, ks.score, ks.score_base, ks.score_advanced, ks.kkson_count, ks.scopus_count, ks.wos_count, ks.nirs_count_manager, ks.monograph_count, ks.international_count, ks.nirs_count, ks.tia_count, ks.h_index_scopus, ks.h_index_wos from users u
     join kpi_scores ks on u.id = ks.userid
     join cafedras c on ks.cafedra = c.id
@@ -300,8 +337,9 @@ const db = {
     const max_year_gap_base = 1;
     const today = new Date();
     const current_year = today.getFullYear()
-    let query_str = `select ka.primaryscore from files f
+    let query_str = `select ka.primaryscore, kac.coef from files f
     join kpi_activities ka on f.activityid=ka.id
+    join kpi_activity_categories kac on ka.categoryid = kac.id
     join users u on f.userid = u.id
     where u.iin = ${iin}
     and ka.isbase=1
@@ -311,9 +349,11 @@ const db = {
     let score=0;
     for(let i=0; i<res.length; i++){
       score+=res[i].primaryscore;
+      //console.log(res[i].primaryscore, '*', res[i].coef,'=',res[i].primaryscore*res[i].coef);
     }
-    query_str = `select ka.primaryscore, f.extradata1 from files f
+    query_str = `select ka.primaryscore, f.extradata1, kac.coef from files f
     join kpi_activities ka on f.activityid=ka.id
+    join kpi_activity_categories kac on ka.categoryid = kac.id
     join users u on f.userid = u.id
     where u.iin = ${iin}
     and ka.id = 26
@@ -335,8 +375,9 @@ const db = {
     const max_year_gap_advanced = 5;
     const today = new Date();
     const current_year = today.getFullYear()
-    const query_str = `select ka.primaryscore from files f
+    const query_str = `select ka.primaryscore, kac.coef from files f
     join kpi_activities ka on f.activityid=ka.id
+    join kpi_activity_categories kac on ka.categoryid = kac.id
     join users u on f.userid = u.id
     where u.iin = ${iin}
     and ka.isbase=0

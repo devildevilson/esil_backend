@@ -94,7 +94,6 @@ module.exports = [
       method: 'GET',
       path: '/getscore/:user_id', 
       handler: async function (request, reply) {
-          // должна быть роль просмотра файлов
         const file_datas = await db.get_kpiscore_by_userid(request.params.user_id);
         return file_datas;
       },
@@ -163,8 +162,7 @@ module.exports = [
       method: 'GET',
       path: '/download/:filename', 
       handler: async function (request, reply) {
-        
-        // должна быть роль просмотра файлов
+        // incomplete !
         const file_datas = 1;
         return file_datas;
       },
@@ -261,10 +259,25 @@ module.exports = [
     },
     {
       method: 'GET',
-      path: '/gettopten',
+      path: '/gettopten/:toptentype',
       handler: async function (request,reply){
-        const tutors = await db.get_top_ten_tutors_by_score();
+        let tutors;
+        if(request.params.toptentype==6) {
+          tutors = await db.get_top_ten_tutors_overall_by_score();
+        }
+        else {
+          tutors = await db.get_top_ten_tutors_by_score(request.params.toptentype);
+        }
         return tutors;
       },
+      schema: {
+        params: {
+          type: "object",
+          required: [ "toptentype" ],
+          properties: {
+            cafedraid: { type: "number" }
+          } 
+        },
+      }
     },
 ];

@@ -92,13 +92,16 @@ module.exports = [
             assotiated_id: plt_data.tutor_id
           }
           const tutorCafedra = await plt.get_tutor_cafedra_by_iin(username);
+          const tutorAcademicDegree = await plt.get_tutor_academic_degree_by_iin(username);
           cafedraname = tutorCafedra.cafedraNameRU;
           cafedraid = tutorCafedra.cafedraid;
+          academicdegreeid = tutorAcademicDegree.AcademicDegreeID;
           console.log('cafedra name:',cafedraname);
           kpi_data = {
             userid: user_id,
             score: 0,
-            cafedra: cafedraid
+            cafedra: cafedraid,
+            academicstatusid: academicdegreeid
           }
           console.log('role selected: tutor');
           // have to find end set tutor's cafedra

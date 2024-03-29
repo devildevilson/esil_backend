@@ -88,12 +88,17 @@ const db = {
     const [ res ] = await query_f(query_str);  
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_tutor_academic_degree_by_iin: async (iin) => {
+    const query_str = `SELECT AcademicStatusID FROM tutors t 
+    WHERE t.deleted = 0 and t.iinplt=${iin};`
+    const [ res ] = await query_f(query_str);  
+    return res.length !== 0 ? res[0] : undefined;
+  },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS student_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-
   find_tutor_by_iin: async (inn) => {
     const query_str = `SELECT tutorid AS tutor_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1;`;
     const [ res ] = await query_f(query_str);
@@ -266,6 +271,7 @@ const db = {
     if (res_pub_kkson.length > 0) {
       for (let i = 0; i < res_pub_kkson.length; i++) {
         KPICounter += 7;
+        // get number from db
         //console.log(`republican publication (KKSON), +7`,KPICounter);
       }             
     }
