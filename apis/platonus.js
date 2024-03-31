@@ -74,10 +74,59 @@ const db = {
   },
   find_student_data_for_application: async (student_id) => {
     const query_str = `
+      SELECT 
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s.BirthDate AS birth_date,
+        s.iinplt AS iin,
+        s.icnumber AS id_card,
+        s.icdate AS id_date,
+        si.ic_finish_date AS id_thru,
+        s.icdepartment AS id_dep,
+        s1.NAMERU AS sex,
+        ck_bp.nameru AS birth_place,
+        s.living_adress AS living_address,
+        s.adress AS registration_address,
+        ck_lp.nameru AS living_place_kato,
+        ck_rp.nameru AS registration_place_kato,
+        ck_bp.nameru AS birth_place_kato,
+        s.phone AS phone1,
+        s.mobilePhone AS phone2,
+        --
+        s.mail AS email,
+        cn.NameRU AS nationality,
+        cc.nameru AS citizenship,
+        s2.nameru AS specialization,
+        sf.NameRu AS study_form,
+        dt.nameru AS degree_type,
+        --
+        sl.NameRU AS study_language,
+        --
+        s.sum_points AS exam_score,
+        --
+        i.edunameru AS edu_name,
+        ck2.nameru AS edu_place_name,
+        s.dorm_state AS dorm
+      FROM students s
+      LEFT JOIN student_info si ON si.studentID = s.StudentID
+      LEFT JOIN sexes s1 ON s1.ID = s.SexID
+      LEFT JOIN center_kato ck_bp ON ck_bp.id = s.birth_place_cato_id
+      LEFT JOIN center_kato ck_lp ON ck_lp.id = s.living_place_cato_id
+      LEFT JOIN center_kato ck_rp ON ck_rp.id = s.registration_place_cato_id
+      LEFT JOIN center_nationalities cn ON cn.Id = s.NationID
+      LEFT JOIN center_countries cc ON cc.id = s.sitizenshipID
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      LEFT JOIN degree_types dt ON dt.degreeID = sf.degreeID
+      LEFT JOIN studylanguages sl ON sl.Id = s.StudyLanguageID
+      LEFT JOIN institutions i ON i.id = si.institution_id
+      LEFT JOIN center_kato ck2 ON ck2.code = i.regioncode
+      WHERE s.StudentID = ${student_id};
     `;
 
-    // const [ res ] = await query_f(query_str);
-    // return res.length !== 0 ? res[0] : undefined;
+    const [ res ] = await query_f(query_str);
+    return res[0];
   },
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
@@ -95,12 +144,17 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
   find_student_by_iin: async (inn) => {
-    const query_str = `SELECT StudentID AS student_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
+    const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  find_applicant_by_iin: async (inn) => {
+    const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 2;`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   find_tutor_by_iin: async (inn) => {
-    const query_str = `SELECT tutorid AS tutor_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1;`;
+    const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1;`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },

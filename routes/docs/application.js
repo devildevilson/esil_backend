@@ -6,11 +6,12 @@ const common = require("@core/common");
 const auth_error_msg = "Authorization failed";
 const role_not_found_msg = "Insufficient privilege";
 const could_not_get_cert_data_msg = "Cert data request is not possible";
-const cert_id_not_found_msg = "Could not find certificate with this id";
+const app_data_not_found_msg = "Could not find student application data";
 const cert_user_id_not_found_msg = "Could not find certificates by user id";
 
-const role_id = "plt_student";
+const role_id = "plt_applicant";
 
+// это только русский, наверное нужно еще казахский вариант сделать
 module.exports = [
   {
     method: 'GET',
@@ -35,12 +36,10 @@ module.exports = [
         role_index = role.assotiated_id;
       }
 
-      // тут нужно скорее всего обратиться в platonus для необходимых данных
-      // каких?
-      //const data = await plt.find_student_data_for_application(role_index);
-      //if (!data) return reply.notFound(cert_id_not_found_msg);
+      const data = await plt.find_student_data_for_application(role_index);
+      if (!data) return reply.notFound(app_data_not_found_msg);
 
-      return { name: "name", state: "alaska" };
+      return data;
     },
     schema: {
       params: {
