@@ -155,7 +155,7 @@ const db = {
     return res;
   },
   get_role_by_username: async (username) => {
-    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.username = ${username};`;
+    const query_str = `SELECT role from roles join users on users.id=roles.user_id where users.username = '${username}';`;
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },

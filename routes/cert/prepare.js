@@ -25,7 +25,7 @@ module.exports = [
         plt_user_id = role.assotiated_id;
       } else {
         // должна быть роль создателя справок
-        const adm_role = await db.find_user_role(token_data.id, "admin");
+        const adm_role = await db.find_user_role(token_data.id, "admissionadmin");
         if (!adm_role) return reply.forbidden(role_not_found_msg);
         // по приоритету берем requested_by из тела сообщения
         requested_by = requested_by === request.body.user_id ? token_data.id : requested_by;

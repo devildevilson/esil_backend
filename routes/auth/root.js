@@ -111,7 +111,7 @@ module.exports = [
       const iin = await db.get_iin_by_username(username);
       console.log('IIN: '+iin);
       
-      user_role = await db.get_role_by_iin(iin);
+      user_role = await db.get_role_by_username(username);
       const role_str = user_role.role;
       console.log(role_str);
       if (!user_data) return reply.unauthorized(auth_error_msg);

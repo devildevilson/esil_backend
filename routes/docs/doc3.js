@@ -27,7 +27,7 @@ module.exports = [
         role_index = role.assotiated_id;
       } else {
         // должна быть роль просмотра справок
-        const adm_role = await db.find_user_role(token_data.id, "admin");
+        const adm_role = await db.find_user_role(token_data.id, "admissionadmin");
         if (!adm_role) return reply.forbidden(role_not_found_msg);
 
         const role = await db.find_user_role(request.params.user_id, role_id);
