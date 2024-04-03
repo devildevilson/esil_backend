@@ -176,8 +176,19 @@ const db = {
     return res;
   },
 
+  // roles - это массив
   get_user_roles_specific: async (user_id, roles) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role IN ('${roles.join("','")}');`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+
+  get_users_with_role: async (role) => {
+    const query_str = `
+      SELECT u.id,u.auth_type,u.name,u.lastname,u.middlename,u.username,u.suspended,u.alt_id,u.iin FROM users u
+      JOIN roles r ON r.user_id = u.id
+      WHERE role = '${role}';
+    `;
     const [ res ] = await query_f(query_str);
     return res;
   },

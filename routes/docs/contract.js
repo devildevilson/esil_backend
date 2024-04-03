@@ -9,12 +9,12 @@ const could_not_get_cert_data_msg = "Cert data request is not possible";
 const cert_id_not_found_msg = "Could not find certificate with this id";
 const cert_user_id_not_found_msg = "Could not find certificates by user id";
 
-const role_id = "plt_student";
+const role_id = "plt_applicant";
 
 module.exports = [
   {
     method: 'GET',
-    path: '/doc2/:user_id', 
+    path: '/contract/:user_id', 
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.query.token);
       if (token_data.error) return reply.forbidden(token_data.error);
@@ -37,10 +37,10 @@ module.exports = [
 
       // тут нужно скорее всего обратиться в platonus для необходимых данных
       // каких?
-      //const data = await plt.find_student_data_for_application(role_index);
-      //if (!data) return reply.notFound(cert_id_not_found_msg);
+      const data = await plt.find_student_data_for_contract(role_index);
+      if (!data) return reply.notFound(cert_id_not_found_msg);
 
-      return { name: "name", state: "alaska" };
+      return data;
     },
     schema: {
       params: {

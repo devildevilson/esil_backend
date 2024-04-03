@@ -128,6 +128,49 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+  find_student_data_for_contract: async (student_id) => {
+    const query_str = `
+      SELECT
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s.iinplt AS iin,
+        s.icnumber AS id_card,
+        s.icdepartment AS id_dep,
+        s2.specializationCode AS specialization_code,
+        s2.nameru AS specialization,
+        sf.courseCount AS course_count,
+        s.living_adress AS living_address,
+        s.adress AS registration_address
+      FROM students s
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
+  find_student_data_for_inventory: async (student_id) => {
+    const query_str = `
+      SELECT
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s.iinplt AS iin,
+        s.seriyaAttestata AS certificate_serial,
+        s.nomerAttestata AS certificate_number,
+        s.dataVydachiAttestata AS certificate_date,
+        s.certificate AS exam_cert,
+        si.ent_cert_date_print AS exam_cert_date
+      FROM students s
+      LEFT JOIN student_info si ON si.studentID = s.StudentID
+      WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
     FROM tutors t 
