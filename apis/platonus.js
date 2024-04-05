@@ -128,6 +128,62 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+  find_student_data_for_application_kz: async (student_id) => {
+    const query_str = `
+      SELECT 
+      s.lastname AS lastname,
+      s.firstname AS firstname,
+      s.patronymic AS patronymic,
+      s.BirthDate AS birth_date,
+      s.iinplt AS iin,
+      s.icnumber AS id_card,
+      s.icdate AS id_date,
+      si.ic_finish_date AS id_thru,
+      s.icdepartment AS id_dep,
+      s1.namekz AS sex,
+      ck_bp.namekz AS birth_place,
+      s.living_adress AS living_address,
+      s.adress AS registration_address,
+      ck_lp.namekz AS living_place_kato,
+      ck_rp.namekz AS registration_place_kato,
+      ck_bp.namekz AS birth_place_kato,
+      s.phone AS phone1,
+      s.mobilePhone AS phone2,
+      --
+      s.mail AS email,
+      cn.namekz AS nationality,
+      cc.namekz AS citizenship,
+      s2.namekz AS specialization,
+      sf.namekz AS study_form,
+      dt.namekz AS degree_type,
+      --
+      sl.namekz AS study_language,
+      --
+      s.sum_points AS exam_score,
+      --
+      i.edunamekz AS edu_name,
+      ck2.namekz AS edu_place_name,
+      s.dorm_state AS dorm
+    FROM students s
+    LEFT JOIN student_info si ON si.studentID = s.StudentID
+    LEFT JOIN sexes s1 ON s1.ID = s.SexID
+    LEFT JOIN center_kato ck_bp ON ck_bp.id = s.birth_place_cato_id
+    LEFT JOIN center_kato ck_lp ON ck_lp.id = s.living_place_cato_id
+    LEFT JOIN center_kato ck_rp ON ck_rp.id = s.registration_place_cato_id
+    LEFT JOIN center_nationalities cn ON cn.Id = s.NationID
+    LEFT JOIN center_countries cc ON cc.id = s.sitizenshipID
+    LEFT JOIN specializations s2 ON s2.id = s.specializationID
+    LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+    LEFT JOIN degree_types dt ON dt.degreeID = sf.degreeID
+    LEFT JOIN studylanguages sl ON sl.Id = s.StudyLanguageID
+    LEFT JOIN institutions i ON i.id = si.institution_id
+    LEFT JOIN center_kato ck2 ON ck2.code = i.regioncode
+    WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
   find_student_data_for_contract: async (student_id) => {
     const query_str = `
       SELECT
