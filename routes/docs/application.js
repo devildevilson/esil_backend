@@ -13,7 +13,7 @@ const role_id = "plt_applicant";
 module.exports = [
   {
     method: 'GET',
-    path: '/applicationru/:user_id', 
+    path: '/application/ru/:user_id', 
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.query.token);
       if (token_data.error) return reply.forbidden(token_data.error);
@@ -58,7 +58,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/applicationkz/:user_id', 
+    path: '/application/kz/:user_id', 
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.query.token);
       if (token_data.error) return reply.forbidden(token_data.error);
