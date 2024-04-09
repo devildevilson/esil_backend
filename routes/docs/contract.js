@@ -38,6 +38,15 @@ module.exports = [
       const data = await plt.find_student_data_for_contract(role_index);
       if (!data) return reply.notFound(cert_id_not_found_msg);
 
+      const meta_data = {
+        user_id: token_data.id,
+        for_user_id: request.params.user_id,
+        type: "contract",
+        lang: "ru"
+      };
+      // вообще await тут ни к чему
+      await db.create_row(meta_data);
+
       return data;
     },
     schema: {

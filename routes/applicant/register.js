@@ -23,6 +23,9 @@ module.exports = [
       const adm_role = await db.find_user_role(token_data.id, "admissionadmin");
       if (!adm_role) return reply.forbidden(role_not_found_msg);
 
+      const user = await db.get_user_id_by_iin(iin);
+      if (user) return { message: user_already_exists };
+
       const plt_data = await plt.find_applicant_by_iin(iin);
       if (!plt_data) return reply.notFound(app_data_not_found_msg);
 
@@ -36,20 +39,15 @@ module.exports = [
         iin: iin,
         password: password_hash,
       };
-      const user = await db.get_user_id_by_iin(iin);
-      if(!user) {
-        const user_id = await db.create_row("users", db_user_data);
-        const role_data = {
-          user_id,
-          role: "plt_applicant",
-          assotiated_id: plt_data.plt_id
-        };
-        await db.create_row("roles", role_data);
-        return {message: `${plt_data.lastname} ${plt_data.name} `+success};
-      }
-      else {
-        return {message: user_already_exists};
-      }
+      
+      const user_id = await db.create_row("users", db_user_data);
+      const role_data = {
+        user_id,
+        role: "plt_applicant",
+        assotiated_id: plt_data.plt_id
+      };
+      await db.create_row("roles", role_data);
+      return { message: `${plt_data.lastname} ${plt_data.name} ` + success };
     },
     schema: {
       params: {

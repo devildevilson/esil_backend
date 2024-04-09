@@ -37,6 +37,15 @@ module.exports = [
       const data = await plt.find_student_data_for_application(role_index);
       if (!data) return reply.notFound(app_data_not_found_msg);
 
+      const meta_data = {
+        user_id: token_data.id,
+        for_user_id: request.params.user_id,
+        type: "application",
+        lang: "ru"
+      };
+      // вообще await тут ни к чему
+      await db.create_row(meta_data);
+
       return data;
     },
     schema: {
@@ -81,6 +90,15 @@ module.exports = [
 
       const data = await plt.find_student_data_for_application_kz(role_index);
       if (!data) return reply.notFound(app_data_not_found_msg);
+
+      const meta_data = {
+        user_id: token_data.id,
+        for_user_id: request.params.user_id,
+        type: "application",
+        lang: "kz"
+      };
+      // вообще await тут ни к чему
+      await db.create_row(meta_data);
 
       return data;
     },
