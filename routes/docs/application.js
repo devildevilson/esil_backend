@@ -44,7 +44,7 @@ module.exports = [
         lang: "ru"
       };
       // вообще await тут ни к чему
-      await db.create_row(meta_data);
+      await db.create_row("meta_generate_docs", meta_data);
 
       return data;
     },
@@ -98,7 +98,7 @@ module.exports = [
         lang: "kz"
       };
       // вообще await тут ни к чему
-      await db.create_row(meta_data);
+      await db.create_row("meta_generate_docs", meta_data);
 
       return data;
     },
