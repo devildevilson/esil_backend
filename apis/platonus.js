@@ -207,6 +207,29 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+  find_student_data_for_contract_kz: async (student_id) => {
+    const query_str = `
+      SELECT
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s.iinplt AS iin,
+        s.icnumber AS id_card,
+        s.icdepartment AS id_dep,
+        s2.specializationCode AS specialization_code,
+        s2.namekz AS specialization,
+        sf.courseCount AS course_count,
+        s.living_adress AS living_address,
+        s.adress AS registration_address
+      FROM students s
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
   find_student_data_for_inventory: async (student_id) => {
     const query_str = `
       SELECT
