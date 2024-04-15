@@ -227,6 +227,30 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+
+  get_student_data_by_id_arr: async (str_arr) => {
+    const query_str = `
+      SELECT 
+        s.StudentID AS plt_id,
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s2.nameru AS specialization,
+        sf.NameRu AS study_form,
+        dt.nameru AS degree_type,
+        sl.NameRU AS study_language
+      FROM students s
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      LEFT JOIN degree_types dt ON dt.degreeID = sf.degreeID
+      LEFT JOIN studylanguages sl ON sl.Id = s.StudyLanguageID
+      WHERE s.StudentID IN (${str_arr});
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
     FROM tutors t 

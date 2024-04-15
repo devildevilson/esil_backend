@@ -193,6 +193,18 @@ const db = {
     return res;
   },
 
+  get_assotiated_id_arr_by_role: async (role) => {
+    //SELECT GROUP_CONCAT(assotiated_id) AS str FROM roles WHERE role = '${role}';
+    const query_str = `
+      SELECT user_id,assotiated_id FROM roles WHERE role = '${role}';
+    `;
+
+    //const [ [ { str } ] ] = await query_f(query_str);
+    //return str;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+
   delete_user_by_iin: async (iin) =>{
     try {
       let query_str = `select * from users where iin='${iin}';`;
