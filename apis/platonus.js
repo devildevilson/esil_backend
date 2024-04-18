@@ -274,6 +274,40 @@ const db = {
     return res;
   },
 
+  get_relevant_specializations: async (str_arr, con)=> {
+    const query_str = `
+      SELECT DISTINCT 
+        s2.nameru AS specialization
+      FROM students s
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      WHERE s.StudentID IN (${str_arr});
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_relevant_studyforms: async (str_arr, con) =>{
+    const query_str = `
+    SELECT DISTINCT
+      sf.NameRu AS study_form
+    From students s
+    LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+    WHERE s.StudentID IN (${str_arr});
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_count: async (str_arr, specialization, study_form) => {
+    const query_str = `
+    SELECT count(*) as counter
+    From students s
+    LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+    LEFT JOIN specializations s2 ON s2.id = s.specializationID
+    WHERE s.StudentID IN (${str_arr}) and s2.nameru='${specialization}' and sf.nameru='${study_form}';
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
     FROM tutors t 
