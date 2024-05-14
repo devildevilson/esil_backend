@@ -192,10 +192,12 @@ const db = {
         s.patronymic AS patronymic,
         s.iinplt AS iin,
         s.icnumber AS id_card,
+        s.icdate as id_date,
         s.icdepartment AS id_dep,
         s2.specializationCode AS specialization_code,
         s2.nameru AS specialization,
         sf.courseCount AS course_count,
+        sf.nameru as study_form,
         s.living_adress AS living_address,
         s.adress AS registration_address
       FROM students s
@@ -215,9 +217,11 @@ const db = {
         s.patronymic AS patronymic,
         s.iinplt AS iin,
         s.icnumber AS id_card,
-        s.icdepartment AS id_dep,
+        s.icdate as id_date,
+        s.icdepartment AS id_dep,    
         s2.specializationCode AS specialization_code,
         s2.namekz AS specialization,
+        sf.namekz as study_form,
         sf.courseCount AS course_count,
         s.living_adress AS living_address,
         s.adress AS registration_address
