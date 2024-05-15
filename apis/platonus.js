@@ -234,6 +234,54 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+  find_student_data_for_title: async (student_id) => {
+    const query_str = `
+    SELECT
+    s.lastname AS lastname,
+    s.firstname AS firstname,
+    s.patronymic AS patronymic,
+    s.iinplt AS iin,
+    s.icnumber AS id_card,
+    s2.specializationCode AS specialization_code,
+    s2.nameru AS specialization,
+    s.phone AS phone,
+    sf.id as studyformID,
+    s.living_adress AS living_address,
+    s.grant_type AS grant_type,
+    s.adress AS registration_address
+  FROM students s
+  LEFT JOIN specializations s2 ON s2.id = s.specializationID
+  LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+  WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
+  find_student_data_for_title_kz: async (student_id) => {
+    const query_str = `
+    SELECT
+    s.lastname AS lastname,
+    s.firstname AS firstname,
+    s.patronymic AS patronymic,
+    s.iinplt AS iin,
+    s.icnumber AS id_card,
+    s2.specializationCode AS specialization_code,
+    s2.namekz AS specialization,
+    s.phone AS phone,
+    sf.id as studyformid,
+    s.living_adress AS living_address,
+    s.grant_type AS grant_type,
+    s.adress AS registration_address
+  FROM students s
+  LEFT JOIN specializations s2 ON s2.id = s.specializationID
+  LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+  WHERE s.StudentID = ${student_id};
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res[0];
+  },
   find_student_data_for_inventory: async (student_id) => {
     const query_str = `
       SELECT
