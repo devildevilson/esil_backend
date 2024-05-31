@@ -227,6 +227,11 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res[0];
   },
+  get_filename: async (file_id) => {
+    const query_str = `SELECT filename from files where id=${file_id};`;
+    const [ res ] = await query_f(query_str);
+    return res[0].filename;
+  },
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
     join kpi_scores ks on u.id = ks.userid

@@ -2,6 +2,9 @@ const Multer = require('fastify-multer');
 const common = require('@core/common');
 const db = require('@apis/db');
 const fs = require('fs').promises;
+const filesystem = require('fs');
+const path = require('path');
+const fastifyStatic = require('fastify-static');
 
 const FILE_PATH = process.env.ROOT_PATH;
 
@@ -39,6 +42,7 @@ async function deleteFile(filename) {
     return 'failed';
   }
 }
+
 
 module.exports = [
     {
@@ -160,18 +164,39 @@ module.exports = [
     },
     {
       method: 'GET',
-      path: '/download/:filename', 
+      path: '/download/:fileid', 
       handler: async function (request, reply) {
         // incomplete !
-        const file_datas = 1;
-        return file_datas;
+        const filename = await db.get_filename(request.params.fileid);
+        if (filename){
+          if (!filesystem.existsSync(FILE_PATH+filename)) {
+            reply.code(404).send({ error: 'File not found' });
+            return;
+          }
+          const filename_parts=filename.split('.')
+          let type;
+          switch(filename_parts[filename_parts.length-1]){
+            case '.jpg': type='image/jpeg'; break;
+            case '.jpeg': type='image/jpeg'; break;
+            case '.pdf': type='application.pdf'; break;
+            case '.doc': type='application/msword'; break;
+            case '.docx': type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
+            default: type='none'; break;
+          }
+          const stream = filesystem.createReadStream(path.resolve(FILE_PATH+filename));
+          reply.send(stream).type(type);
+          return reply;
+        }
+        else{
+          return 'file not found';
+        }
       },
       schema: {
         params: {
           type: "object",
-          required: [ "filename" ],
+          required: [ "fileid" ],
           properties: {
-            filename: { type: "string" }
+            filename: { type: "number" }
           } 
         },
       }
