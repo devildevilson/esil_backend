@@ -169,7 +169,11 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-
+  get_iin_by_user_id: async (id) => {
+    const query_str = `SELECT iin from users where id = '${id}';`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
     const [ res ] = await query_f(query_str);
@@ -231,6 +235,20 @@ const db = {
     const query_str = `SELECT filename from files where id=${file_id};`;
     const [ res ] = await query_f(query_str);
     return res[0].filename;
+  },
+  get_debt_data_by_iin: async (iin) => {
+    const query_str = `SELECT debt from student_debt where iin=${iin};`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  debt_update: async(debt_data) =>{
+    const clear_table_query = `delete from student_debt;`;
+    await query_f(clear_table_query);
+    for(const item of debt_data){
+      const insert_query = `insert into student_debt (fio,iin,debt) values ('${item.FIO}','${item.iin}','${item.debt}');`;
+      await query_f(insert_query);
+    }
+    return 'update complete';
   },
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u

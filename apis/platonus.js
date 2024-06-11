@@ -359,6 +359,15 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  find_student_iin_by_fio: async (lastname,firstname,patronymic) => {
+    let query_str;
+    query_str = `select iinplt as iin from students s
+    WHERE s.lastname='${lastname}' and s.firstname='${firstname}' and s.patronymic='${patronymic}';`
+    if(patronymic==''||patronymic==undefined) query_str = `select iinplt as iin from students s
+    WHERE s.lastname='${lastname}' and s.firstname='${firstname}';`
+    const [ res ] = await query_f(query_str);  
+    return res.length !== 0 ? res[0].iin : undefined;
+  },
 
   get_tutor_cafedra_by_iin: async (iin) => {
     const query_str = `SELECT c.cafedraid, c.cafedraNameRU
