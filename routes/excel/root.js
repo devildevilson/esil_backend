@@ -28,7 +28,7 @@ module.exports = [
             jsonData.splice(0,21);
             let formattedData = [];
             for(let i=0; i<jsonData.length; i++){
-                if(jsonData[i].length==7
+                if(jsonData[i].length>6
                     && jsonData[i][6]>0
                     && jsonData[i][0].toLowerCase().indexOf('отд.')==-1 
                     && jsonData[i][0].toLowerCase().indexOf('рус.отд')==-1 
@@ -46,6 +46,7 @@ module.exports = [
                         formattedData.push({
                             'FIO':formattedFIO,
                             'iin':iin, 
+                            'overall':jsonData[i][4],
                             'debt':jsonData[i][6]});
                     }
                     

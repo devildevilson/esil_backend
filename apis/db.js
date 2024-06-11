@@ -237,7 +237,7 @@ const db = {
     return res[0].filename;
   },
   get_debt_data_by_iin: async (iin) => {
-    const query_str = `SELECT debt from student_debt where iin=${iin};`;
+    const query_str = `SELECT iin, debt, overall from student_debt where iin=${iin};`;
     const [ res ] = await query_f(query_str);
     return res;
   },
@@ -245,7 +245,7 @@ const db = {
     const clear_table_query = `delete from student_debt;`;
     await query_f(clear_table_query);
     for(const item of debt_data){
-      const insert_query = `insert into student_debt (fio,iin,debt) values ('${item.FIO}','${item.iin}','${item.debt}');`;
+      const insert_query = `insert into student_debt (fio,iin,overall,debt) values ('${item.FIO}','${item.iin}','${item.overall}','${item.debt}');`;
       await query_f(insert_query);
     }
     return 'update complete';
