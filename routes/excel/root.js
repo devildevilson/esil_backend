@@ -52,6 +52,10 @@ module.exports = [
                     
             }
             await db.debt_update(formattedData);
+            const excel_data = {
+              upload_date: common.human_date(new Date()),
+            };
+            await db.create_row("excel_data", excel_data);
             reply.send(formattedData);
         },
     },
@@ -72,6 +76,15 @@ module.exports = [
             } 
           },
         }
+      },
+      {
+        method: 'GET',
+        path: '/getdocdate', 
+        handler: async function (request, reply) {
+          const docdate = await db.get_excel_doc_date();
+          reply.send(docdate);
+          return docdate;
+        },
       },
 
 ];

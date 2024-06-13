@@ -346,6 +346,11 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res;
   },
+  get_excel_doc_date: async () => {
+    const query_str = `SELECT upload_date FROM excel_data order by id desc limit 1;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   get_file_records_by_user_id: async (user_id) => {
     const query_str = `select f.id, ka.name, f.file_path, f.extradata1, f.filename, f.upload_date, ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
