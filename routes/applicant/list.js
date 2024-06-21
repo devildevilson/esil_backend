@@ -28,7 +28,7 @@ module.exports = [
       // надо дополнить users idшниками как?
       let users_table = {};
       users.forEach(elem => { users_table[elem.plt_id] = elem; });
-      role_arr.forEach(elem => { users_table[elem.assotiated_id].id = elem.user_id; });
+      role_arr.forEach(elem => { if (users_table[elem.assotiated_id]) users_table[elem.assotiated_id].id = elem.user_id; });
       return Object.values(users_table);
 
       //const users = await db.get_users_with_role(role_id);
