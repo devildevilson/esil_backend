@@ -394,6 +394,151 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  form_admission_stats: async () =>{
+    const d = new Date();
+    let current_year = d.getFullYear();
+    const query_str = `SELECT 
+    sf.nameru AS StudyFormName, 
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-07 23:59:59' THEN 1 ELSE 0 END) AS 'june7',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-14 23:59:59' THEN 1 ELSE 0 END) AS 'june14',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-21 23:59:59' THEN 1 ELSE 0 END) AS 'june21',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-28 23:59:59' THEN 1 ELSE 0 END) AS 'june28',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-05 23:59:59' THEN 1 ELSE 0 END) AS 'july5',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-12 23:59:59' THEN 1 ELSE 0 END) AS 'july12',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-19 23:59:59' THEN 1 ELSE 0 END) AS 'july19',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-26 23:59:59' THEN 1 ELSE 0 END) AS 'july26',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-02 23:59:59' THEN 1 ELSE 0 END) AS 'august2',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-09 23:59:59' THEN 1 ELSE 0 END) AS 'august9',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-16 23:59:59' THEN 1 ELSE 0 END) AS 'august16',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-23 23:59:59' THEN 1 ELSE 0 END) AS 'august23',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-30 23:59:59' THEN 1 ELSE 0 END) AS 'august30'
+FROM 
+    students s
+JOIN 
+    studyforms sf ON s.StudyFormID = sf.id
+GROUP BY 
+    s.StudyFormID, sf.nameru;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  form_admission_stats_main: async() =>{
+    const d = new Date();
+    let current_year = d.getFullYear();
+    const query_str = `SELECT 
+    sp.nameru AS specialization,
+    
+SUM(CASE WHEN sf.id = 1   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf1_sl1,
+SUM(CASE WHEN sf.id = 1   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf1_sl2,
+
+SUM(CASE WHEN sf.id = 3   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf3_sl1,
+SUM(CASE WHEN sf.id = 3   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf3_sl2,
+
+SUM(CASE WHEN sf.id = 4   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf4_sl1,
+SUM(CASE WHEN sf.id = 4   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf4_sl2,
+
+SUM(CASE WHEN sf.id = 5   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf5_sl1,
+SUM(CASE WHEN sf.id = 5   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf5_sl2,
+
+SUM(CASE WHEN sf.id = 6   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf6_sl1,
+SUM(CASE WHEN sf.id = 6   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf6_sl2,
+
+SUM(CASE WHEN sf.id = 7   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf7_sl1,
+SUM(CASE WHEN sf.id = 7   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf7_sl2,
+
+SUM(CASE WHEN sf.id = 8   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf8_sl1,
+SUM(CASE WHEN sf.id = 8   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf8_sl2,
+
+SUM(CASE WHEN sf.id = 12 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf12_sl1,
+SUM(CASE WHEN sf.id = 12 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf12_sl2,
+ 
+SUM(CASE WHEN sf.id = 13 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf13_sl1,
+SUM(CASE WHEN sf.id = 13 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf13_sl2,
+ 
+SUM(CASE WHEN sf.id = 14 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf14_sl1,
+SUM(CASE WHEN sf.id = 14 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf14_sl2,
+ 
+SUM(CASE WHEN sf.id = 15 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf15_sl1,
+SUM(CASE WHEN sf.id = 15 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf15_sl2,
+ 
+SUM(CASE WHEN sf.id = 17 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf17_sl1,
+SUM(CASE WHEN sf.id = 17 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf17_sl2,
+ 
+SUM(CASE WHEN sf.id = 18 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf18_sl1,
+SUM(CASE WHEN sf.id = 18 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf18_sl2,
+ 
+SUM(CASE WHEN sf.id = 19 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf19_sl1,
+SUM(CASE WHEN sf.id = 19 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf19_sl2,
+ 
+SUM(CASE WHEN sf.id = 20 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf20_sl1,
+SUM(CASE WHEN sf.id = 20 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf20_sl2,
+ 
+SUM(CASE WHEN sf.id = 21 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf21_sl1,
+SUM(CASE WHEN sf.id = 21 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf21_sl2,
+ 
+SUM(CASE WHEN sf.id = 23 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf23_sl1,
+SUM(CASE WHEN sf.id = 23 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf23_sl2,
+ 
+SUM(CASE WHEN sf.id = 24 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf24_sl1,
+SUM(CASE WHEN sf.id = 24 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf24_sl2,
+ 
+SUM(CASE WHEN sf.id = 25 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf25_sl1,
+SUM(CASE WHEN sf.id = 25 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf25_sl2,
+ 
+SUM(CASE WHEN sf.id = 26 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf26_sl1,
+SUM(CASE WHEN sf.id = 26 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf26_sl2,
+ 
+SUM(CASE WHEN sf.id = 27 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf27_sl1,
+SUM(CASE WHEN sf.id = 27 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf27_sl2,
+ 
+SUM(CASE WHEN sf.id = 28 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf28_sl1,
+SUM(CASE WHEN sf.id = 28 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf28_sl2,
+ 
+SUM(CASE WHEN sf.id = 29 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf29_sl1,
+SUM(CASE WHEN sf.id = 29 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf29_sl2,
+ 
+SUM(CASE WHEN sf.id = 30 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf30_sl1,
+SUM(CASE WHEN sf.id = 30 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf30_sl2,
+ 
+SUM(CASE WHEN sf.id = 31 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf31_sl1,
+SUM(CASE WHEN sf.id = 31 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf31_sl2,
+ 
+SUM(CASE WHEN sf.id = 32 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf32_sl1,
+SUM(CASE WHEN sf.id = 32 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf32_sl2,
+ 
+SUM(CASE WHEN sf.id = 33 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf33_sl1,
+SUM(CASE WHEN sf.id = 33 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf33_sl2,
+ 
+SUM(CASE WHEN sf.id = 34 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf34_sl1,
+SUM(CASE WHEN sf.id = 34 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf34_sl2,
+ 
+SUM(CASE WHEN sf.id = 35 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf35_sl1,
+SUM(CASE WHEN sf.id = 35 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf35_sl2,
+ 
+SUM(CASE WHEN sf.id = 36 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf36_sl1,
+SUM(CASE WHEN sf.id = 36 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf36_sl2,
+ 
+SUM(CASE WHEN sf.id = 37 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf37_sl1,
+SUM(CASE WHEN sf.id = 37 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf37_sl2,
+ 
+SUM(CASE WHEN sf.id = 38 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf38_sl1,
+SUM(CASE WHEN sf.id = 38 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf38_sl2
+
+FROM 
+    students s
+JOIN 
+    specializations sp ON s.specializationID = sp.id
+JOIN 
+    studyforms sf ON s.studyformID = sf.id
+JOIN 
+    studylanguages sl ON s.studylanguageID = sl.id
+where s.isStudent=2 and startdate>'${current_year}-06-01 00:00:00'
+GROUP BY 
+    sp.nameru
+ORDER BY 
+    sp.nameru;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   find_tutor_by_iin: async (inn) => {
     const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1;`;
     const [ res ] = await query_f(query_str);

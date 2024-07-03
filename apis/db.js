@@ -138,7 +138,24 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  
+  update_applicant_extrainfo: async (user_id,column,data) => {
+    const query_str = `select userid from admission_extrainfo where userid=${user_id};`;
+    const [ res ] = await query_f(query_str);
+    if(res.length!==0){
+      const update_str = `update admission_extrainfo set ${column}='${data}' where userid=${user_id};`;
+      await query_f(update_str);
+    }
+    else{
+      const insert_str = `insert into admission_extrainfo (userid,${column}) values (${user_id},'${data}');`;
+      await query_f(insert_str);
+    }
+    return `updated ${user_id} extradata`;
+  },
+  get_applicant_extradata_by_userid: async (user_id) => {
+    const query_str = `SELECT * from admission_extrainfo where userid = ${user_id};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
   get_kpiscore_by_userid: async (user_id) => {
     const query_str = `SELECT score from kpi_scores where userid = ${user_id};`;
     const [ res ] = await query_f(query_str);

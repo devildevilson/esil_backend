@@ -15,13 +15,13 @@ module.exports = [
     {
         method: 'GET',
         handler: async function (request, reply) {
-            const token_data = await common.decode_token(request.query.token);
-            if (token_data.error) return reply.forbidden(token_data.error);
+            //const token_data = await common.decode_token(request.query.token);
+            //if (token_data.error) return reply.forbidden(token_data.error);
 
-            const adm_role = await db.find_user_role(token_data.id, "admissionstats");
-            if (!adm_role) return reply.forbidden(role_not_found_msg);
+            //const adm_role = await db.find_user_role(token_data.id, "admissionstats");
+            //if (!adm_role) return reply.forbidden(role_not_found_msg);
 
-            const role_arr = await db.get_assotiated_id_arr_by_role("plt_applicant");
+            const role_arr = await db.get_assotiated_id_arr_by_role(role_id);
             const str_arr = role_arr.map(elem => elem.assotiated_id).join(",");
             const users = await plt.get_student_data_by_id_arr(str_arr);
 
@@ -30,8 +30,8 @@ module.exports = [
 
             let users_table = {};
             users.forEach(elem => { users_table[elem.plt_id] = elem; });
-            role_arr.forEach(elem => { users_table[elem.assotiated_id].id = elem.user_id; });
-
+            role_arr.forEach(elem => { if (users_table[elem.assotiated_id]) users_table[elem.assotiated_id].id = elem.user_id; });
+      
             let specializationsArr = [], studyformsArr = [];
 
             for (let i = 0; i < specializationsObj.length; i++) {
@@ -52,15 +52,6 @@ module.exports = [
             return (statistics);
 
         },
-        schema: {
-            querystring: {
-                type: "object",
-                required: ["token"],
-                properties: {
-                    token: { type: "string" }
-                }
-            }
-        }
     },
 ];
 
