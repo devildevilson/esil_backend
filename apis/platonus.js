@@ -414,6 +414,8 @@ const db = {
     SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-30 23:59:59' THEN 1 ELSE 0 END) AS 'august30'
 FROM 
     students s
+WHERE
+    s.StudyFormID in (1,3,4,5,8,15,17,21,23,24,29,30,31)
 JOIN 
     studyforms sf ON s.StudyFormID = sf.id
 GROUP BY 
@@ -439,38 +441,14 @@ SUM(CASE WHEN sf.id = 4   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf4_sl2,
 SUM(CASE WHEN sf.id = 5   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf5_sl1,
 SUM(CASE WHEN sf.id = 5   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf5_sl2,
 
-SUM(CASE WHEN sf.id = 6   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf6_sl1,
-SUM(CASE WHEN sf.id = 6   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf6_sl2,
-
-SUM(CASE WHEN sf.id = 7   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf7_sl1,
-SUM(CASE WHEN sf.id = 7   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf7_sl2,
-
 SUM(CASE WHEN sf.id = 8   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf8_sl1,
 SUM(CASE WHEN sf.id = 8   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf8_sl2,
-
-SUM(CASE WHEN sf.id = 12 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf12_sl1,
-SUM(CASE WHEN sf.id = 12 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf12_sl2,
- 
-SUM(CASE WHEN sf.id = 13 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf13_sl1,
-SUM(CASE WHEN sf.id = 13 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf13_sl2,
- 
-SUM(CASE WHEN sf.id = 14 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf14_sl1,
-SUM(CASE WHEN sf.id = 14 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf14_sl2,
  
 SUM(CASE WHEN sf.id = 15 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf15_sl1,
 SUM(CASE WHEN sf.id = 15 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf15_sl2,
  
 SUM(CASE WHEN sf.id = 17 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf17_sl1,
 SUM(CASE WHEN sf.id = 17 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf17_sl2,
- 
-SUM(CASE WHEN sf.id = 18 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf18_sl1,
-SUM(CASE WHEN sf.id = 18 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf18_sl2,
- 
-SUM(CASE WHEN sf.id = 19 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf19_sl1,
-SUM(CASE WHEN sf.id = 19 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf19_sl2,
- 
-SUM(CASE WHEN sf.id = 20 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf20_sl1,
-SUM(CASE WHEN sf.id = 20 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf20_sl2,
  
 SUM(CASE WHEN sf.id = 21 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf21_sl1,
 SUM(CASE WHEN sf.id = 21 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf21_sl2,
@@ -481,18 +459,6 @@ SUM(CASE WHEN sf.id = 23 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf23_sl2,
 SUM(CASE WHEN sf.id = 24 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf24_sl1,
 SUM(CASE WHEN sf.id = 24 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf24_sl2,
  
-SUM(CASE WHEN sf.id = 25 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf25_sl1,
-SUM(CASE WHEN sf.id = 25 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf25_sl2,
- 
-SUM(CASE WHEN sf.id = 26 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf26_sl1,
-SUM(CASE WHEN sf.id = 26 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf26_sl2,
- 
-SUM(CASE WHEN sf.id = 27 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf27_sl1,
-SUM(CASE WHEN sf.id = 27 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf27_sl2,
- 
-SUM(CASE WHEN sf.id = 28 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf28_sl1,
-SUM(CASE WHEN sf.id = 28 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf28_sl2,
- 
 SUM(CASE WHEN sf.id = 29 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf29_sl1,
 SUM(CASE WHEN sf.id = 29 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf29_sl2,
  
@@ -500,28 +466,7 @@ SUM(CASE WHEN sf.id = 30 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf30_sl1,
 SUM(CASE WHEN sf.id = 30 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf30_sl2,
  
 SUM(CASE WHEN sf.id = 31 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf31_sl1,
-SUM(CASE WHEN sf.id = 31 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf31_sl2,
- 
-SUM(CASE WHEN sf.id = 32 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf32_sl1,
-SUM(CASE WHEN sf.id = 32 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf32_sl2,
- 
-SUM(CASE WHEN sf.id = 33 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf33_sl1,
-SUM(CASE WHEN sf.id = 33 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf33_sl2,
- 
-SUM(CASE WHEN sf.id = 34 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf34_sl1,
-SUM(CASE WHEN sf.id = 34 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf34_sl2,
- 
-SUM(CASE WHEN sf.id = 35 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf35_sl1,
-SUM(CASE WHEN sf.id = 35 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf35_sl2,
- 
-SUM(CASE WHEN sf.id = 36 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf36_sl1,
-SUM(CASE WHEN sf.id = 36 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf36_sl2,
- 
-SUM(CASE WHEN sf.id = 37 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf37_sl1,
-SUM(CASE WHEN sf.id = 37 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf37_sl2,
- 
-SUM(CASE WHEN sf.id = 38 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf38_sl1,
-SUM(CASE WHEN sf.id = 38 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf38_sl2
+SUM(CASE WHEN sf.id = 31 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf31_sl2
 
 FROM 
     students s
