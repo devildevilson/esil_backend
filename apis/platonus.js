@@ -414,10 +414,10 @@ const db = {
     SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-30 23:59:59' THEN 1 ELSE 0 END) AS 'august30'
 FROM 
     students s
-WHERE
-    s.StudyFormID in (1,3,4,5,8,15,17,21,23,24,29,30,31)
 JOIN 
     studyforms sf ON s.StudyFormID = sf.id
+WHERE
+    s.StudyFormID in (1,3,4,5,8,15,17,21,23,24,29,30,31)
 GROUP BY 
     s.StudyFormID, sf.nameru;`;
     const [ res ] = await query_f(query_str);
