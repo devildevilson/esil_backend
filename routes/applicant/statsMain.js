@@ -70,16 +70,16 @@ module.exports = [
             }
             stats.push({
                 specialization: 'Всего',
-                sf1_sl1: sf1_sl1count + '',
-                sf1_sl2: sf1_sl2count + '',
-                sf3_sl1: sf3_sl1count + '',
-                sf3_sl2: sf3_sl2count + '',
-                sf4_sl1: sf4_sl1count + '',
-                sf4_sl2: sf4_sl2count + '',
-                sf5_sl1: sf5_sl1count + '',
-                sf5_sl2: sf5_sl2count + '',
-                sf8_sl1: sf8_sl1count + '',
-                sf8_sl2: sf8_sl2count + '',
+                 sf1_sl1: sf1_sl1count + '',
+                 sf1_sl2: sf1_sl2count + '',
+                 sf3_sl1: sf3_sl1count + '',
+                 sf3_sl2: sf3_sl2count + '',
+                 sf4_sl1: sf4_sl1count + '',
+                 sf4_sl2: sf4_sl2count + '',
+                 sf5_sl1: sf5_sl1count + '',
+                 sf5_sl2: sf5_sl2count + '',
+                 sf8_sl1: sf8_sl1count + '',
+                 sf8_sl2: sf8_sl2count + '',
                 sf15_sl1: sf15_sl1count + '',
                 sf15_sl2: sf15_sl2count + '',
                 sf17_sl1: sf17_sl1count + '',
@@ -97,6 +97,14 @@ module.exports = [
                 sf31_sl1: sf31_sl1count + '',
                 sf31_sl2: sf31_sl2count + ''
             });
+            for(res of stats){
+                let sf_overall = parseInt(res.sf1_sl1) + parseInt(res.sf1_sl2) + parseInt(res.sf3_sl1) + parseInt(res.sf3_sl2) + parseInt(res.sf4_sl1) + parseInt(res.sf4_sl2) + parseInt(res.sf5_sl1) + parseInt(res.sf5_sl2) + parseInt(res.sf8_sl1) + parseInt(res.sf8_sl2) + parseInt(res.sf15_sl1) + parseInt(res.sf15_sl2) + parseInt(res.sf17_sl1) + parseInt(res.sf17_sl2) + parseInt(res.sf21_sl1) + parseInt(res.sf21_sl2) + parseInt(res.sf23_sl1) + parseInt(res.sf23_sl2) + parseInt(res.sf24_sl1) + parseInt(res.sf24_sl2) + parseInt(res.sf29_sl1) + parseInt(res.sf29_sl2) + parseInt(res.sf30_sl1) + parseInt(res.sf30_sl2) + parseInt(res.sf31_sl1) + parseInt(res.sf31_sl2);
+                Object.assign(res, { sf_overall:sf_overall+'' });
+                let sf_fulltime = parseInt(res.sf1_sl1) + parseInt(res.sf1_sl2) + parseInt(res.sf5_sl1) + parseInt(res.sf5_sl2) + parseInt(res.sf15_sl1) + parseInt(res.sf15_sl2) + parseInt(res.sf17_sl1) + parseInt(res.sf17_sl2) + parseInt(res.sf21_sl1) + parseInt(res.sf21_sl2) + parseInt(res.sf23_sl1) + parseInt(res.sf23_sl2) + parseInt(res.sf24_sl1) + parseInt(res.sf24_sl2) + parseInt(res.sf29_sl1) + parseInt(res.sf29_sl2) + parseInt(res.sf31_sl1) + parseInt(res.sf31_sl2)
+                Object.assign(res, { sf_fulltime:sf_fulltime+'' });
+                let sf_dl = parseInt(res.sf3_sl1) + parseInt(res.sf3_sl2) + parseInt(res.sf4_sl1) + parseInt(res.sf4_sl2) + parseInt(res.sf8_sl1) + parseInt(res.sf8_sl2) + parseInt(res.sf30_sl1) + parseInt(res.sf30_sl2);
+                Object.assign(res, { sf_dl:sf_dl+'' });
+            }
             return stats;
         },
     },
