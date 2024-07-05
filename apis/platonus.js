@@ -399,19 +399,19 @@ const db = {
     let current_year = d.getFullYear();
     const query_str = `SELECT 
     sf.nameru AS StudyFormName, 
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-07 23:59:59' THEN 1 ELSE 0 END) AS 'june7',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-14 23:59:59' THEN 1 ELSE 0 END) AS 'june14',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-21 23:59:59' THEN 1 ELSE 0 END) AS 'june21',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-06-28 23:59:59' THEN 1 ELSE 0 END) AS 'june28',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-05 23:59:59' THEN 1 ELSE 0 END) AS 'july5',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-12 23:59:59' THEN 1 ELSE 0 END) AS 'july12',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-19 23:59:59' THEN 1 ELSE 0 END) AS 'july19',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-07-26 23:59:59' THEN 1 ELSE 0 END) AS 'july26',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-02 23:59:59' THEN 1 ELSE 0 END) AS 'august2',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-09 23:59:59' THEN 1 ELSE 0 END) AS 'august9',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-16 23:59:59' THEN 1 ELSE 0 END) AS 'august16',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-23 23:59:59' THEN 1 ELSE 0 END) AS 'august23',
-    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-06-01 00:00:00' AND '${current_year}-08-30 23:59:59' THEN 1 ELSE 0 END) AS 'august30'
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-06-07 23:59:59' THEN 1 ELSE 0 END) AS 'june7',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-06-14 23:59:59' THEN 1 ELSE 0 END) AS 'june14',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-06-21 23:59:59' THEN 1 ELSE 0 END) AS 'june21',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-06-28 23:59:59' THEN 1 ELSE 0 END) AS 'june28',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-07-05 23:59:59' THEN 1 ELSE 0 END) AS 'july5',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-07-12 23:59:59' THEN 1 ELSE 0 END) AS 'july12',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-07-19 23:59:59' THEN 1 ELSE 0 END) AS 'july19',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-07-26 23:59:59' THEN 1 ELSE 0 END) AS 'july26',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-08-02 23:59:59' THEN 1 ELSE 0 END) AS 'august2',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-08-09 23:59:59' THEN 1 ELSE 0 END) AS 'august9',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-08-16 23:59:59' THEN 1 ELSE 0 END) AS 'august16',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-08-23 23:59:59' THEN 1 ELSE 0 END) AS 'august23',
+    SUM(CASE WHEN s.StartDate BETWEEN '${current_year}-03-15 00:00:00' AND '${current_year}-08-30 23:59:59' THEN 1 ELSE 0 END) AS 'august30'
 FROM 
     students s
 JOIN 
@@ -429,20 +429,20 @@ GROUP BY
     const query_str = `SELECT 
     sp.nameru AS specialization,
     
-SUM(CASE WHEN sf.id = 1   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf1_sl1,
-SUM(CASE WHEN sf.id = 1   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf1_sl2,
+SUM(CASE WHEN sf.id = 1  AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf1_sl1,
+SUM(CASE WHEN sf.id = 1  AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf1_sl2,
 
-SUM(CASE WHEN sf.id = 3   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf3_sl1,
-SUM(CASE WHEN sf.id = 3   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf3_sl2,
+SUM(CASE WHEN sf.id = 3  AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf3_sl1,
+SUM(CASE WHEN sf.id = 3  AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf3_sl2,
 
-SUM(CASE WHEN sf.id = 4   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf4_sl1,
-SUM(CASE WHEN sf.id = 4   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf4_sl2,
+SUM(CASE WHEN sf.id = 4  AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf4_sl1,
+SUM(CASE WHEN sf.id = 4  AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf4_sl2,
 
-SUM(CASE WHEN sf.id = 5   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf5_sl1,
-SUM(CASE WHEN sf.id = 5   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf5_sl2,
+SUM(CASE WHEN sf.id = 5  AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf5_sl1,
+SUM(CASE WHEN sf.id = 5  AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf5_sl2,
 
-SUM(CASE WHEN sf.id = 8   AND sl.id = 1 THEN 1 ELSE 0 END) AS sf8_sl1,
-SUM(CASE WHEN sf.id = 8   AND sl.id = 2 THEN 1 ELSE 0 END) AS sf8_sl2,
+SUM(CASE WHEN sf.id = 8  AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf8_sl1,
+SUM(CASE WHEN sf.id = 8  AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf8_sl2,
  
 SUM(CASE WHEN sf.id = 15 AND sl.id = 1 THEN 1 ELSE 0 END) AS  sf15_sl1,
 SUM(CASE WHEN sf.id = 15 AND sl.id = 2 THEN 1 ELSE 0 END) AS  sf15_sl2,
@@ -476,7 +476,7 @@ JOIN
     studyforms sf ON s.studyformID = sf.id
 JOIN 
     studylanguages sl ON s.studylanguageID = sl.id
-where s.isStudent=2 and startdate>'${current_year}-06-01 00:00:00'
+where s.isStudent=2 and startdate>'${current_year}-03-15 00:00:00'
 GROUP BY 
     sp.nameru
 ORDER BY 
