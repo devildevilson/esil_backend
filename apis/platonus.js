@@ -476,7 +476,7 @@ JOIN
     studyforms sf ON s.studyformID = sf.id
 JOIN 
     studylanguages sl ON s.studylanguageID = sl.id
-where s.isStudent=2 and startdate>'${current_year}-03-15 00:00:00'
+where s.isStudent=2 and startdate>='${current_year}-03-15 00:00:00'
 GROUP BY 
     sp.nameru
 ORDER BY 
