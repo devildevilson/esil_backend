@@ -376,6 +376,29 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res;
   },
+  delete_library_book: async (id) => {
+    const query_str = `update librarybooks set deletedundeleted='false' where id=${id};`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  }, 
+  resolve_book_transfer: async (id) => {
+    const query_str = `update booktransfer set resolved='true' where id=${id};`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  }, 
+  get_due_books: async () => {
+    const query_str = `select bt.id, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, bt.DateCreated from booktransfer bt
+      join users u on bt.userid = u.id
+      join librarybooks lb on bt.bookid = lb.id
+      where resolved='false' order by bt.id desc;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  }, 
+  get_all_physical_books: async () => {
+    const query_str = `select * from librarybooks where deletedundeleted='true' order by id desc;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   delete_file_by_filename: async (filename) => {
     const query_str = `delete from files where filename = '${filename}';`;
     const [ res]  = await query_f(query_str);

@@ -47,7 +47,7 @@ module.exports = [
         assotiated_id: plt_data.plt_id
       };
       await db.create_row("roles", role_data);
-      return { message: `${plt_data.lastname} ${plt_data.name} ` + success };
+      return { message: `${plt_data.lastname} ${plt_data.name}` + success };
     },
     schema: {
       params: {

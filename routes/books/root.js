@@ -4,6 +4,9 @@ const fs = require('fs').promises;
 
 
 const successful_upload = "Книга успешно добавлена";
+const successful_deletion = "Книга успешно удалена";
+const successful_transfer = "Книга успешно выдана студенту";
+const transfer_resolved = "Книга успешно откреплена от студента";
 const book_upload_error = "Внутренняя ошибка загрузки новой книги";
 const book_deletion_error = "Внутренняя ошибка удаления книги";
 const book_assignment_error = "Внутренняя ошибка создания прикрепления";
@@ -53,20 +56,82 @@ module.exports = [
     },
     {
       method: 'GET',
-      path: '/files/:user_id', 
+      path: '/allbooks', 
       handler: async function (request, reply) {
-        const file_datas = await db.get_file_records_by_user_id(request.params.user_id);
-        return file_datas;
+        const books = await db.get_all_physical_books();
+        return books;
       },
-      schema: {
-        params: {
-          type: "object",
-          required: [ "user_id" ],
-          properties: {
-            user_id: { type: "number" }
-          } 
-        },
-      }
+    },
+    {
+      method: 'GET',
+      path: '/deletebook', 
+      handler: async function (request, reply) {
+        const params = request.query;
+        await db.deleteLibraryBook(params.id);
+        return {message: successful_deletion};
+      },
+    },
+    {
+      method: 'GET',
+      path: '/getduebooks', 
+      handler: async function (request, reply) {
+        const duebooks = await db.get_due_books();
+        return duebooks;
+      },
+    },
+    {
+      method: 'GET',
+      path: '/addbooktransfer', 
+      handler: async function (request, reply) {
+        const params = request.query;
+        const transfer_data = {
+          userid: params.userid,
+          bookid: params.bookid, 
+          DateCreated: common.human_date(new Date()),
+        };
+        await db.create_row("booktransfer", transfer_data);
+        return {message: successful_transfer};
+      },
+    },
+    {
+      method: 'GET',
+      path: '/resolvebooktransfer', 
+      handler: async function (request, reply) {
+        const params = request.query;
+        await db.resolve_book_transfer(params.id);
+        return {message: transfer_resolved};
+      },
+    },
+    {
+      method: 'GET',
+      path: '/addbook', 
+      handler: async function (request, reply) {
+        const params = request.query;
+        const book_data = {
+          NameRuBook: params.Name,
+          Pages: params.Pages,
+          Annotation: params.Annotation,
+          Barcode: params.Barcode,
+          Subject: params.Subject,
+          CopyrightSigns: params.CopyrightSigns,
+          Heading: params.Heading,
+          ISBN: params.ISBN,
+          InventoryNumber: params.InventoryNumber,
+          KeyWords: params.KeyWords,
+          LLC: params.LLC,
+          Language: params.Language,
+          Price: params.Price,
+          PublishedCountryCity: params.PublishedCountryCity,
+          PublishedTime: params.PublishedTime,
+          PublishingHouse: params.PublishingHouse,
+          RLibraryCategoryRLibraryBook: params.RLibraryCategoryRLibraryBook,
+          TypeOfBook: params.TypeOfBook,
+          UDC: params.UDC,
+          DateCreated: common.human_date(new Date()),
+        };
+        await db.create_row("librarybooks", book_data);
+        return {message: successful_upload};
+      },
     },
     {
       method: 'DELETE',
