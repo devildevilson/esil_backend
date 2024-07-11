@@ -395,7 +395,17 @@ const db = {
     return res;
   }, 
   get_all_physical_books: async () => {
-    const query_str = `select * from librarybooks where deletedundeleted='true' order by id desc;`;
+    const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
+  get_physical_book_by_id: async (id) => {
+    const query_str = `select * from librarybooks where id=${id};`;
+    const [ res ] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  get_book_categories: async () => {
+    const query_str = `select * from bookcategory where deleted = false;`;
     const [ res ] = await query_f(query_str);
     return res;
   },

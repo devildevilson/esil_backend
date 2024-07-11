@@ -64,10 +64,20 @@ module.exports = [
     },
     {
       method: 'GET',
+      path: '/getbook', 
+      handler: async function (request, reply) {
+        const params = request.query;
+        const book = await db.get_physical_book_by_id(params.id);
+        console.log(book);
+        return book;
+      },
+    },
+    {
+      method: 'GET',
       path: '/deletebook', 
       handler: async function (request, reply) {
         const params = request.query;
-        await db.deleteLibraryBook(params.id);
+        await db.delete_library_book(params.id);
         return {message: successful_deletion};
       },
     },
@@ -76,6 +86,14 @@ module.exports = [
       path: '/getduebooks', 
       handler: async function (request, reply) {
         const duebooks = await db.get_due_books();
+        return duebooks;
+      },
+    },
+    {
+      method: 'GET',
+      path: '/getbookcategories', 
+      handler: async function (request, reply) {
+        const duebooks = await db.get_book_categories();
         return duebooks;
       },
     },
@@ -107,8 +125,10 @@ module.exports = [
       path: '/addbook', 
       handler: async function (request, reply) {
         const params = request.query;
+        console.log(params);
         const book_data = {
           NameRuBook: params.Name,
+          Author: params.Author,
           Pages: params.Pages,
           Annotation: params.Annotation,
           Barcode: params.Barcode,
