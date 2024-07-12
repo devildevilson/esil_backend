@@ -66,6 +66,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getduebooksforstudent',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const duebooks = await db.get_due_books_for_student(params.user_id);
+      return duebooks;
+    },
+  },
+  {
+    method: 'GET',
     path: '/getbookcategories',
     handler: async function (request, reply) {
       const duebooks = await db.get_book_categories();

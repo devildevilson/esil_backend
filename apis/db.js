@@ -424,6 +424,14 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_due_books_for_student: async (user_id) => {
+    const query_str = `select bt.id, lb.namerubook as bookname, bt.DateCreated from booktransfer bt
+      join users u on bt.userid = u.id
+      join librarybooks lb on bt.bookid = lb.id
+      where resolved='false' and bt.userid = ${user_id} order by bt.id desc;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_all_physical_books: async () => {
     const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
     const [res] = await query_f(query_str);
