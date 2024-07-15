@@ -43,7 +43,7 @@ module.exports = [
     handler: async function (request, reply) {
       const params = request.query;
       const book = await db.get_physical_book_by_id(params.id);
-      console.log(book);
+      //console.log(book);
       return book;
     },
   },
