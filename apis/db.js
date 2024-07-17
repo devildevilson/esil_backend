@@ -432,11 +432,26 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_physical_book_page_count: async () =>{
+    const query_str = `select count(*) as count from librarybooks where deletedundeleted='true';`;
+    const [res] = await query_f(query_str);
+    return Math.floor(res[0].count/1000)
+  },
   get_all_physical_books: async () => {
-    const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_physical_books_by_name: async (name) => {
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${name}%' order by lb.id desc limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_physical_books_per_page: async (page) => {
+    const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.namerubook limit 1000 offset ${(page-1)*1000};`;
+    const [res] = await query_f(query_str);
+    return res;
+  }, 
   get_physical_book_by_id: async (id) => {
     const query_str = `select * from librarybooks where id=${id};`;
     const [res] = await query_f(query_str);

@@ -39,6 +39,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/booksperpage',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const books = await db.get_physical_books_per_page(params.page);
+      return books;
+    },
+  },
+  {
+    method: 'GET',
     path: '/getbook',
     handler: async function (request, reply) {
       const params = request.query;
@@ -64,6 +73,23 @@ module.exports = [
       return duebooks;
     },
   },
+  {
+    method: 'GET',
+    path: '/getphysicalbookpagecount',
+    handler: async function (request, reply) {
+      const res = await db.get_physical_book_page_count();
+      return res;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getbooksbyname',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_name(params.name);
+      return res;
+    },
+  },  
   {
     method: 'GET',
     path: '/getduebooksforstudent',
@@ -160,7 +186,7 @@ module.exports = [
         DateCreated: common.human_date(new Date()),
       };
       await db.create_row("librarybooks", book_data);
-      return { message: successful_upload };
+      return { message: `Книга ${params.Name} успешно загружена` };
     },
   },
   {
