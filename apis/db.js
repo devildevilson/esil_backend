@@ -447,6 +447,21 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_physical_books_by_isbn: async (isbn) => {
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.ISBN like '%${isbn}%' order by lb.id desc limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_physical_books_by_keywords: async (keywords) => {
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.KeyWords like '%${keywords}%' order by lb.id desc limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_physical_books_by_inventory: async (inventory) => {
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.InventoryNumber like '%${inventory}%' order by lb.id desc limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_physical_books_per_page: async (page) => {
     const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.namerubook limit 1000 offset ${(page-1)*1000};`;
     const [res] = await query_f(query_str);

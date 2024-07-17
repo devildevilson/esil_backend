@@ -92,6 +92,33 @@ module.exports = [
   },  
   {
     method: 'GET',
+    path: '/getbooksbyisbn',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_isbn(params.ISBN);
+      return res;
+    },
+  }, 
+  {
+    method: 'GET',
+    path: '/getbooksbykeywords',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_keywords(params.keywords);
+      return res;
+    },
+  }, 
+  {
+    method: 'GET',
+    path: '/getbooksbyinventory',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_inventory(params.inventory);
+      return res;
+    },
+  }, 
+  {
+    method: 'GET',
     path: '/getduebooksforstudent',
     handler: async function (request, reply) {
       const params = request.query;
