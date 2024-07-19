@@ -35,7 +35,7 @@ module.exports = [
 
       const data = await plt.find_student_data_for_inventory(role_index);
       if (!data) return reply.notFound(cert_id_not_found_msg);
-
+      console.log(data);
       const meta_data = {
         user_id: token_data.id,
         for_user_id: request.params.user_id,
@@ -89,7 +89,6 @@ module.exports = [
 
       const data = await plt.find_student_data_for_inventory(role_index);
       if (!data) return reply.notFound(cert_id_not_found_msg);
-
       const meta_data = {
         user_id: token_data.id,
         for_user_id: request.params.user_id,

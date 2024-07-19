@@ -293,7 +293,10 @@ const db = {
         s.nomerAttestata AS certificate_number,
         s.dataVydachiAttestata AS certificate_date,
         s.certificate AS exam_cert,
-        si.ent_cert_date_print AS exam_cert_date
+        si.ent_cert_date_print AS exam_cert_date,
+        si.f_seriya_diplom AS alternative_certificate_serial,
+        si.f_nomer_diplom AS alternative_certificate_number,
+        si.f_data_vydachi_diploma AS alternative_certificate_date
       FROM students s
       LEFT JOIN student_info si ON si.studentID = s.StudentID
       WHERE s.StudentID = ${student_id};
