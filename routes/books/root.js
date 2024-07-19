@@ -7,9 +7,9 @@ const fs = require('fs').promises;
 const successful_upload = "Книга успешно добавлена";
 const successful_update = "Книга успешно обновлена";
 const successful_deletion = "Книга успешно удалена";
-const successful_transfer = "Книга успешно выдана студенту";
-const transfer_resolved = "Книга успешно откреплена от студента";
-const book_already_on_hand = "Эта книга уже выдана этому студенту.";
+const successful_transfer = "Книга успешно выдана пользователю";
+const transfer_resolved = "Книга успешно откреплена от пользователя";
+const book_already_on_hand = "Эта книга уже выдана этому пользователю";
 const book_upload_error = "Внутренняя ошибка загрузки новой книги";
 const book_deletion_error = "Внутренняя ошибка удаления книги";
 const book_assignment_error = "Внутренняя ошибка создания прикрепления";
@@ -119,10 +119,10 @@ module.exports = [
   }, 
   {
     method: 'GET',
-    path: '/getduebooksforstudent',
+    path: '/getduebooksforuser',
     handler: async function (request, reply) {
       const params = request.query;
-      const duebooks = await db.get_due_books_for_student(params.user_id);
+      const duebooks = await db.get_due_books_for_user(params.user_id);
       return duebooks;
     },
   },
@@ -130,8 +130,8 @@ module.exports = [
     method: 'GET',
     path: '/getbookcategories',
     handler: async function (request, reply) {
-      const duebooks = await db.get_book_categories();
-      return duebooks;
+      const categories = await db.get_book_categories();
+      return categories;
     },
   },
   {
@@ -140,10 +140,14 @@ module.exports = [
     handler: async function (request, reply) {
       const params = request.query;
       const iin = params.iin;
-
-      const plt_data = await plt.find_student_by_iin(iin);
-      if (!plt_data) return reply.notFound('ИИН не найден в базе студентов');
-
+      let role = 'student';
+      let plt_data = await plt.find_student_by_iin(iin);
+      if (!plt_data) {
+        plt_data = await plt.find_tutor_by_iin(iin);
+        role = 'tutor';
+        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+      }
+      
       const user = await db.get_user_id_by_iin(iin);
       if (!user) {
         const password_hash = await common.hash_password(iin);
@@ -158,7 +162,7 @@ module.exports = [
         const user_id = await db.create_row("users", db_user_data);
         const role_data = {
           user_id,
-          role: "plt_student",
+          role: `plt_${role}`,
           assotiated_id: plt_data.plt_id
         };
         await db.create_row("roles", role_data);

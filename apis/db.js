@@ -417,17 +417,19 @@ const db = {
     return res;
   },
   get_due_books: async () => {
-    const query_str = `select bt.id, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, bt.DateCreated from booktransfer bt
+    const query_str = `select bt.id, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, r.role as role, bt.DateCreated from booktransfer bt
       join users u on bt.userid = u.id
       join librarybooks lb on bt.bookid = lb.id
+      join roles r on r.user_id = u.id
       where resolved='false' order by bt.id desc;`;
     const [res] = await query_f(query_str);
     return res;
   },
-  get_due_books_for_student: async (user_id) => {
-    const query_str = `select bt.id, lb.namerubook as bookname, bt.DateCreated from booktransfer bt
+  get_due_books_for_user: async (user_id) => {
+    const query_str = `select bt.id, lb.namerubook as bookname, r.role as role, bt.DateCreated from booktransfer bt
       join users u on bt.userid = u.id
       join librarybooks lb on bt.bookid = lb.id
+      join roles r on r.user_id=u.id
       where resolved='false' and bt.userid = ${user_id} order by bt.id desc;`;
     const [res] = await query_f(query_str);
     return res;
