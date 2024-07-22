@@ -119,6 +119,15 @@ module.exports = [
   }, 
   {
     method: 'GET',
+    path: '/getbooksbybarcode',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_barcode(params.barcode);
+      return res;
+    },
+  }, 
+  {
+    method: 'GET',
     path: '/getduebooksforuser',
     handler: async function (request, reply) {
       const params = request.query;
@@ -199,8 +208,6 @@ module.exports = [
         Pages: params.Pages,
         Annotation: params.Annotation,
         Barcode: params.Barcode,
-        Subject: params.Subject,
-        CopyrightSigns: params.CopyrightSigns,
         Heading: params.Heading,
         ISBN: params.ISBN,
         InventoryNumber: params.InventoryNumber,
@@ -225,7 +232,7 @@ module.exports = [
     path: '/editbook',
     handler: async function (request, reply) {
       const params = request.query;
-      await db.edit_library_book(params.id, params.Name, params.Author, params.Pages, params.Annotation, params.Barcode, params.Subject, params.CopyrightSigns, params.Heading, params.ISBN, params.InventoryNumber, params.KeyWords, params.LLC, params.Language, params.Price, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
+      await db.edit_library_book(params.id, params.Name, params.Author, params.Pages, params.Annotation, params.Barcode, params.Heading, params.ISBN, params.InventoryNumber, params.KeyWords, params.LLC, params.Language, params.Price, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
       return { message: successful_update };
     },
   },
