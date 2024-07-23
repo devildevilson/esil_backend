@@ -385,6 +385,28 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  delete_e_book: async (id) => {
+    const query_str = `update ebooks set deletedundeleted='false' where id=${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  edit_e_book: async (id, Name, Author, Pages, LLC, Language, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook, TypeOfBook, UDC) => {
+    const query_str = `update librarybooks 
+      set namerubook='${Name}',
+      Author='${Author}',
+      Pages='${Pages}', 
+      LLC='${LLC}',
+      Language='${Language}',
+      PublishedCountryCity='${PublishedCountryCity}',
+      PublishedTime='${PublishedTime}',
+      PublishingHouse='${PublishingHouse}',
+      RLibraryCategoryRLibraryBook=${RLibraryCategoryRLibraryBook},
+      TypeOfBook='${TypeOfBook}', 
+      UDC='${UDC}' 
+      where id=${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   edit_library_book: async (id, Name, Author, Pages, Annotation, Barcode, Heading, ISBN, InventoryNumber, KeyWords, LLC, Language, Price, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook, TypeOfBook, UDC) => {
     const query_str = `update librarybooks 
       set namerubook='${Name}',
@@ -432,38 +454,48 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_e_book_page_count: async () =>{
+    const query_str = `select count(*) as count from ebooks where deletedundeleted='true';`;
+    const [res] = await query_f(query_str);
+    return Math.floor(res[0].count/1000+1)
+  },
+  get_e_books_per_page: async (page) => {
+    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by eb.namerubook limit 1000 offset ${(page-1)*1000};`;
+    const [res] = await query_f(query_str);
+    return res;
+  }, 
   get_physical_book_page_count: async () =>{
     const query_str = `select count(*) as count from librarybooks where deletedundeleted='true';`;
     const [res] = await query_f(query_str);
     return Math.floor(res[0].count/1000+1)
   },
-  get_all_physical_books: async () => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
-    const [res] = await query_f(query_str);
-    return res;
-  },
+  // get_all_physical_books: async () => {
+  //   const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
+  //   const [res] = await query_f(query_str);
+  //   return res;
+  // },
   get_physical_books_by_name: async (name) => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${name}%' order by lb.id desc limit 1000;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${name}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_physical_books_by_isbn: async (isbn) => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.ISBN like '%${isbn}%' order by lb.id desc limit 1000;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.ISBN like '%${isbn}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_physical_books_by_keywords: async (keywords) => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.KeyWords like '%${keywords}%' order by lb.id desc limit 1000;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.KeyWords like '%${keywords}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_physical_books_by_inventory: async (inventory) => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.InventoryNumber like '%${inventory}%' order by lb.id desc limit 1000;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.InventoryNumber like '%${inventory}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_physical_books_by_barcode: async (barcode) => {
-    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.Barcode like '%${barcode}%' order by lb.id desc limit 1000;`;
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.Barcode like '%${barcode}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -474,6 +506,11 @@ const db = {
   }, 
   get_physical_book_by_id: async (id) => {
     const query_str = `select * from librarybooks where id=${id};`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  get_e_book_by_id: async (id) => {
+    const query_str = `select * from ebooks where id=${id};`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },

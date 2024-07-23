@@ -39,6 +39,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/ebooksperpage',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const books = await db.get_e_books_per_page(params.page);
+      return books;
+    },
+  },
+  {
+    method: 'GET',
     path: '/booksperpage',
     handler: async function (request, reply) {
       const params = request.query;
@@ -58,10 +67,28 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const book = await db.get_e_book_by_id(params.id);
+      return book;
+    },
+  },
+  {
+    method: 'GET',
     path: '/deletebook',
     handler: async function (request, reply) {
       const params = request.query;
       await db.delete_library_book(params.id);
+      return { message: successful_deletion };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/deleteEbook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      await db.delete_e_book(params.id);
       return { message: successful_deletion };
     },
   },
@@ -78,6 +105,14 @@ module.exports = [
     path: '/getphysicalbookpagecount',
     handler: async function (request, reply) {
       const res = await db.get_physical_book_page_count();
+      return res;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getebookpagecount',
+    handler: async function (request, reply) {
+      const res = await db.get_e_book_page_count();
       return res;
     },
   },
@@ -215,6 +250,30 @@ module.exports = [
         LLC: params.LLC,
         Language: params.Language,
         Price: params.Price,
+        PublishedCountryCity: params.PublishedCountryCity,
+        PublishedTime: params.PublishedTime,
+        PublishingHouse: params.PublishingHouse,
+        RLibraryCategoryRLibraryBook: params.RLibraryCategoryRLibraryBook,
+        TypeOfBook: params.TypeOfBook,
+        UDC: params.UDC,
+        DateCreated: common.human_date(new Date()),
+      };
+      await db.create_row("librarybooks", book_data);
+      return { message: `Книга ${params.Name} успешно загружена` };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/addebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const book_data = {
+        NameRuBook: params.Name,
+        Author: params.Author,
+        EBookPath: params.EBookPath,
+        Pages: params.Pages, 
+        LLC: params.LLC,
+        Language: params.Language,
         PublishedCountryCity: params.PublishedCountryCity,
         PublishedTime: params.PublishedTime,
         PublishingHouse: params.PublishingHouse,
