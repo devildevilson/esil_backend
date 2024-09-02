@@ -191,6 +191,26 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_all_dorm_requests: async (iin) => {
+    const query_str = `SELECT * from dormrequests;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_dorm_request_by_iin: async (iin) => {
+    const query_str = `SELECT * from dormrequests where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  delete_dorm_request_by_iin: async (iin) => {
+    const query_str = `delete from dormrequests where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  approve_dorm_request_by_iin: async (iin) => {
+    const query_str = `update dormrequests set approved = 1 where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
     const [res] = await query_f(query_str);
@@ -222,6 +242,21 @@ const db = {
     //SELECT GROUP_CONCAT(assotiated_id) AS str FROM roles WHERE role = '${role}';
     const query_str = `
       SELECT user_id,assotiated_id FROM roles WHERE role = '${role}';
+    `;
+
+    //const [ [ { str } ] ] = await query_f(query_str);
+    //return str;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+
+  get_assotiated_id_arr_by_role_test: async (role) => {
+    //SELECT GROUP_CONCAT(assotiated_id) AS str FROM roles WHERE role = '${role}';
+    const query_str = `
+    SELECT user_id,assotiated_id,dr.approved FROM roles 
+    left join users on users.id=roles.user_id
+    left join dormrequests dr on users.iin=dr.iin 
+    WHERE role = '${role}';
     `;
 
     //const [ [ { str } ] ] = await query_f(query_str);

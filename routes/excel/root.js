@@ -82,8 +82,7 @@ module.exports = [
         path: '/getdocdate', 
         handler: async function (request, reply) {
           const docdate = await db.get_excel_doc_date();
-          reply.send(docdate);
-          return docdate;
+          return reply.send(docdate);
         },
       },
 

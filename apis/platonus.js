@@ -328,6 +328,26 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res;
   },
+  get_student_data_by_iin_arr: async (str_arr) => {
+    const query_str = `
+      SELECT 
+        s.StudentID AS plt_id,
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s2.nameru AS specialization,
+        sf.NameRu AS study_form,
+        s.phone as phone,
+        s.iinplt as iin
+      FROM students s
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      WHERE s.iinplt IN (${str_arr}) and s.isstudent in (1,2);
+    `;
+
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
 
   get_relevant_specializations: async (str_arr, con)=> {
     const query_str = `

@@ -282,8 +282,8 @@ module.exports = [
         UDC: params.UDC,
         DateCreated: common.human_date(new Date()),
       };
-      await db.create_row("librarybooks", book_data);
-      return { message: `Книга ${params.Name} успешно загружена` };
+      await db.create_row("ebooks", book_data);
+      return { message: `Электронная книга ${params.Name} успешно загружена` };
     },
   },
   {
@@ -292,6 +292,15 @@ module.exports = [
     handler: async function (request, reply) {
       const params = request.query;
       await db.edit_library_book(params.id, params.Name, params.Author, params.Pages, params.Annotation, params.Barcode, params.Heading, params.ISBN, params.InventoryNumber, params.KeyWords, params.LLC, params.Language, params.Price, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
+      return { message: successful_update };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/editebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      await db.edit_e_book(params.id, params.Name, params.Author, params.Pages, params.LLC, params.Language, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
       return { message: successful_update };
     },
   },
