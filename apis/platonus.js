@@ -335,6 +335,7 @@ const db = {
         s.lastname AS lastname,
         s.firstname AS firstname,
         s.patronymic AS patronymic,
+        s.grant_type AS grant_type,
         s2.nameru AS specialization,
         sf.NameRu AS study_form,
         s.phone as phone,

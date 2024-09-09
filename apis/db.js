@@ -206,8 +206,16 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  approve_dorm_request_by_iin: async (iin) => {
-    const query_str = `update dormrequests set approved = 1 where iin = '${iin}';`;
+  approve_dorm_request_by_iin: async (iin,dormtype,message,roomnumber,datemodified) => {
+    let ishostel;
+    if(dormtype=='dorm') ishostel='0';
+    if(dormtype=='hostel') ishostel='1';
+    const query_str = `update dormrequests set approved = 1, ishostel = ${ishostel}, notification_message = '${message}', roomnumber = '${roomnumber}', datemodified = '${datemodified}' where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  deny_dorm_request_by_iin: async (iin,message,datemodified) => {
+    const query_str = `update dormrequests set approved = -1, notification_message = '${message}', datemodified = '${datemodified}' where iin = '${iin}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },

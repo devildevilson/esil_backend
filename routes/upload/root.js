@@ -92,17 +92,19 @@ module.exports = [
       
       for (let i = 0; i < users.length; i++) {
         const dormreq = await db.get_dorm_request_by_iin(users[i].iin);
-        console.log(users[i].iin);
         if(dormreq != undefined) {
           Object.assign(users[i],{
             approved:dormreq.approved,
             datecreated:dormreq.datecreated,
+            datemodified:dormreq.datemodified,
+            roomnumber:dormreq.roomnumber,
+            notification_message:dormreq.notification_message,
+            ishostel:dormreq.ishostel,
             iin:dormreq.iin,
             req_id:dormreq.id
           });   
         }
       }
-      console.log(users);
       return users;
     },
   },
@@ -233,12 +235,15 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/approvedormrequest/:iin',
+    path: '/approvedormrequest',
     handler: async function (request, reply) {
-      const iin = request.params.iin;
+      const iin = request.query.iin;
+      const dormtype = request.query.dormType;
+      const message = request.query.dormMessage;
+      const roomnumber = request.query.dormRoomNumber;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       if (requestQuery) {
-        await db.approve_dorm_request_by_iin(iin);
+        await db.approve_dorm_request_by_iin(iin,dormtype,message,roomnumber,common.human_date(new Date()));
         return { message: success };
       }
       else {
@@ -247,13 +252,45 @@ module.exports = [
 
     },
     schema: {
-      params: {
+      querystring: {
         type: "object",
-        required: ["iin"],
+        required: ["iin","dormType","dormMessage","dormRoomNumber"],
         properties: {
-          iin: { type: "string" }
+          iin: { type: "string" },
+          dormtype: { type: "string" },
+          message: { type: "string" },
+          roomnumber: { type: "string" },
         }
       },
+      
+    }
+  },
+  {
+    method: 'GET',
+    path: '/denydormrequest',
+    handler: async function (request, reply) {
+      const iin = request.query.iin;
+      const message = request.query.dormMessage;
+      const requestQuery = await db.get_dorm_request_by_iin(iin);
+      if (requestQuery) {
+        await db.deny_dorm_request_by_iin(iin,message,common.human_date(new Date()));
+        return { message: success };
+      }
+      else {
+        return { message: 'Не найдена заявка' };
+      }
+
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: ["iin","dormMessage"],
+        properties: {
+          iin: { type: "string" },
+          message: { type: "string" },
+        }
+      },
+      
     }
   },
   {
