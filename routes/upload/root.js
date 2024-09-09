@@ -105,6 +105,7 @@ module.exports = [
           });   
         }
       }
+      users.sort((a, b) => a.datecreated - b.datecreated)
       return users;
     },
   },

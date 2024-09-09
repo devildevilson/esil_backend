@@ -336,6 +336,7 @@ const db = {
         s.firstname AS firstname,
         s.patronymic AS patronymic,
         s.grant_type AS grant_type,
+        COALESCE(b.nameru, 'Без квоты') as benefits,
         s2.nameru AS specialization,
         sf.NameRu AS study_form,
         s.phone as phone,
@@ -343,6 +344,8 @@ const db = {
       FROM students s
       LEFT JOIN specializations s2 ON s2.id = s.specializationID
       LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      LEFT JOIN student_info si on s.studentid = si.studentid
+      LEFT JOIN benefits b on b.id = si.benefit_quota_id
       WHERE s.iinplt IN (${str_arr}) and s.isstudent in (1,2);
     `;
 
