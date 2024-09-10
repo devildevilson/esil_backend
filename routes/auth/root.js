@@ -33,7 +33,7 @@ module.exports = [
       const payload = request.body;
       const username = payload.username.trim().toLowerCase();
       console.log('username: '+username);
-      let cafedraname = '', cafedraid = '';
+      let cafedraname = '', cafedraid = '',academicdegreeid='';
       if (username=='6172'){
         let user_data = await db.find_user_by_username(username);
         let user_role = await db.get_role_by_username(username);
@@ -89,9 +89,14 @@ module.exports = [
         if (role_id === "plt_tutor") {
           const tutorCafedra = await plt.get_tutor_cafedra_by_iin(username);
           const tutorAcademicDegree = await plt.get_tutor_academic_degree_by_iin(username);
+          try{
           cafedraname = tutorCafedra.cafedraNameRU;
           cafedraid = tutorCafedra.cafedraid;
-          const academicdegreeid = tutorAcademicDegree.AcademicDegreeID;
+          academicdegreeid = tutorAcademicDegree.AcademicDegreeID;
+          }
+          catch{
+
+          }
           console.log('cafedra name:',cafedraname);
 
           const kpi_data = {
@@ -128,14 +133,25 @@ module.exports = [
       let KPIScore, user_id, update;
       if (role_str === 'plt_tutor') {
         const tutorCafedra = await plt.get_tutor_cafedra_by_iin(iin);
-        cafedraname = tutorCafedra.cafedraNameRU;
+        try{
+          cafedraname = tutorCafedra.cafedraNameRU;
         cafedraid = tutorCafedra.cafedraid;
+        }
+        catch{
+
+        }
         user_id = await db.get_user_id_by_iin(iin);
         user_id = user_id.id;
         console.log('trying to find and update tutor\'s KPI');
-        update = await db.update_kpi_for_user(user_id);
-        KPIScore = await db.get_kpiscore_by_userid(user_id);
-        KPIScore = KPIScore.score;
+        try{
+          update = await db.update_kpi_for_user(user_id);
+          KPIScore = await db.get_kpiscore_by_userid(user_id);
+          KPIScore = KPIScore.score;
+        }
+        catch{
+          KPIScore = 0;
+        }
+        
       }
 
       return {
