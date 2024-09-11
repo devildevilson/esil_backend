@@ -11,7 +11,7 @@ const successful_transfer = "Книга успешно выдана пользо
 const successful_transfer_batch = "Все книги успешно выданы пользователю";
 const transfer_resolved = "Книга успешно откреплена от пользователя";
 const book_already_on_hand = "Эта книга уже выдана этому пользователю";
-const book_already_on_hand_specific = "Некоторые книги из корзины уже есть у этого пользователя. Книги не выданы.";
+const book_already_on_hand_specific = "Книги не выданы! Некоторые книги из корзины уже есть у этого пользователя. Штрихкоды: ";
 const book_upload_error = "Внутренняя ошибка загрузки новой книги";
 const book_deletion_error = "Внутренняя ошибка удаления книги";
 const book_assignment_error = "Внутренняя ошибка создания прикрепления";
@@ -261,9 +261,13 @@ module.exports = [
       const userid = await db.get_user_id_by_iin(iin);
       // bookidsJSON
       let books = JSON.parse(params.bookidsJSON);
+      let givenbooks=[];
       for(book of books){
         const eligibility = await db.check_book_transfer_eligibility(userid.id, book.id);
-        if(parseInt(eligibility[0].sum)>0) return { message: `${book_already_on_hand_specific}` }; 
+        if(parseInt(eligibility[0].sum)>0) givenbooks.push(book.barcode);
+      }
+      if(givenbooks.length>0){
+        return { message: `${book_already_on_hand_specific} ${givenbooks.toString()}` }; 
       }
       for(book of books){
         const transfer_data = {
