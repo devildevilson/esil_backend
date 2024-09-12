@@ -182,6 +182,29 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getuserdata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const iin = params.iin;
+      let role = 'student';
+      let plt_data = await plt.find_student_by_iin(iin);
+      if (!plt_data) {
+        plt_data = await plt.find_tutor_by_iin(iin);
+        role = 'tutor';
+        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+      }
+      let userdata;
+      switch(role){
+        case 'student':
+          userdata = await plt.get_student_data_for_library(iin); break;
+        case 'tutor':
+          userdata = await plt.get_tutor_data_for_library(iin); break;
+      }
+      return userdata;
+    },
+  },
+  {
+    method: 'GET',
     path: '/transferbook',
     handler: async function (request, reply) {
       const params = request.query;

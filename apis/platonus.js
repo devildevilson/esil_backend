@@ -244,7 +244,7 @@ const db = {
     s.icnumber AS id_card,
     s2.specializationCode AS specialization_code,
     s2.nameru AS specialization,
-    s.phone AS phone,
+    s.mobilePhone AS phone,
     sf.id as studyformID,
     s.living_adress AS living_address,
     s.grant_type AS grant_type,
@@ -268,7 +268,7 @@ const db = {
     s.icnumber AS id_card,
     s2.specializationCode AS specialization_code,
     s2.namekz AS specialization,
-    s.phone AS phone,
+    s.mobilePhone AS phone,
     sf.id as studyformid,
     s.living_adress AS living_address,
     s.grant_type AS grant_type,
@@ -339,7 +339,7 @@ const db = {
         COALESCE(b.nameru, 'Без квоты') as benefits,
         s2.nameru AS specialization,
         sf.NameRu AS study_form,
-        s.phone as phone,
+        s.mobilePhone as phone,
         s.iinplt as iin
       FROM students s
       LEFT JOIN specializations s2 ON s2.id = s.specializationID
@@ -353,13 +353,57 @@ const db = {
     return res;
   },
 
-  get_relevant_specializations: async (str_arr, con)=> {
+  get_relevant_specializations: async (str_arr)=> {
     const query_str = `
       SELECT DISTINCT 
         s2.nameru AS specialization
       FROM students s
       LEFT JOIN specializations s2 ON s2.id = s.specializationID
       WHERE s.StudentID IN (${str_arr});
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_student_data_for_library: async(iin) =>{
+    const query_str = `
+    SELECT 
+        s.StudentID AS plt_id,
+        s.lastname AS lastname,
+        s.firstname AS firstname,
+        s.patronymic AS patronymic,
+        s2.nameru AS specialization,
+        sf.NameRu AS extradata,
+        g.name AS extradata2,
+        s.mobilePhone as phone,
+        s.iinplt as iin,
+        s.isstudent as status
+      FROM students s
+      LEFT JOIN \`groups\` g on s.groupID=g.groupid 
+      LEFT JOIN specializations s2 ON s2.id = s.specializationID
+      LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+      LEFT JOIN student_info si on s.studentid = si.studentid
+      WHERE s.iinplt = '${iin}' and s.isstudent in (1,3) order by s.StudentID desc limit 1;
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_tutor_data_for_library: async(iin) =>{
+    const query_str = `
+    SELECT 
+        t.tutorid AS plt_id,
+        t.lastname AS lastname,
+        t.firstname AS firstname,
+        t.patronymic AS patronymic,
+        c.cafedraNameRU AS specialization,
+        f.facultyNameRU AS extradata2,
+        t.mobilePhone as phone,
+        t.iinplt as iin,
+        t.deleted as status
+      FROM tutors t
+      LEFT JOIN tutor_cafedra tc ON t.TutorID = tc.tutorID
+      LEFT JOIN cafedras c ON tc.cafedraid = c.cafedraID
+      LEFT JOIN faculties f on c.FacultyID = f.FacultyID
+      WHERE t.iinplt = '${iin}' order by t.TutorID desc limit 1;
     `;
     const [res] = await query_f(query_str);
     return res;
