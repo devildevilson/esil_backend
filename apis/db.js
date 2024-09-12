@@ -574,6 +574,21 @@ const db = {
     return res;
   },
 
+  get_notification_icon_data : async (user_id) => {
+    const query_str = `SELECT 
+    COUNT(n.id) AS notif_count,
+    IFNULL(SUM(n.viewed = 0), 0) AS unread_count,
+    IFNULL(SUM(n.viewed = 0 AND nt.isimportant = 1), 0) AS important_unread_count
+FROM 
+    notifications n
+JOIN 
+    notificationtypes nt ON n.notificationtype_id = nt.id
+WHERE 
+    n.receiver_id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+
   count_kpi_score_by_iin: async (iin) => {
     const query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
