@@ -245,6 +245,16 @@ module.exports = [
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       if (requestQuery) {
         await db.approve_dorm_request_by_iin(iin,dormtype,message,roomnumber,common.human_date(new Date()));
+        const userid = await db.get_user_id_by_iin(iin);
+        if (userid){
+          const db_notification_data = {
+            receiver_id: userid.id,
+            message: `Заявка принята. Сообщение: "${message}"`,
+            notificationtype_id: 4,
+            date_sent: common.human_date(new Date()),
+          };
+          await db.create_row("notifications", db_notification_data);
+        }
         return { message: success };
       }
       else {
@@ -275,6 +285,16 @@ module.exports = [
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       if (requestQuery) {
         await db.deny_dorm_request_by_iin(iin,message,common.human_date(new Date()));
+        const userid = await db.get_user_id_by_iin(iin);
+        if (!userid){
+          const db_notification_data = {
+            receiver_id: userid.id,
+            message: `Заявка отклонена по причине: "${message}"`,
+            notificationtype_id: 4,
+            date_sent: common.human_date(new Date()),
+          };
+          await db.create_row("notifications", db_notification_data);
+        }
         return { message: success };
       }
       else {

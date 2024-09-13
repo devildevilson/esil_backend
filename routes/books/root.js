@@ -205,6 +205,23 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/notifydebtor',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const bookname = params.bookname;
+      const db_notification_data = {
+        receiver_id: userid,
+        message: `Напоминаем, что необходимо вернуть книгу "${bookname}".`,
+        notificationtype_id: 7,
+        date_sent: common.human_date(new Date()),
+      };
+      await db.create_row("notifications", db_notification_data);
+      return { message: 'Пользователь успешно уведомлен' };
+    },
+  },
+  {
+    method: 'GET',
     path: '/transferbook',
     handler: async function (request, reply) {
       const params = request.query;

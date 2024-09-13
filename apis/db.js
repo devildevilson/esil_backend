@@ -480,7 +480,7 @@ const db = {
     return res;
   },
   get_due_books: async () => {
-    const query_str = `select bt.id, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, lb.barcode as barcode, r.role as role, bt.DateCreated from booktransfer bt
+    const query_str = `select bt.id, bt.userid, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, lb.barcode as barcode, r.role as role, bt.DateCreated from booktransfer bt
       join users u on bt.userid = u.id
       join librarybooks lb on bt.bookid = lb.id
       join roles r on r.user_id = u.id
@@ -588,7 +588,19 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-
+  get_notifications_for_user: async (user_id) =>{
+    const query_str = `select n.id,u.lastname,u.name,nt.name as notification_name, n.message, nt.ispersonal, isimportant, n.date_sent, n.date_viewed, n.viewed from notifications n 
+    join notificationtypes nt on n.notificationtype_id=nt.id
+    left join users u on u.id = n.sender_id
+    where n.receiver_id=${user_id} order by nt.isimportant desc, date_sent desc;`
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  mark_notification_as_read_by_id: async (id,date) =>{
+    const query_str = `update notifications set viewed=1, date_viewed='${date}' where id=${id};`
+    const [res] = await query_f(query_str);
+    return res;
+  },
   count_kpi_score_by_iin: async (iin) => {
     const query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id

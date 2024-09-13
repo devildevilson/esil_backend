@@ -30,6 +30,24 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getnotifications',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const data = await db.get_notifications_for_user(params.user_id);
+      return data;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/markasread',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const data = await db.mark_notification_as_read_by_id(params.notif_id,common.human_date(new Date()));
+      return data;
+    },
+  },
+  {
+    method: 'GET',
     path: '/ebooksperpage',
     handler: async function (request, reply) {
       const params = request.query;
