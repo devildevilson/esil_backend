@@ -326,8 +326,17 @@ module.exports = [
     path: '/resolvebooktransfer',
     handler: async function (request, reply) {
       const params = request.query;
-      await db.resolve_book_transfer(params.id);
+      await db.resolve_book_transfer(params.id,common.human_date(new Date()));
       return { message: transfer_resolved };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getlibrarystats',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_library_statistics_by_year(params.year);
+      return res;
     },
   },
   {

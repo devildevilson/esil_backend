@@ -134,7 +134,8 @@ const db = {
     return res;
   },
   find_user_by_username: async (username) => {
-    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${username}';`;
+
+    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${mysql_real_escape_string(username)}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -474,8 +475,8 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
-  resolve_book_transfer: async (id) => {
-    const query_str = `update booktransfer set resolved='true' where id=${id};`;
+  resolve_book_transfer: async (id,date) => {
+    const query_str = `update booktransfer set resolved='true', dateresolved='${date}' where id=${id};`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -559,6 +560,17 @@ const db = {
   },
   get_book_categories: async () => {
     const query_str = `select * from bookcategory where deleted = false;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_library_statistics_by_year: async (year) => {
+    let nYear = parseInt(year);
+    const query_str = `SELECT 
+    COUNT(CASE WHEN DateCreated>'${nYear}-09-01 00:00:00' and DateCreated<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksgiven,
+    COUNT(CASE WHEN id>0 THEN 1 END) AS booksonhand,
+    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksreturned
+FROM 
+    booktransfer;`;
     const [res] = await query_f(query_str);
     return res;
   },

@@ -11,79 +11,80 @@ const storage = Multer.memoryStorage();
 const upload = Multer({ storage });
 
 module.exports = [
-    {
-        method: 'POST',
-        url: '/excel/upload',
-        preHandler: upload.single('file'),
-        handler: async function (req, reply) {
-            const payload = req.file;
-            console.log(payload);
-            if (!payload) {
-                reply.code(400).send({ error: 'No file uploaded' });
-                return;
-            }
-            const workbook = XLSX.read(payload.buffer, { type: 'buffer' });
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            jsonData.splice(0,21);
-            let formattedData = [];
-            for(let i=0; i<jsonData.length; i++){
-                if(jsonData[i].length>6
-                    && jsonData[i][6]>0
-                    && jsonData[i][0].toLowerCase().indexOf('отд.')==-1 
-                    && jsonData[i][0].toLowerCase().indexOf('рус.отд')==-1 
-                    && jsonData[i][0].toLowerCase().indexOf('каз.отд')==-1
-                    && jsonData[i][0].toLowerCase().indexOf('1 курс')==-1 
-                    && jsonData[i][0].toLowerCase().indexOf('2 курс')==-1
-                    && jsonData[i][0].toLowerCase().indexOf('3 курс')==-1
-                    && jsonData[i][0].toLowerCase().indexOf('4 курс')==-1
-                    && jsonData[i][0].toLowerCase().indexOf('факультет')==-1
-                    && jsonData[i][0].toLowerCase().indexOf('итого')==-1 ){
-                        let FIOArray = jsonData[i][0].trim().split(' ');
-                        let iin = await plt.find_student_iin_by_fio(FIOArray[0],FIOArray[1],FIOArray[2])
-                        let formattedFIO = FIOArray[0]+' '+FIOArray[1]+' '+FIOArray[2];
-                        if(FIOArray[2]==undefined||FIOArray[2]=='undefined') formattedFIO = FIOArray[0]+' '+FIOArray[1];
-                        formattedData.push({
-                            'FIO':formattedFIO,
-                            'iin':iin, 
-                            'overall':jsonData[i][4],
-                            'debt':jsonData[i][6]});
-                    }
-                    
-            }
-            await db.debt_update(formattedData);
-            const excel_data = {
-              upload_date: common.human_date(new Date()),
-            };
-            await db.create_row("excel_data", excel_data);
-            reply.send(formattedData);
-        },
+  {
+    method: 'POST',
+    url: '/excel/upload',
+    preHandler: upload.single('file'),
+    handler: async function (req, reply) {
+      const payload = req.file;
+      console.log(payload);
+      if (!payload) {
+        reply.code(400).send({ error: 'No file uploaded' });
+        return;
+      }
+      const workbook = XLSX.read(payload.buffer, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      jsonData.splice(0, 21);
+      let formattedData = [];
+      for (let i = 0; i < jsonData.length; i++) {
+        if (jsonData[i].length > 6
+          && jsonData[i][6] > 0
+          && jsonData[i][0].toLowerCase().indexOf('отд.') == -1
+          && jsonData[i][0].toLowerCase().indexOf('рус.отд') == -1
+          && jsonData[i][0].toLowerCase().indexOf('каз.отд') == -1
+          && jsonData[i][0].toLowerCase().indexOf('1 курс') == -1
+          && jsonData[i][0].toLowerCase().indexOf('2 курс') == -1
+          && jsonData[i][0].toLowerCase().indexOf('3 курс') == -1
+          && jsonData[i][0].toLowerCase().indexOf('4 курс') == -1
+          && jsonData[i][0].toLowerCase().indexOf('факультет') == -1
+          && jsonData[i][0].toLowerCase().indexOf('итого') == -1) {
+          let FIOArray = jsonData[i][0].trim().split(' ');
+          let iin = await plt.find_student_iin_by_fio(FIOArray[0], FIOArray[1], FIOArray[2])
+          let formattedFIO = FIOArray[0] + ' ' + FIOArray[1] + ' ' + FIOArray[2];
+          if (FIOArray[2] == undefined || FIOArray[2] == 'undefined') formattedFIO = FIOArray[0] + ' ' + FIOArray[1];
+          formattedData.push({
+            'FIO': formattedFIO,
+            'iin': iin,
+            'overall': jsonData[i][4],
+            'debt': jsonData[i][6]
+          });
+        }
+
+      }
+      await db.debt_update(formattedData);
+      const excel_data = {
+        upload_date: common.human_date(new Date()),
+      };
+      await db.create_row("excel_data", excel_data);
+      reply.send(formattedData);
     },
-    {
-        method: 'GET',
-        path: '/getdebtdata/:user_id', 
-        handler: async function (request, reply) {
-          const iin = await db.get_iin_by_user_id(request.params.user_id);
-          const debtdata = await db.get_debt_data_by_iin(iin.iin);
-          return debtdata;
-        },
-        schema: {
-          params: {
-            type: "object",
-            required: [ "user_id" ],
-            properties: {
-              user_id: { type: "number" }
-            } 
-          },
+  },
+  {
+    method: 'GET',
+    path: '/getdebtdata/:user_id',
+    handler: async function (request, reply) {
+      const iin = await db.get_iin_by_user_id(request.params.user_id);
+      const debtdata = await db.get_debt_data_by_iin(iin.iin);
+      return debtdata;
+    },
+    schema: {
+      params: {
+        type: "object",
+        required: ["user_id"],
+        properties: {
+          user_id: { type: "number" }
         }
       },
-      {
-        method: 'GET',
-        path: '/getdocdate', 
-        handler: async function (request, reply) {
-          const docdate = await db.get_excel_doc_date();
-          return reply.send(docdate);
-        },
-      },
+    }
+  },
+  {
+    method: 'GET',
+    path: '/getdocdate',
+    handler: async function (request, reply) {
+      const docdate = await db.get_excel_doc_date();
+      return reply.send(docdate);
+    },
+  },
 
 ];
