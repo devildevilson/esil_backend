@@ -335,7 +335,10 @@ module.exports = [
     path: '/getlibrarystats',
     handler: async function (request, reply) {
       const params = request.query;
-      const res = await db.get_library_statistics_by_year(params.year);
+      let year = params.year;
+      const d = new Date();
+      if ((d.getMonth() + 1) < 9) year-=1;
+      const res = await db.get_library_statistics_by_year(year);
       return res;
     },
   },
