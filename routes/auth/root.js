@@ -32,7 +32,7 @@ module.exports = [
     method: 'POST',
     path: '/',
     handler: async (request, reply) => {
-      console.log('POST started');
+      console.log('user is logging in');
       const payload = request.body;
       const username = payload.username.trim().toLowerCase();
       console.log('username: ' + username);
@@ -94,7 +94,7 @@ module.exports = [
       }
 
       const iin = await db.get_iin_by_username(username);
-      console.log('IIN: ' + iin);
+      console.log('iin: ' + iin);
 
       user_role = await db.get_role_by_username(username);
       const role_str = user_role.role;
@@ -133,7 +133,7 @@ module.exports = [
         }
 
       }
-
+      console.log(`${user_data.lastname} ${user_data.name} ${user_data.middlename}`);
       return {
         id: user_data.id,
         name: user_data.name,
