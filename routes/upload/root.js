@@ -8,12 +8,16 @@ const path = require('path');
 const fastifyStatic = require('fastify-static');
 
 const FILE_PATH = process.env.ROOT_PATH;
+const PHOTO_FILE_PATH = process.env.ROOT_PHOTO_PATH;
 
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
 const file_user_id_not_found_msg = "Could not find files by user id";
 const cant_upload_unique_activity = "Этот показатель уже загружен";
+const cant_upload_photo_exists = "Фото уже существует";
+const cant_upload_photo = "Невозможно загрузить фото";
 const successful_upload = "Файл был загружен";
+const successful_photo_upload = "Фото было загружено";
 const request_already_exists = "Для этого студента уже есть заявка";
 const user_not_found = "Пользователь не найден";
 const success = "Успешно";
@@ -28,9 +32,33 @@ var storage = Multer.diskStorage({
   },
 });
 
+var storagePhoto = Multer.diskStorage({
+  destination: async function (req, file, cb) {
+    cb(null, PHOTO_FILE_PATH)
+  },
+  filename: async function (req, file, cb) {
+    const userid = file.originalname.split('.')[0];
+    const user = await db.find_user_by_id(userid);
+    cb(null, `${user.lastname}+${user.name}_${user.iin}.png`);
+  },
+});
+
 var upload = Multer({
   storage: storage,
   limits: { fileSize: 20000000 }
+});
+
+var uploadPhoto = Multer({
+  storage: storagePhoto,
+  fileFilter: function (req, file, callback) {
+    let ext = file.originalname.split('.')[file.originalname.split('.').length - 1];
+    console.log(ext);
+    if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg') {
+      return callback(new Error('Допущены только фотографии'));
+    }
+    callback(null, true)
+  },
+  limits: { fileSize: 1000000 }
 });
 
 async function deleteFile(filename) {
@@ -46,8 +74,20 @@ async function deleteFile(filename) {
     return 'failed';
   }
 }
-
-
+async function deletePhoto(filename) {
+  if (filename != '') {
+    try {
+      await fs.unlink(PHOTO_FILE_PATH + filename);
+      console.log(`File ${filename} has been deleted.`);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  else {
+    return 'failed';
+  }
+}
+const uploadPhotoMethod = uploadPhoto.single('file');
 module.exports = [
   {
     method: 'POST',
@@ -80,7 +120,32 @@ module.exports = [
       }
     },
   },
-
+  {
+    method: 'POST',
+    url: '/upload/photo',
+    preHandler: uploadPhoto.single('file'),
+    handler: async function (req, reply) {
+      const user = await db.find_user_by_id(req.body.user_id);
+      let canupload = await db.check_photo_upload_eligibility(user.iin);
+      const filename = req.file.filename;
+      console.log(canupload);
+      if (!canupload) {
+        //await deletePhoto(filename);
+        return { message: cant_upload_photo_exists }
+      };
+      const photo_data = {
+        iin: user.iin,
+        photo_path: PHOTO_FILE_PATH + filename,
+        photo_filename: filename,
+        DateCreated: common.human_date(new Date()),
+      };
+      await db.create_row("photos", photo_data);
+      return { message: successful_photo_upload };
+    },
+    schema: {
+      consumes: ["multipart/form-data"]
+    }
+  },
   {
     method: 'GET',
     path: '/getalldormrequests',
@@ -89,20 +154,20 @@ module.exports = [
       if (request_data.length == 0) return [];
       const str_arr = request_data.map(elem => elem.iin).join(",");
       const users = await plt.get_student_data_by_iin_arr(str_arr);
-      
+
       for (let i = 0; i < users.length; i++) {
         const dormreq = await db.get_dorm_request_by_iin(users[i].iin);
-        if(dormreq != undefined) {
-          Object.assign(users[i],{
-            approved:dormreq.approved,
-            datecreated:dormreq.datecreated,
-            datemodified:dormreq.datemodified,
-            roomnumber:dormreq.roomnumber,
-            notification_message:dormreq.notification_message,
-            ishostel:dormreq.ishostel,
-            iin:dormreq.iin,
-            req_id:dormreq.id
-          });   
+        if (dormreq != undefined) {
+          Object.assign(users[i], {
+            approved: dormreq.approved,
+            datecreated: dormreq.datecreated,
+            datemodified: dormreq.datemodified,
+            roomnumber: dormreq.roomnumber,
+            notification_message: dormreq.notification_message,
+            ishostel: dormreq.ishostel,
+            iin: dormreq.iin,
+            req_id: dormreq.id
+          });
         }
       }
       users.sort((a, b) => a.datecreated - b.datecreated)
@@ -244,9 +309,9 @@ module.exports = [
       const roomnumber = request.query.dormRoomNumber;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       if (requestQuery) {
-        await db.approve_dorm_request_by_iin(iin,dormtype,message,roomnumber,common.human_date(new Date()));
+        await db.approve_dorm_request_by_iin(iin, dormtype, message, roomnumber, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
-        if (userid){
+        if (userid) {
           const db_notification_data = {
             receiver_id: userid.id,
             message: `Заявка принята. Сообщение: "${message}"`,
@@ -265,7 +330,7 @@ module.exports = [
     schema: {
       querystring: {
         type: "object",
-        required: ["iin","dormType","dormMessage","dormRoomNumber"],
+        required: ["iin", "dormType", "dormMessage", "dormRoomNumber"],
         properties: {
           iin: { type: "string" },
           dormtype: { type: "string" },
@@ -273,7 +338,7 @@ module.exports = [
           roomnumber: { type: "string" },
         }
       },
-      
+
     }
   },
   {
@@ -284,9 +349,9 @@ module.exports = [
       const message = request.query.dormMessage;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       if (requestQuery) {
-        await db.deny_dorm_request_by_iin(iin,message,common.human_date(new Date()));
+        await db.deny_dorm_request_by_iin(iin, message, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
-        if (!userid){
+        if (!userid) {
           const db_notification_data = {
             receiver_id: userid.id,
             message: `Заявка отклонена по причине: "${message}"`,
@@ -305,13 +370,13 @@ module.exports = [
     schema: {
       querystring: {
         type: "object",
-        required: ["iin","dormMessage"],
+        required: ["iin", "dormMessage"],
         properties: {
           iin: { type: "string" },
           message: { type: "string" },
         }
       },
-      
+
     }
   },
   {

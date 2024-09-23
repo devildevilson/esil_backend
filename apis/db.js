@@ -134,8 +134,12 @@ const db = {
     return res;
   },
   find_user_by_username: async (username) => {
-
     const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${mysql_real_escape_string(username)}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  find_user_by_id: async (userid) => {
+    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,iin,suspended,alt_id FROM users WHERE id = '${userid}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -229,6 +233,11 @@ const db = {
     const query_str = `SELECT count(*) as sum from booktransfer where userid=${user_id} and bookid=${book_id} and resolved='false';`;
     const [res] = await query_f(query_str);
     return res;
+  },
+  check_photo_upload_eligibility: async (iin) =>{
+    const query_str = `SELECT count(*) as sum from photos where iin='${iin}';`;
+    const [res] = await query_f(query_str);
+    return res[0].sum==0;
   },
   // roles - это массив
   get_user_roles_specific: async (user_id, roles) => {

@@ -24,7 +24,7 @@ async function get_plt_data_and_role(iin) {
   return [];
 }
 function isASCII(str) {
-  return typeof str === 'string' && /^[A-Za-z0-9_]*$/.test(str);
+  return typeof str === 'string' && /^[A-Za-zА-Яа-я0-9_]*$/.test(str);
 }
 
 module.exports = [

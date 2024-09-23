@@ -11,11 +11,12 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@fastify/cors": "^8.3.0",
+    "@fastify/multipart": "^8.0.0",
     "@fastify/sensible": "^5.2.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
     "fast-jwt": "^3.2.0",
-    "fastify": "^4.22.0",
+    "fastify": "4.28",
     "fastify-multer": "^2.0.3",
     "fastify-static": "^4.7.0",
     "module-alias": "^2.2.3",
