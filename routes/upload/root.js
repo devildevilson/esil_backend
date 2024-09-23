@@ -148,6 +148,25 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/checkphotoeligibility/:user_id',
+    handler: async function (request, reply) {
+      let user = await db.find_user_by_id(request.params.user_id)
+      const data = await db.check_photo_upload_eligibility(user.iin);
+      if(data) return 'true';
+      return 'false';
+    },
+    schema: {
+      params: {
+        type: "object",
+        required: ["user_id"],
+        properties: {
+          user_id: { type: "number" }
+        }
+      },
+    }
+  },
+  {
+    method: 'GET',
     path: '/getalldormrequests',
     handler: async function (request, reply) {
       const request_data = await db.get_all_dorm_requests();
