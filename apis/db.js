@@ -572,6 +572,27 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  duplicate_book_by_id: async(id)=>{
+    const query_str = `INSERT INTO librarybooks (
+      AdditionalInformation, Annotation, ArrivingAct, Author, Barcode, CopyrightSigns,
+      CoverPage, DateCreated, DeletedUndeleted, DepartingAct, EditedBy, Exchanged, Heading,
+      ISBN, ISSN, InventoryNumber, IsCD, IsGift, IsOut, KeyWords, LLC, Language,
+      MONRecomended, NameEnBook, NameKZBook, NameRuBook, NoteAboutControl, Pages,
+      Price, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook,
+      Series, Speciality, Subject, TypeOfBook, UDC
+    )
+    SELECT
+      AdditionalInformation, Annotation, ArrivingAct, Author, Barcode, CopyrightSigns,
+      CoverPage, DateCreated, DeletedUndeleted, DepartingAct, EditedBy, Exchanged, Heading,
+      ISBN, ISSN, InventoryNumber, IsCD, IsGift, IsOut, KeyWords, LLC, Language,
+      MONRecomended, NameEnBook, NameKZBook, NameRuBook, NoteAboutControl, Pages,
+      Price, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook,
+      Series, Speciality, Subject, TypeOfBook, UDC
+    FROM librarybooks
+    WHERE id = ${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_library_statistics_by_year: async (year) => {
     let nYear = parseInt(year);
     const query_str = `SELECT 

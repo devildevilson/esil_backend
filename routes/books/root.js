@@ -7,6 +7,7 @@ const fs = require('fs').promises;
 const successful_upload = "Книга успешно добавлена";
 const successful_update = "Книга успешно обновлена";
 const successful_deletion = "Книга успешно удалена";
+const successful_duplication = "Книга успешно дублирована";
 const successful_transfer = "Книга успешно выдана пользователю";
 const successful_transfer_batch = "Все книги успешно выданы пользователю";
 const transfer_resolved = "Книга успешно откреплена от пользователя";
@@ -83,6 +84,15 @@ module.exports = [
       const params = request.query;
       await db.delete_library_book(params.id);
       return { message: successful_deletion };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/duplicatebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      await db.duplicate_book_by_id(params.id);
+      return { message: successful_duplication };
     },
   },
   {
