@@ -39,7 +39,7 @@ var storagePhoto = Multer.diskStorage({
   filename: async function (req, file, cb) {
     const userid = file.originalname.split('.')[0];
     const user = await db.find_user_by_id(userid);
-    cb(null, `${user.lastname}+${user.name}_${user.iin}.png`);
+    cb(null, `${user.lastname.trim()}+${user.name.trim()}_${user.iin}.png`);
   },
 });
 
@@ -87,7 +87,6 @@ async function deletePhoto(filename) {
     return 'failed';
   }
 }
-const uploadPhotoMethod = uploadPhoto.single('file');
 module.exports = [
   {
     method: 'POST',
