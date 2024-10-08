@@ -14,7 +14,7 @@ const current_date = () => new Intl.DateTimeFormat("ru", {
   year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
 }).format(Date.now());
 
-const db_functions_array = { "plt_student": plt.find_student_by_iin, "plt_applicant": plt.find_applicant_by_iin, "plt_tutor": plt.find_tutor_by_iin };
+const db_functions_array = { "plt_student": plt.find_student_by_iin, "plt_applicant": plt.find_applicant_by_iin, "plt_tutor": plt.find_tutor_by_iin, "plt_employee":plt.find_employee_by_iin };
 async function get_plt_data_and_role(iin) {
   for (const [role_id, db_func] of Object.entries(db_functions_array)) {
     const data = await db_func(iin);
@@ -86,7 +86,6 @@ module.exports = [
             academicstatusid: academicdegreeid
           }
           console.log('role selected: tutor');
-          // have to find end set tutor's cafedra
           await db.create_row("kpi_scores", kpi_data);
         }
 
