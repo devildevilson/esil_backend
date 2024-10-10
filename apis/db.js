@@ -609,7 +609,18 @@ FROM
     const [res] = await query_f(query_str);
     return res;
   },
-
+  find_photo_data_for_admin: async (iin) =>{
+    const query_str = `select photos.id,photos.iin,name,lastname,middlename,DateCreated from users
+    join photos on photos.iin = users.iin
+    where photos.iin='${iin}';`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  delete_photo_by_id: async (id) => {
+    const query_str = `delete from photos where id = ${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_activities_by_category: async (categoryid) => {
     const query_str = `select * from kpi_activities where categoryid=${categoryid};`;
     const [res] = await query_f(query_str);
