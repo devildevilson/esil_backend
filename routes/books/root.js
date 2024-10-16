@@ -128,6 +128,16 @@ module.exports = [
       return res;
     },
   },
+
+  {
+    method: 'GET',
+    path: '/getbooksbyfilter',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_filter(params.name, params.author);
+      return res;
+    },
+  },  
   {
     method: 'GET',
     path: '/getbooksbyname',
