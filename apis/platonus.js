@@ -72,6 +72,26 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_employees_for_hr: async() =>{
+    const query_str = `Select t.iinplt as iin,
+    t.lastname, t.firstname, t.patronymic, 
+    t.icnumber,
+    t.adress as registration_adress,
+    t.living_adress,
+    t.mobilePhone as phone,
+    if (t.cafedraID is null or t.CafedraID = 0, ss.nameru, c.cafedraNameRU ) as dep,
+    if (t.cafedraID is null or t.CafedraID = 0, null, ast.nameru ) as academic,
+    t.RATE,
+    ws.NameRU as workstatus
+    from tutors t 
+    left JOIN structural_subdivision ss on t.departmentid = ss.id
+    join academicstatus ast on t.AcademicStatusID = ast.id
+    join workstatus ws on t.work_status = ws.id
+    left JOIN cafedras c on c.cafedraID = t.CafedraID
+    where t.deleted = 0;`;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   find_student_data_for_application: async (student_id) => {
     const query_str = `
       SELECT 
