@@ -78,6 +78,7 @@ const db = {
     let kpiscore_cloud_base = await db.count_kpi_score_by_iin_base(iin);
     let kpiscore_cloud_advanced = await db.count_kpi_score_by_iin_advanced(iin);
     let kpi_kkson_count = await plt.get_pub_count_by_iin_and_edition_index(iin, 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)');
+    let kpi_kkson2_count = await plt.get_pub_count_by_iin_and_edition_index(iin, 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)');
     let kpi_scopus_count = await plt.get_pub_count_by_iin_and_edition_index(iin, 'Scopus');
     let kpi_monograph_count = await plt.get_pub_count_by_iin_and_edition_index(iin, 'monograph');
     let kpi_international_count = await plt.get_pub_count_by_iin_and_edition_index(iin, 'international');
@@ -87,7 +88,7 @@ const db = {
     let kpi_tia_count = await plt.get_tia_count_by_iin(iin);
     let h_index = await plt.get_h_index(iin);
     let hindex_scopus = 0, hindex_wos = 0;
-    let kpiscore_base = kpiscore_cloud_base + kpi_kkson_count.pubcount * 7 + kpi_international_count.pubcount * 3;
+    let kpiscore_base = kpiscore_cloud_base + kpi_kkson_count.pubcount * 7 + kpi_kkson2_count.pubcount * 7 + kpi_international_count.pubcount * 3;
     let kpiscore_advanced = kpiscore_cloud_advanced + kpi_scopus_count.pubcount * 10 + kpi_monograph_count.pubcount * 10 + kpi_wos_count.pubcount * 10 + kpi_nirs_count.total * 20 + kpi_nirs_count_manager.total * 40 + kpi_tia_count.total * 5;
     if (h_index != undefined) {
       if (h_index.hscopus != undefined) hindex_scopus = h_index.hscopus;
