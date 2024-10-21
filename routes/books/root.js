@@ -7,9 +7,12 @@ const fs = require('fs').promises;
 const successful_upload = "Книга успешно добавлена";
 const successful_update = "Книга успешно обновлена";
 const successful_deletion = "Книга успешно удалена";
+const successful_duplication = "Книга успешно дублирована";
 const successful_transfer = "Книга успешно выдана пользователю";
+const successful_transfer_batch = "Все книги успешно выданы пользователю";
 const transfer_resolved = "Книга успешно откреплена от пользователя";
 const book_already_on_hand = "Эта книга уже выдана этому пользователю";
+const book_already_on_hand_specific = "Книги не выданы! Некоторые книги из корзины уже есть у этого пользователя. Штрихкоды: ";
 const book_upload_error = "Внутренняя ошибка загрузки новой книги";
 const book_deletion_error = "Внутренняя ошибка удаления книги";
 const book_assignment_error = "Внутренняя ошибка создания прикрепления";
@@ -85,6 +88,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/duplicatebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      await db.duplicate_book_by_id(params.id);
+      return { message: successful_duplication };
+    },
+  },
+  {
+    method: 'GET',
     path: '/deleteEbook',
     handler: async function (request, reply) {
       const params = request.query;
@@ -116,6 +128,16 @@ module.exports = [
       return res;
     },
   },
+
+  {
+    method: 'GET',
+    path: '/getbooksbyfilter',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const res = await db.get_physical_books_by_filter(params.name, params.author);
+      return res;
+    },
+  },  
   {
     method: 'GET',
     path: '/getbooksbyname',
@@ -180,6 +202,46 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getuserdata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const iin = params.iin;
+      let role = 'student';
+      let plt_data = await plt.find_student_by_iin(iin);
+      if (!plt_data) {
+        plt_data = await plt.find_tutor_by_iin(iin);
+        role = 'tutor';
+        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+      }
+      let userdata;
+      switch(role){
+        case 'student':
+          userdata = await plt.get_student_data_for_library(iin); break;
+        case 'tutor':
+          userdata = await plt.get_tutor_data_for_library(iin); break;
+      }
+      return userdata;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/notifydebtor',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const bookname = params.bookname;
+      const db_notification_data = {
+        receiver_id: userid,
+        message: `Напоминаем, что необходимо вернуть книгу "${bookname}".`,
+        notificationtype_id: 7,
+        date_sent: common.human_date(new Date()),
+      };
+      await db.create_row("notifications", db_notification_data);
+      return { message: 'Пользователь успешно уведомлен' };
+    },
+  },
+  {
+    method: 'GET',
     path: '/transferbook',
     handler: async function (request, reply) {
       const params = request.query;
@@ -225,11 +287,79 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/transferbookbatch',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const iin = params.iin;
+      let role = 'student';
+      let plt_data = await plt.find_student_by_iin(iin);
+      if (!plt_data) {
+        plt_data = await plt.find_tutor_by_iin(iin);
+        role = 'tutor';
+        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+      }
+      
+      const user = await db.get_user_id_by_iin(iin);
+      if (!user) {
+        const password_hash = await common.hash_password(iin);
+        const db_user_data = {
+          name: plt_data.name,
+          lastname: plt_data.lastname,
+          middlename: plt_data.middlename,
+          username: iin,
+          iin: iin,
+          password: password_hash,
+        };
+        const user_id = await db.create_row("users", db_user_data);
+        const role_data = {
+          user_id,
+          role: `plt_${role}`,
+          assotiated_id: plt_data.plt_id
+        };
+        await db.create_row("roles", role_data);
+      }
+      const userid = await db.get_user_id_by_iin(iin);
+      // bookidsJSON
+      let books = JSON.parse(params.bookidsJSON);
+      let givenbooks=[];
+      for(book of books){
+        const eligibility = await db.check_book_transfer_eligibility(userid.id, book.id);
+        if(parseInt(eligibility[0].sum)>0) givenbooks.push(book.barcode);
+      }
+      if(givenbooks.length>0){
+        return { message: `${book_already_on_hand_specific} ${givenbooks.toString()}` }; 
+      }
+      for(book of books){
+        const transfer_data = {
+          userid: userid.id,
+          bookid: book.id,
+          DateCreated: common.human_date(new Date()),
+        };
+        await db.create_row("booktransfer", transfer_data);
+      }
+      
+      return { message: successful_transfer_batch };
+    },
+  },
+  {
+    method: 'GET',
     path: '/resolvebooktransfer',
     handler: async function (request, reply) {
       const params = request.query;
-      await db.resolve_book_transfer(params.id);
+      await db.resolve_book_transfer(params.id,common.human_date(new Date()));
       return { message: transfer_resolved };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getlibrarystats',
+    handler: async function (request, reply) {
+      const params = request.query;
+      let year = params.year;
+      const d = new Date();
+      if ((d.getMonth() + 1) < 9) year-=1;
+      const res = await db.get_library_statistics_by_year(year);
+      return res;
     },
   },
   {
@@ -282,8 +412,8 @@ module.exports = [
         UDC: params.UDC,
         DateCreated: common.human_date(new Date()),
       };
-      await db.create_row("librarybooks", book_data);
-      return { message: `Книга ${params.Name} успешно загружена` };
+      await db.create_row("ebooks", book_data);
+      return { message: `Электронная книга ${params.Name} успешно загружена` };
     },
   },
   {
@@ -292,6 +422,15 @@ module.exports = [
     handler: async function (request, reply) {
       const params = request.query;
       await db.edit_library_book(params.id, params.Name, params.Author, params.Pages, params.Annotation, params.Barcode, params.Heading, params.ISBN, params.InventoryNumber, params.KeyWords, params.LLC, params.Language, params.Price, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
+      return { message: successful_update };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/editebook',
+    handler: async function (request, reply) {
+      const params = request.query;
+      await db.edit_e_book(params.id, params.Name, params.Author, params.Pages, params.LLC, params.Language, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
       return { message: successful_update };
     },
   },

@@ -135,7 +135,12 @@ const db = {
     return res;
   },
   find_user_by_username: async (username) => {
-    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${username}';`;
+    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${mysql_real_escape_string(username)}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  find_user_by_id: async (userid) => {
+    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,iin,suspended,alt_id FROM users WHERE id = '${userid}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -192,6 +197,34 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_all_dorm_requests: async (iin) => {
+    const query_str = `SELECT * from dormrequests;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_dorm_request_by_iin: async (iin) => {
+    const query_str = `SELECT * from dormrequests where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  delete_dorm_request_by_iin: async (iin) => {
+    const query_str = `delete from dormrequests where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  approve_dorm_request_by_iin: async (iin,dormtype,message,roomnumber,datemodified) => {
+    let ishostel;
+    if(dormtype=='dorm') ishostel='0';
+    if(dormtype=='hostel') ishostel='1';
+    const query_str = `update dormrequests set approved = 1, ishostel = ${ishostel}, notification_message = '${message}', roomnumber = '${roomnumber}', datemodified = '${datemodified}' where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
+  deny_dorm_request_by_iin: async (iin,message,datemodified) => {
+    const query_str = `update dormrequests set approved = -1, notification_message = '${message}', datemodified = '${datemodified}' where iin = '${iin}';`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0] : undefined;
+  },
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
     const [res] = await query_f(query_str);
@@ -201,6 +234,11 @@ const db = {
     const query_str = `SELECT count(*) as sum from booktransfer where userid=${user_id} and bookid=${book_id} and resolved='false';`;
     const [res] = await query_f(query_str);
     return res;
+  },
+  check_photo_upload_eligibility: async (iin) =>{
+    const query_str = `SELECT count(*) as sum from photos where iin='${iin}';`;
+    const [res] = await query_f(query_str);
+    return res[0].sum==0;
   },
   // roles - это массив
   get_user_roles_specific: async (user_id, roles) => {
@@ -223,6 +261,21 @@ const db = {
     //SELECT GROUP_CONCAT(assotiated_id) AS str FROM roles WHERE role = '${role}';
     const query_str = `
       SELECT user_id,assotiated_id FROM roles WHERE role = '${role}';
+    `;
+
+    //const [ [ { str } ] ] = await query_f(query_str);
+    //return str;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+
+  get_assotiated_id_arr_by_role_test: async (role) => {
+    //SELECT GROUP_CONCAT(assotiated_id) AS str FROM roles WHERE role = '${role}';
+    const query_str = `
+    SELECT user_id,assotiated_id,dr.approved FROM roles 
+    left join users on users.id=roles.user_id
+    left join dormrequests dr on users.iin=dr.iin 
+    WHERE role = '${role}';
     `;
 
     //const [ [ { str } ] ] = await query_f(query_str);
@@ -432,13 +485,13 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
-  resolve_book_transfer: async (id) => {
-    const query_str = `update booktransfer set resolved='true' where id=${id};`;
+  resolve_book_transfer: async (id,date) => {
+    const query_str = `update booktransfer set resolved='true', dateresolved='${date}' where id=${id};`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_due_books: async () => {
-    const query_str = `select bt.id, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, lb.barcode as barcode, r.role as role, bt.DateCreated from booktransfer bt
+    const query_str = `select bt.id, bt.userid, concat(u.lastname, ' ', u.name, ' ', u.middlename) as fio, lb.namerubook as bookname, lb.barcode as barcode, r.role as role, bt.DateCreated from booktransfer bt
       join users u on bt.userid = u.id
       join librarybooks lb on bt.bookid = lb.id
       join roles r on r.user_id = u.id
@@ -475,6 +528,11 @@ const db = {
   //   const [res] = await query_f(query_str);
   //   return res;
   // },
+  get_physical_books_by_filter: async (name, author) => {
+    const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${mysql_real_escape_string(name).trim()}%' and lb.Author like '%${mysql_real_escape_string(author).trim()}%' order by lb.NameRuBook limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_physical_books_by_name: async (name) => {
     const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${name}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
@@ -520,18 +578,88 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  duplicate_book_by_id: async(id)=>{
+    const query_str = `INSERT INTO librarybooks (
+      AdditionalInformation, Annotation, ArrivingAct, Author, Barcode, CopyrightSigns,
+      CoverPage, DateCreated, DeletedUndeleted, DepartingAct, EditedBy, Exchanged, Heading,
+      ISBN, ISSN, InventoryNumber, IsCD, IsGift, IsOut, KeyWords, LLC, Language,
+      MONRecomended, NameEnBook, NameKZBook, NameRuBook, NoteAboutControl, Pages,
+      Price, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook,
+      Series, Speciality, Subject, TypeOfBook, UDC
+    )
+    SELECT
+      AdditionalInformation, Annotation, ArrivingAct, Author, Barcode, CopyrightSigns,
+      CoverPage, DateCreated, DeletedUndeleted, DepartingAct, EditedBy, Exchanged, Heading,
+      ISBN, ISSN, InventoryNumber, IsCD, IsGift, IsOut, KeyWords, LLC, Language,
+      MONRecomended, NameEnBook, NameKZBook, NameRuBook, NoteAboutControl, Pages,
+      Price, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook,
+      Series, Speciality, Subject, TypeOfBook, UDC
+    FROM librarybooks
+    WHERE id = ${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_library_statistics_by_year: async (year) => {
+    let nYear = parseInt(year);
+    const query_str = `SELECT 
+    COUNT(CASE WHEN DateCreated>'${nYear}-09-01 00:00:00' and DateCreated<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksgiven,
+    COUNT(CASE WHEN resolved = 'false' THEN 1 END) AS booksonhand,
+    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksreturned
+FROM 
+    booktransfer;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   delete_file_by_filename: async (filename) => {
     const query_str = `delete from files where filename = '${filename}';`;
     const [res] = await query_f(query_str);
     return res;
   },
-
+  find_photo_data_for_admin: async (iin) =>{
+    const query_str = `select photos.id,photos.iin,name,lastname,middlename,DateCreated from users
+    join photos on photos.iin = users.iin
+    where photos.iin='${iin}';`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  delete_photo_by_id: async (id) => {
+    const query_str = `delete from photos where id = ${id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_activities_by_category: async (categoryid) => {
     const query_str = `select * from kpi_activities where categoryid=${categoryid};`;
     const [res] = await query_f(query_str);
     return res;
   },
 
+  get_notification_icon_data : async (user_id) => {
+    const query_str = `SELECT 
+    COUNT(n.id) AS notif_count,
+    IFNULL(SUM(n.viewed = 0), 0) AS unread_count,
+    IFNULL(SUM(n.viewed = 0 AND nt.isimportant = 1), 0) AS important_unread_count
+FROM 
+    notifications n
+JOIN 
+    notificationtypes nt ON n.notificationtype_id = nt.id
+WHERE 
+    n.receiver_id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_notifications_for_user: async (user_id) =>{
+    const query_str = `select n.id,u.lastname,u.name,nt.name as notification_name, n.message, nt.ispersonal, isimportant, n.date_sent, n.date_viewed, n.viewed from notifications n 
+    join notificationtypes nt on n.notificationtype_id=nt.id
+    left join users u on u.id = n.sender_id
+    where n.receiver_id=${user_id} order by nt.isimportant desc, date_sent desc;`
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  mark_notification_as_read_by_id: async (id,date) =>{
+    const query_str = `update notifications set viewed=1, date_viewed='${date}' where id=${id};`
+    const [res] = await query_f(query_str);
+    return res;
+  },
   count_kpi_score_by_iin: async (iin) => {
     const query_str = `select ka.primaryscore from files f
     join kpi_activities ka on f.activityid=ka.id
