@@ -5,20 +5,8 @@ const fs = require('fs').promises;
 
 
 const successful_photo_deletion = "Фото успешно удалено";
-const successful_upload = "Книга успешно добавлена";
-const successful_update = "Книга успешно обновлена";
-const successful_deletion = "Книга успешно удалена";
-const successful_duplication = "Книга успешно дублирована";
-const successful_transfer = "Книга успешно выдана пользователю";
-const successful_transfer_batch = "Все книги успешно выданы пользователю";
-const transfer_resolved = "Книга успешно откреплена от пользователя";
-const book_already_on_hand = "Эта книга уже выдана этому пользователю";
-const book_already_on_hand_specific = "Книги не выданы! Некоторые книги из корзины уже есть у этого пользователя. Штрихкоды: ";
-const book_upload_error = "Внутренняя ошибка загрузки новой книги";
-const book_deletion_error = "Внутренняя ошибка удаления книги";
-const book_assignment_error = "Внутренняя ошибка создания прикрепления";
-const book_assignment_removal_error = "Внутренняя ошибка удаления прикрепления";
-
+const user_already_exists = "Пользователь уже существует";
+const user_created = "Пользователь успешно добавлен";
 // async function deleteFile(filename) {
 //   if (filename != '') {
 //     try {
@@ -41,6 +29,42 @@ module.exports = [
       const iin = params.iin;
       const photodata = await db.find_photo_data_for_admin(iin);
       return photodata;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/addnewuser',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const iin = params.iin;
+      const lastname = params.lastname;
+      const firstname = params.firstname;
+      const patronymic = params.patronymic;
+      const role = params.role;
+      const user = await db.get_user_id_by_iin(iin);
+      if (user) return { message: user_already_exists };
+      try {
+        const password_hash = await common.hash_password(iin);
+        const db_user_data = {
+          name: firstname,
+          lastname: lastname,
+          middlename: patronymic,
+          username: iin,
+          iin: iin,
+          password: password_hash,
+        };
+        await db.create_row("users", db_user_data);
+        const userid = await db.get_user_id_by_iin(iin);
+        const db_role_data = {
+          user_id: userid.id,
+          role: role,
+        };
+        await db.create_row("roles", db_role_data);
+        return { message: user_created };
+      }
+      catch {
+        return { message: "Something went wrong. Suggesting to check the tables to revert changes" };
+      }
     },
   },
   {
