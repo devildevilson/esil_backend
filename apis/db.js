@@ -533,6 +533,11 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_e_books_by_filter: async (name, author) => {
+    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and ebookpath not like '%:%' and NameRuBook like '%${mysql_real_escape_string(name)}%' and Author like '%${mysql_real_escape_string(author)}%' order by eb.namerubook limit 1000;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_physical_books_by_name: async (name) => {
     const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and lb.NameRuBook like '%${name}%' order by lb.NameRuBook limit 1000;`;
     const [res] = await query_f(query_str);
