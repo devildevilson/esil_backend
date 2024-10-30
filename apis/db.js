@@ -509,12 +509,12 @@ const db = {
     return res;
   },
   get_e_book_page_count: async () =>{
-    const query_str = `select count(*) as count from ebooks where deletedundeleted='true';`;
+    const query_str = `select count(*) as count from ebooks where deletedundeleted='true' and ebookpath not like '%:%';`;
     const [res] = await query_f(query_str);
     return Math.floor(res[0].count/1000+1)
   },
   get_e_books_per_page: async (page) => {
-    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by eb.namerubook limit 1000 offset ${(page-1)*1000};`;
+    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and ebookpath not like '%:%' order by eb.namerubook limit 1000 offset ${(page-1)*1000};`;
     const [res] = await query_f(query_str);
     return res;
   }, 
