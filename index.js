@@ -8,13 +8,33 @@ const common = require("@core/common");
 const db = require("@apis/db");
 const platonus = require("@apis/platonus");
 const schedule = require('node-schedule');
-
+const path = require('path');
+const fs = require('fs');
 
 fastify.register(require("fastify-multer").contentParser);
 
 
 fastify.register(require('@fastify/sensible'));
+const pdfDirectory = '/usr/share/ebooks/eLibraryBooks/';
 
+fastify.get('/view/:filename', (request, reply) => {
+  const { filename } = request.params;
+  const filePath = path.posix.join(pdfDirectory, filename);
+
+  fs.access(filePath, fs.constants.R_OK, (err) => {
+    if (err) {
+      console.error('File access error:', err);
+      return reply.status(404).send({ error: 'File not found' });
+    }
+
+    // Set headers and send the file as response
+    reply
+      .header('Content-Type', 'application/pdf')
+      .header('Content-Disposition', 'inline');
+
+    return reply.send(fs.createReadStream(filePath));
+  });
+});
 // разрабатываем на http://localhost:5173
 // REST RESTful
  fastify.register(require('@fastify/cors'), {
