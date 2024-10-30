@@ -250,6 +250,22 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/ebookaddlog',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const ebookid = params.ebookid;
+      const db_ebook_data = {
+        userid: userid,
+        ebookid: ebookid,
+        DateCreated: common.human_date(new Date()),
+      };
+      await db.create_row("ebooks_log", db_ebook_data);
+      return { message: 'Запись создана' };
+    },
+  },
+  {
+    method: 'GET',
     path: '/transferbook',
     handler: async function (request, reply) {
       const params = request.query;
