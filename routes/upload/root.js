@@ -9,6 +9,7 @@ const fastifyStatic = require('fastify-static');
 
 const FILE_PATH = process.env.ROOT_PATH;
 const PHOTO_FILE_PATH = process.env.ROOT_PHOTO_PATH;
+const PDF_FILE_PATH = process.env.ROOT_PDF_PATH;
 
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
@@ -16,12 +17,17 @@ const file_user_id_not_found_msg = "Could not find files by user id";
 const cant_upload_unique_activity = "Этот показатель уже загружен";
 const cant_upload_photo_exists = "Фото уже существует";
 const cant_upload_photo = "Невозможно загрузить фото";
+const cant_upload_pdf = "Ошибка загрузки";
 const successful_upload = "Файл был загружен";
 const successful_photo_upload = "Фото было загружено";
+const successful_pdf_upload = "Книга успешно загружена";
 const request_already_exists = "Для этого студента уже есть заявка";
 const user_not_found = "Пользователь не найден";
 const success = "Успешно";
 
+function sanitizeFilename(filename) {
+  return filename.replace(/[\\\/:*?"<>|\s]/g, '_');
+}
 
 var storage = Multer.diskStorage({
   destination: function (req, file, cb) {
@@ -43,6 +49,16 @@ var storagePhoto = Multer.diskStorage({
   },
 });
 
+var storagePDF = Multer.diskStorage({
+  destination: async function (req, file, cb) {
+    cb(null, PDF_FILE_PATH)
+  },
+  filename: async function (req, file, cb) {
+    const redactedFilename = sanitizeFilename(file.originalname.split('.')[0]);
+    cb(null, `${redactedFilename}${Date.now()}.pdf`);
+  },
+});
+
 var upload = Multer({
   storage: storage,
   limits: { fileSize: 20000000 }
@@ -52,9 +68,20 @@ var uploadPhoto = Multer({
   storage: storagePhoto,
   fileFilter: function (req, file, callback) {
     let ext = file.originalname.split('.')[file.originalname.split('.').length - 1];
-    console.log(ext);
     if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg') {
       return callback(new Error('Допущены только фотографии'));
+    }
+    callback(null, true)
+  },
+  limits: { fileSize: 1000000 }
+});
+
+var uploadPDF = Multer({
+  storage: storagePDF,
+  fileFilter: function (req, file, callback) {
+    let ext = file.originalname.split('.')[file.originalname.split('.').length - 1];
+    if (ext !== 'PDF' && ext !== 'pdf') {
+      return callback(new Error('Допущены только PDF'));
     }
     callback(null, true)
   },
@@ -74,10 +101,10 @@ async function deleteFile(filename) {
     return 'failed';
   }
 }
-async function deletePhoto(filename) {
+async function deletePDF(filename) {
   if (filename != '') {
     try {
-      await fs.unlink(PHOTO_FILE_PATH + filename);
+      await fs.unlink(PDF_FILE_PATH + filename);
       console.log(`File ${filename} has been deleted.`);
     } catch (err) {
       console.log(err);
@@ -116,6 +143,40 @@ module.exports = [
         const file_storage = await deleteFile(cleared_filename);
         //await reply.setHeader('message',cant_upload_unique_activity);
         return { message: cant_upload_unique_activity };
+      }
+    },
+  },
+  {
+    method: 'POST',
+    url: '/upload/pdf',
+    preHandler: uploadPDF.single('file'),
+    handler: async function (req, reply) { 
+      //req.body.user_id
+      const payload = req.body;
+      let filename = req.file.filename;
+      try {
+        const ebook_data = {
+          NameRuBook: payload.Name,
+          Author: payload.Author,
+          Pages: payload.Pages,
+          EBookPath: `/CSP/euniversity/img/eLibraryBooks/${filename}`,
+          ISBN: payload.ISBN,
+          LLC: payload.LLC,
+          Language: payload.Language,
+          PublishedCountryCity: payload.PublishedCountryCity,
+          PublishedTime: payload.PublishedTime,
+          PublishingHouse: payload.PublishingHouse,
+          RLibraryCategoryRLibraryBook: payload.RLibraryCategoryRLibraryBook,
+          UDC: payload.UDC,
+          DateCreated: common.human_date(new Date()),
+        };
+        await db.create_row("ebooks", ebook_data);
+        //await res.code(200).send('processed');
+        return { message: successful_pdf_upload };
+      }
+      catch {
+        await deletePDF(filename);
+        return { message: cant_upload_pdf };
       }
     },
   },
