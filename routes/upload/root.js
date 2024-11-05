@@ -85,8 +85,9 @@ var uploadPDF = Multer({
     }
     callback(null, true)
   },
-  limits: { fileSize: 1000000 }
+  limits: { fileSize: 300000000 } //300 mb
 });
+
 
 async function deleteFile(filename) {
   if (filename != '') {
@@ -387,13 +388,15 @@ module.exports = [
       const message = request.query.dormMessage;
       const roomnumber = request.query.dormRoomNumber;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
+      let messageEdited = 'Заявка принята.';
+      if (message!='') messageEdited = `Заявка принята. Сообщение: ${message}`;
       if (requestQuery) {
         await db.approve_dorm_request_by_iin(iin, dormtype, message, roomnumber, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
         if (userid) {
           const db_notification_data = {
             receiver_id: userid.id,
-            message: `Заявка принята. Сообщение: "${message}"`,
+            message: messageEdited,
             notificationtype_id: 4,
             date_sent: common.human_date(new Date()),
           };
@@ -427,13 +430,15 @@ module.exports = [
       const iin = request.query.iin;
       const message = request.query.dormMessage;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
+      let messageEdited = 'Заявка отклонена.';
+      if (message!='') messageEdited = `Заявка отклонена по причине: "${message}"`;
       if (requestQuery) {
         await db.deny_dorm_request_by_iin(iin, message, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
         if (!userid) {
           const db_notification_data = {
             receiver_id: userid.id,
-            message: `Заявка отклонена по причине: "${message}"`,
+            message: messageEdited,
             notificationtype_id: 4,
             date_sent: common.human_date(new Date()),
           };
