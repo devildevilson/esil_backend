@@ -72,6 +72,29 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_student_data_by_qr: async (student_id) => {
+    const query_str = `
+    SELECT 
+    s.StudentID AS plt_id,
+    s.lastname AS lastname,
+    s.firstname AS firstname,
+    s.patronymic AS patronymic,
+    s2.nameru AS specialization,
+    g.name as groupname,
+    sf.NameRu AS study_form,
+    dt.nameru AS degree_type,
+    sl.NameRU AS study_language
+  FROM students s
+  LEFT JOIN specializations s2 ON s2.id = s.specializationID
+  LEFT JOIN studyforms sf ON sf.Id = s.StudyFormID
+  LEFT JOIN \`groups\` g ON s.groupID = g.groupID
+  LEFT JOIN degree_types dt ON dt.degreeID = sf.degreeID
+  LEFT JOIN studylanguages sl ON sl.Id = s.StudyLanguageID
+  WHERE s.StudentID = ${student_id};
+    `;
+    const [ res ] = await query_f(query_str);
+    return res;
+  },
   get_employees_for_hr: async() =>{
     const query_str = `Select t.iinplt as iin,
     t.lastname, t.firstname, t.patronymic, 
