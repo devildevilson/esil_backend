@@ -160,5 +160,16 @@ module.exports = [
         }
       }
     }
-  }
+  },
+  {
+    method: 'GET',
+    path: '/getmanagerstatus',
+    handler: async function (request, reply) {
+      // const categories = await db.get_book_categories();
+      // return categories;
+      const params = request.query;
+      const managerinfo = await db.get_cafedra_manager_info(params.user_id);
+      return managerinfo;
+    },
+  },
 ];

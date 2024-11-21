@@ -8,6 +8,7 @@ const path = require('path');
 const fastifyStatic = require('fastify-static');
 
 const FILE_PATH = process.env.ROOT_PATH;
+const BONUS_FILE_PATH = process.env.ROOT_BONUSSYSTEM_PATH;
 const PHOTO_FILE_PATH = process.env.ROOT_PHOTO_PATH;
 const PDF_FILE_PATH = process.env.ROOT_PDF_PATH;
 
@@ -38,6 +39,15 @@ var storage = Multer.diskStorage({
   },
 });
 
+var storageBonus = Multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, BONUS_FILE_PATH)
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + sanitizeFilename(file.originalname));
+  },
+});
+
 var storagePhoto = Multer.diskStorage({
   destination: async function (req, file, cb) {
     cb(null, PHOTO_FILE_PATH)
@@ -61,6 +71,11 @@ var storagePDF = Multer.diskStorage({
 
 var upload = Multer({
   storage: storage,
+  limits: { fileSize: 20000000 }
+});
+
+var uploadBonus = Multer({
+  storage: storageBonus,
   limits: { fileSize: 20000000 }
 });
 
@@ -93,6 +108,19 @@ async function deleteFile(filename) {
   if (filename != '') {
     try {
       await fs.unlink(FILE_PATH + filename);
+      console.log(`File ${filename} has been deleted.`);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  else {
+    return 'failed';
+  }
+}
+async function deleteBonusFile(filename) {
+  if (filename != '') {
+    try {
+      await fs.unlink(BONUS_FILE_PATH + filename);
       console.log(`File ${filename} has been deleted.`);
     } catch (err) {
       console.log(err);
@@ -145,6 +173,38 @@ module.exports = [
         //await reply.setHeader('message',cant_upload_unique_activity);
         return { message: cant_upload_unique_activity };
       }
+    },
+  },
+  {
+    method: 'POST',
+    url: '/bonusfile',
+    preHandler: uploadBonus.single('file'),
+    handler: async function (req, reply) {
+
+      // const canupload = await db.check_upload_eligibility(req.body.activity_id, req.body.user_id);
+      // const payload = req.file;
+      // console.log(payload);
+      // let cleared_filename = payload.filename;
+      // cleared_filename = cleared_filename.replace(/\s+/g, '-');
+      // if (canupload) {
+      //   const file_data = {
+      //     userid: req.body.user_id,
+      //     activityid: req.body.activity_id,
+      //     extradata1: req.body.info,
+      //     file_path: FILE_PATH + cleared_filename,
+      //     filename: cleared_filename,
+      //     upload_date: common.human_date(new Date()),
+      //   };
+      //   const file = await db.create_row("files", file_data);
+      //   //await res.code(200).send('processed');
+      //   const update = await db.update_kpi_for_user(req.body.user_id);
+      //   return { message: successful_upload };
+      // }
+      // else {
+      //   const file_storage = await deleteFile(cleared_filename);
+      //   //await reply.setHeader('message',cant_upload_unique_activity);
+      //   return { message: cant_upload_unique_activity };
+      // }
     },
   },
   {
@@ -510,7 +570,6 @@ module.exports = [
     method: 'GET',
     path: '/download/:fileid',
     handler: async function (request, reply) {
-      // incomplete !
       const filename = await db.get_filename(request.params.fileid);
       if (filename) {
         if (!filesystem.existsSync(FILE_PATH + filename)) {
@@ -528,6 +587,45 @@ module.exports = [
           default: type = 'none'; break;
         }
         const stream = filesystem.createReadStream(path.resolve(FILE_PATH + filename));
+        reply.send(stream).type(type);
+        return reply;
+      }
+      else {
+        return 'file not found';
+      }
+    },
+    schema: {
+      params: {
+        type: "object",
+        required: ["fileid"],
+        properties: {
+          filename: { type: "number" }
+        }
+      },
+    }
+  },
+  {
+    method: 'GET',
+    path: '/downloadbonusfile/:fileid',
+    handler: async function (request, reply) {
+      const filename = await db.get_filename(request.params.fileid);
+      if (filename) {
+        if (!filesystem.existsSync(BONUS_FILE_PATH + filename)) {
+          reply.code(404).send({ error: 'File not found' });
+          return;
+        }
+        const filename_parts = filename.split('.')
+        let type;
+        switch (filename_parts[filename_parts.length - 1]) {
+          case '.jpg': type = 'image/jpeg'; break;
+          case '.png': type = 'image/png'; break;
+          case '.jpeg': type = 'image/jpeg'; break;
+          case '.pdf': type = 'application.pdf'; break;
+          case '.doc': type = 'application/msword'; break;
+          case '.docx': type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
+          default: type = 'none'; break;
+        }
+        const stream = filesystem.createReadStream(path.resolve(BONUS_FILE_PATH + filename));
         reply.send(stream).type(type);
         return reply;
       }

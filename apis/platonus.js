@@ -395,7 +395,35 @@ const db = {
     const [ res ] = await query_f(query_str);
     return res;
   },
-
+  generate_dashboard_data: async ()=> {
+    const query_str = `
+    SELECT 
+    SUM(CASE WHEN maternity_leave = 0 THEN 1 ELSE 0 END) AS tutorcount,
+    SUM(CASE WHEN maternity_leave = 1 THEN 1 ELSE 0 END) AS tutors_maternity_leave_count,
+    SUM(CASE WHEN citizenshipID != 113 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutors_foreign,
+    SUM(CASE WHEN c.FacultyID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_faculty_applied_science,
+    SUM(CASE WHEN c.FacultyID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_faculty_business_and_management,
+    SUM(CASE WHEN ScientificDegreeID = 1 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_blank,
+    SUM(CASE WHEN ScientificDegreeID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_candidate_of_science,
+    SUM(CASE WHEN ScientificDegreeID = 3 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_doctor_of_science,
+    SUM(CASE WHEN ScientificDegreeID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_master,
+    SUM(CASE WHEN ScientificDegreeID = 5 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_phd,
+    SUM(CASE WHEN AcademicStatusID = 1 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_blank,
+    SUM(CASE WHEN AcademicStatusID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_docent,
+    SUM(CASE WHEN AcademicStatusID = 3 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_professor,
+    SUM(CASE WHEN AcademicStatusID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_associate_professor,
+    SUM(CASE WHEN AcademicStatusID = 5 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_professor_new_qualification
+FROM 
+    tutors t
+LEFT JOIN 
+    cafedras c ON t.CafedraID = c.cafedraID
+WHERE 
+    deleted = 0 
+    AND t.CafedraID != 0;
+    `;
+    const [res] = await query_f(query_str);
+    return res[0];
+  },
   get_relevant_specializations: async (str_arr)=> {
     const query_str = `
       SELECT DISTINCT 

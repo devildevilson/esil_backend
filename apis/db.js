@@ -306,6 +306,11 @@ const db = {
     const [res] = await query_f(query_str);
     return res[0];
   },
+  get_cafedra_manager_info: async (user_id) => {
+    const query_str = `SELECT cafedraid from cafedra_manager_assignment cma join users u on u.id=cma.userid where u.id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? 0:res[0].cafedraid;
+  },  
   get_filename: async (file_id) => {
     const query_str = `SELECT filename from files where id=${file_id};`;
     const [res] = await query_f(query_str);
@@ -328,7 +333,73 @@ const db = {
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
     join kpi_scores ks on u.id = ks.userid
-    where ks.cafedra = ${cafedraid} order by ks.score desc;`;
+    where ks.cafedra = ${cafedraid} and u.suspended=0 order by ks.score desc;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_tutor_bonus_data_by_user_id: async (id) => {
+    const query_str = `SELECT 
+    cbg.userid,
+    cbg.auditorium_percentage AS auditorium_percentage_fileid,
+    bf1.filename AS auditorium_percentage_filename,
+    cbg.umkd AS umkd_fileid,
+    bf2.filename AS umkd_filename,
+    cbg.course_development AS course_development_fileid,
+    bf3.filename AS course_development_filename,
+    cbg.dot_content AS dot_content_fileid,
+    bf4.filename AS dot_content_filename,
+    cbg.certificates AS certificates_fileid,
+    bf5.filename AS certificates_filename,
+    cbg.science_event AS science_event_fileid,
+    bf6.filename AS science_event_filename,
+    cbg.is_adviser AS is_adviser_fileid,
+    bf7.filename AS is_adviser_filename,
+    cbg.disciplinary_event AS disciplinary_event_fileid,
+    bf8.filename AS disciplinary_event_filename,
+    cbg.employer_cooperation AS employer_cooperation_fileid,
+    bf9.filename AS employer_cooperation_filename,
+    cbg.proforientation AS proforientation_fileid,
+    bf10.filename AS proforientation_filename,
+    cbg.commission_participation AS commission_participation_fileid,
+    bf11.filename AS commission_participation_filename,
+    cbg.task_completion AS task_completion_fileid,
+    bf12.filename AS task_completion_filename
+FROM 
+    cafedra_bonus_general cbg
+LEFT JOIN bonussystem_files bf1 ON cbg.auditorium_percentage = bf1.id
+LEFT JOIN bonussystem_files bf2 ON cbg.umkd = bf2.id
+LEFT JOIN bonussystem_files bf3 ON cbg.course_development = bf3.id
+LEFT JOIN bonussystem_files bf4 ON cbg.dot_content = bf4.id
+LEFT JOIN bonussystem_files bf5 ON cbg.certificates = bf5.id
+LEFT JOIN bonussystem_files bf6 ON cbg.science_event = bf6.id
+LEFT JOIN bonussystem_files bf7 ON cbg.is_adviser = bf7.id
+LEFT JOIN bonussystem_files bf8 ON cbg.disciplinary_event = bf8.id
+LEFT JOIN bonussystem_files bf9 ON cbg.employer_cooperation = bf9.id
+LEFT JOIN bonussystem_files bf10 ON cbg.proforientation = bf10.id
+LEFT JOIN bonussystem_files bf11 ON cbg.commission_participation = bf11.id
+LEFT JOIN bonussystem_files bf12 ON cbg.task_completion = bf12.id
+WHERE 
+    cbg.userid = ${id};`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res : undefined;
+  },
+  get_dashboard_data: async() => {
+    const query_str=`SELECT 
+    (SELECT COUNT(id) FROM librarybooks WHERE DeletedUndeleted = 'true') AS 'librarybook_count',
+    (SELECT COUNT(id) FROM ebooks WHERE DeletedUndeleted = 'true') AS 'ebook_count',
+    (SELECT COUNT(id) FROM dormrequests WHERE approved = 1) AS 'student_dorm_count',
+    (SELECT COUNT(id) FROM cert_records WHERE created BETWEEN '2023-09-01 00:00:00' AND '2024-06-30 23:59:59') AS '2023-2024_certif_count',
+    (SELECT COUNT(id) FROM cert_records WHERE created BETWEEN '2024-09-01 00:00:00' AND CURRENT_TIMESTAMP()) AS '2024-actual_certif_count',
+    (SELECT COUNT(id) FROM files) AS 'kpi_file_count',
+    (SELECT COUNT(id) FROM photos) AS 'faceid_photo_count';`;
+    const [res] = await query_f(query_str);
+    return res[0];
+  },
+  get_tutors_by_cafedra_id_for_manager: async (cafedraid) => {
+    const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ast.nameru as 'academicstatus' from users u
+    join kpi_scores ks on u.id = ks.userid
+    join academicstatus ast on ks.academicstatusid = ast.id
+    where ks.cafedra = ${cafedraid} and u.suspended=0 order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
