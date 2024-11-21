@@ -9,25 +9,18 @@ const successful_upload = "";
 module.exports = [
   {
     method: 'GET',
-    path: '/generate',
+    path: '/generate/cloud',
     handler: async function (request, reply) {
-        let data = {};
-        const plt_data = await plt.generate_dashboard_data();
         const cloud_data = await db.get_dashboard_data();
-        Object.assign(data,plt_data,cloud_data);
-        
-        return data;
-    //  const params = request.query;
-    //  const userid = params.userid;
-    //  const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
-    //  if(!tutordata) {
-    //    const empty_data = {
-    //      userid: userid,
-    //    };
-    //    await db.create_row("cafedra_bonus_general", empty_data);
-    //    return await db.get_tutor_bonus_data_by_user_id(userid);
-    //  }
-    //  return tutordata;
+        return cloud_data;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/generate/platonus',
+    handler: async function (request, reply) {
+        const plt_data = await plt.generate_dashboard_data();
+        return plt_data;
     },
   },
 ];

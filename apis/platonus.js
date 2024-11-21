@@ -4,11 +4,11 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 
 const connection_config = {
-  host     : process.env.PLT_DATABASE_HOST,
-  port     : process.env.PLT_DATABASE_PORT,
-  user     : process.env.PLT_DATABASE_USER,
-  password : process.env.PLT_DATABASE_PASSWORD,
-  database : process.env.PLT_DATABASE_NAME,
+  host: process.env.PLT_DATABASE_HOST,
+  port: process.env.PLT_DATABASE_PORT,
+  user: process.env.PLT_DATABASE_USER,
+  password: process.env.PLT_DATABASE_PASSWORD,
+  database: process.env.PLT_DATABASE_NAME,
   connectionLimit: 10,
   connectTimeout: 100000,
 };
@@ -26,8 +26,8 @@ const transaction_f = async (callback) => {
   return out;
 };
 
-const last_insert_id_f = async (con) => { const [ [ { id } ] ] = await con.query("SELECT LAST_INSERT_ID() AS id"); return id; }
-const row_count_f = async (con) => { const [ [ { count } ] ] = await con.query("SELECT ROW_COUNT() AS count"); return count; }
+const last_insert_id_f = async (con) => { const [[{ id }]] = await con.query("SELECT LAST_INSERT_ID() AS id"); return id; }
+const row_count_f = async (con) => { const [[{ count }]] = await con.query("SELECT ROW_COUNT() AS count"); return count; }
 
 const db = {
   close: async () => {
@@ -69,7 +69,7 @@ const db = {
       WHERE StudentID = ${student_id} AND s.isStudent = 1;
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   get_student_data_by_qr: async (student_id) => {
@@ -92,10 +92,10 @@ const db = {
   LEFT JOIN studylanguages sl ON sl.Id = s.StudyLanguageID
   WHERE s.StudentID = ${student_id};
     `;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
-  get_employees_for_hr: async() =>{
+  get_employees_for_hr: async () => {
     const query_str = `Select t.iinplt as iin,
     t.lastname, t.firstname, t.patronymic, 
     t.icnumber,
@@ -112,7 +112,7 @@ const db = {
     join workstatus ws on t.work_status = ws.id
     left JOIN cafedras c on c.cafedraID = t.CafedraID
     where t.deleted = 0;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
   find_student_data_for_application: async (student_id) => {
@@ -168,7 +168,7 @@ const db = {
       WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_application_kz: async (student_id) => {
@@ -224,7 +224,7 @@ const db = {
     WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_contract: async (student_id) => {
@@ -249,7 +249,7 @@ const db = {
       WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_contract_kz: async (student_id) => {
@@ -274,7 +274,7 @@ const db = {
       WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_title: async (student_id) => {
@@ -298,7 +298,7 @@ const db = {
   WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_title_kz: async (student_id) => {
@@ -322,7 +322,7 @@ const db = {
   WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
   find_student_data_for_inventory: async (student_id) => {
@@ -345,7 +345,7 @@ const db = {
       WHERE s.StudentID = ${student_id};
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res[0];
   },
 
@@ -368,7 +368,7 @@ const db = {
       WHERE s.StudentID IN (${str_arr});
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
   get_student_data_by_iin_arr: async (str_arr) => {
@@ -392,39 +392,35 @@ const db = {
       WHERE s.iinplt IN (${str_arr}) and s.isstudent in (1,2);
     `;
 
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
-  generate_dashboard_data: async ()=> {
+  generate_dashboard_data: async () => {
     const query_str = `
-    SELECT 
-    SUM(CASE WHEN maternity_leave = 0 THEN 1 ELSE 0 END) AS tutorcount,
-    SUM(CASE WHEN maternity_leave = 1 THEN 1 ELSE 0 END) AS tutors_maternity_leave_count,
-    SUM(CASE WHEN citizenshipID != 113 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutors_foreign,
-    SUM(CASE WHEN c.FacultyID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_faculty_applied_science,
-    SUM(CASE WHEN c.FacultyID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_faculty_business_and_management,
-    SUM(CASE WHEN ScientificDegreeID = 1 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_blank,
-    SUM(CASE WHEN ScientificDegreeID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_candidate_of_science,
-    SUM(CASE WHEN ScientificDegreeID = 3 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_doctor_of_science,
-    SUM(CASE WHEN ScientificDegreeID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_master,
-    SUM(CASE WHEN ScientificDegreeID = 5 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_scientific_degree_phd,
-    SUM(CASE WHEN AcademicStatusID = 1 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_blank,
-    SUM(CASE WHEN AcademicStatusID = 2 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_docent,
-    SUM(CASE WHEN AcademicStatusID = 3 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_professor,
-    SUM(CASE WHEN AcademicStatusID = 4 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_associate_professor,
-    SUM(CASE WHEN AcademicStatusID = 5 AND maternity_leave = 0 THEN 1 ELSE 0 END) AS tutor_academic_status_professor_new_qualification
-FROM 
-    tutors t
-LEFT JOIN 
-    cafedras c ON t.CafedraID = c.cafedraID
-WHERE 
-    deleted = 0 
-    AND t.CafedraID != 0;
+    select concat(t.lastname,' ',t.firstname,' ',t.patronymic) as 'fio',
+  s.NAMERU as 'gender',
+  sd.NAMERU as 'scientificdegree',
+  ast.nameru as 'academicstatus',
+  c.cafedraNameRU as 'cafedra',
+  f.facultyNameRU as 'faculty',
+  ws.NameRU as 'workstatus',
+  cc.nameru as 'citizenship',
+  t.maternity_leave
+from tutors t
+left join scientificdegree sd on t.ScientificDegreeID = sd.id
+left join academicstatus ast on t.AcademicStatusID = ast.id
+left join sexes s on t.SexID = s.ID
+left join cafedras c on t.CafedraID = c.cafedraID
+left join faculties f on f.FacultyID = c.FacultyID
+left join workstatus ws on t.work_status = ws.id
+left join center_countries cc on t.citizenshipID = cc.id
+where t.deleted = 0
+and t.CafedraID != 0;
     `;
     const [res] = await query_f(query_str);
-    return res[0];
+    return res;
   },
-  get_relevant_specializations: async (str_arr)=> {
+  get_relevant_specializations: async (str_arr) => {
     const query_str = `
       SELECT DISTINCT 
         s2.nameru AS specialization
@@ -435,7 +431,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  get_student_data_for_library: async(iin) =>{
+  get_student_data_for_library: async (iin) => {
     const query_str = `
     SELECT 
         s.StudentID AS plt_id,
@@ -458,7 +454,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  get_tutor_data_for_library: async(iin) =>{
+  get_tutor_data_for_library: async (iin) => {
     const query_str = `
     SELECT 
         t.tutorid AS plt_id,
@@ -479,7 +475,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  get_relevant_studyforms: async (str_arr, con) =>{
+  get_relevant_studyforms: async (str_arr, con) => {
     const query_str = `
     SELECT DISTINCT
       sf.NameRu AS study_form
@@ -501,13 +497,13 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  find_student_iin_by_fio: async (lastname,firstname,patronymic) => {
+  find_student_iin_by_fio: async (lastname, firstname, patronymic) => {
     let query_str;
     query_str = `select iinplt as iin from students s
     WHERE s.lastname='${lastname}' and s.firstname='${firstname}' and s.patronymic='${patronymic}';`
-    if(patronymic==''||patronymic==undefined) query_str = `select iinplt as iin from students s
+    if (patronymic == '' || patronymic == undefined) query_str = `select iinplt as iin from students s
     WHERE s.lastname='${lastname}' and s.firstname='${firstname}';`
-    const [ res ] = await query_f(query_str);  
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0].iin : undefined;
   },
 
@@ -517,26 +513,26 @@ WHERE
     JOIN tutor_cafedra tc ON t.TutorID = tc.tutorID
     JOIN cafedras c ON tc.cafedraid = c.cafedraID
     WHERE t.deleted = 0 and t.iinplt=${iin};`
-    const [ res ] = await query_f(query_str);  
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   get_tutor_academic_degree_by_iin: async (iin) => {
     const query_str = `SELECT AcademicStatusID FROM tutors t 
     WHERE t.deleted = 0 and t.iinplt=${iin};`
-    const [ res ] = await query_f(query_str);  
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   find_applicant_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 2;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  form_admission_stats: async () =>{
+  form_admission_stats: async () => {
     const d = new Date();
     let current_year = d.getFullYear();
     const query_str = `SELECT 
@@ -568,10 +564,10 @@ WHERE
     isStudent = 2
 GROUP BY 
     s.StudyFormID, sf.nameru;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
-  form_admission_stats_main: async() =>{
+  form_admission_stats_main: async () => {
     const d = new Date();
     let current_year = d.getFullYear();
     const query_str = `SELECT 
@@ -629,33 +625,33 @@ GROUP BY
     sp.nameru
 ORDER BY 
     sp.nameru;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res;
   },
   find_tutor_by_iin: async (inn) => {
     const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1 AND cafedraid != 0;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
   find_employee_by_iin: async (inn) => {
     const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1 AND cafedraid = 0;`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  get_h_index: async(inn) =>{
+  get_h_index: async (inn) => {
     const query_str = `select hi.h_index_scopus as hscopus, hi.h_index_wos as hwos from hirsch_index hi
     join tutors t on t.TutorID = hi.tutorID
     where t.iinplt=${inn}`;
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  get_pub_count_by_iin_and_edition_index: async (inn,edition_index_db) =>{
+  get_pub_count_by_iin_and_edition_index: async (inn, edition_index_db) => {
     const max_year_gap = 5;
     const max_year_gap_base = 1;
     const today = new Date();
     const current_year = today.getFullYear()
-    let query_str='';
-    if(edition_index_db=='monograph'){
+    let query_str = '';
+    if (edition_index_db == 'monograph') {
       query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
       join tutors t on t.tutorid=ip.tutorID
       join tutorpubs tp on ip.pubID = tp.pubID
@@ -663,7 +659,7 @@ ORDER BY
       join publication_level pl ON tp.publication_level = pl.id
       where t.iinplt = ${inn} 
       and pt.nameru='Научные монографии'
-      and tp.edition_year>=${current_year-max_year_gap}
+      and tp.edition_year>=${current_year - max_year_gap}
       UNION ALL
       select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
       join tutors t on t.tutorid=tp.tutorID
@@ -671,9 +667,9 @@ ORDER BY
       join publication_level pl ON tp.publication_level = pl.id
       where t.iinplt = ${inn}
       and pt.nameru='Научные монографии'
-      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
+      and tp.edition_year>=${current_year - max_year_gap}) as tem;`;
     }
-    if(edition_index_db=='international'){
+    if (edition_index_db == 'international') {
       query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
       join tutors t on t.tutorid=ip.tutorID
       join tutorpubs tp on ip.pubID = tp.pubID
@@ -682,7 +678,7 @@ ORDER BY
       where t.iinplt = ${inn} 
       and pt.nameru = 'Научные статьи'
       and pl.nameru = 'Международного уровня'
-      and tp.edition_year>=${current_year-max_year_gap_base}
+      and tp.edition_year>=${current_year - max_year_gap_base}
       UNION ALL
       select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
       join tutors t on t.tutorid=tp.tutorID
@@ -691,9 +687,9 @@ ORDER BY
       where t.iinplt = ${inn}
       and pt.nameru = 'Научные статьи'
       and pl.nameru = 'Международного уровня'
-      and tp.edition_year>=${current_year-max_year_gap_base}) as tem;`;
+      and tp.edition_year>=${current_year - max_year_gap_base}) as tem;`;
     }
-    if(edition_index_db=='Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)'){
+    if (edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
       query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
       join tutors t on t.tutorid=ip.tutorID
       join tutorpubs tp on ip.pubID = tp.pubID
@@ -702,7 +698,7 @@ ORDER BY
       where t.iinplt = ${inn} 
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}
+      and tp.edition_year>=${current_year - max_year_gap}
       UNION ALL
       select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
       join tutors t on t.tutorid=tp.tutorID
@@ -711,9 +707,9 @@ ORDER BY
       where t.iinplt = ${inn} 
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
+      and tp.edition_year>=${current_year - max_year_gap}) as tem;`;
     }
-    if(edition_index_db=='Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)'){
+    if (edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
       query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
       join tutors t on t.tutorid=ip.tutorID
       join tutorpubs tp on ip.pubID = tp.pubID
@@ -722,7 +718,7 @@ ORDER BY
       where t.iinplt = ${inn} 
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}
+      and tp.edition_year>=${current_year - max_year_gap}
       UNION ALL
       select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
       join tutors t on t.tutorid=tp.tutorID
@@ -731,9 +727,9 @@ ORDER BY
       where t.iinplt = ${inn} 
       and pl.nameru='Республиканского уровня'
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
+      and tp.edition_year>=${current_year - max_year_gap}) as tem;`;
     }
-    if(edition_index_db=='Scopus' || edition_index_db=='Web of Science'){
+    if (edition_index_db == 'Scopus' || edition_index_db == 'Web of Science') {
       query_str = `select count(*) as 'pubcount' from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
       join tutors t on t.tutorid=ip.tutorID
       join tutorpubs tp on ip.pubID = tp.pubID
@@ -741,7 +737,7 @@ ORDER BY
       join publication_level pl ON tp.publication_level = pl.id
       where t.iinplt = ${inn}  
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}
+      and tp.edition_year>=${current_year - max_year_gap}
       UNION ALL
       select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
       join tutors t on t.tutorid=tp.tutorID
@@ -749,12 +745,12 @@ ORDER BY
       join publication_level pl ON tp.publication_level = pl.id
       where t.iinplt = ${inn} 
       and tp.edition_index_db='${edition_index_db}'
-      and tp.edition_year>=${current_year-max_year_gap}) as tem;`;
+      and tp.edition_year>=${current_year - max_year_gap}) as tem;`;
     }
-    const [ res ] = await query_f(query_str);
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
   },
-  get_nirs_count_by_iin: async (inn) =>{
+  get_nirs_count_by_iin: async (inn) => {
     const max_year_gap_nir = 3;
     const today = new Date();
     const current_year = today.getFullYear()
@@ -767,11 +763,11 @@ ORDER BY
     join tutors t on n.personID=t.TutorID
     WHERE t.iinplt=${inn}
     and n.manager not like '%${res_lastname[0].lastname}%'
-    and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
-    const [ res ] = await query_f(query_str);
+    and n.startdate>='${current_year - max_year_gap_nir}-01-01';`;
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
-  }, 
-  get_nirs_count_manager_by_iin: async (inn) =>{
+  },
+  get_nirs_count_manager_by_iin: async (inn) => {
     const max_year_gap_nir = 3;
     const today = new Date();
     const current_year = today.getFullYear()
@@ -784,11 +780,11 @@ ORDER BY
     join tutors t on n.personID=t.TutorID
     WHERE t.iinplt=${inn}
     and n.manager like '%${res_lastname[0].lastname}%'
-    and n.startdate>='${current_year-max_year_gap_nir}-01-01';`;
-    const [ res ] = await query_f(query_str);
+    and n.startdate>='${current_year - max_year_gap_nir}-01-01';`;
+    const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : 0;
   },
-  get_tia_count_by_iin: async (inn) =>{
+  get_tia_count_by_iin: async (inn) => {
     let query_str = `
     SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
     join tutors t on tia.tutorid = t.tutorid
@@ -797,7 +793,7 @@ ORDER BY
     let [res_inv] = await query_f(query_str);
     return res_inv.length !== 0 ? res_inv[0] : 0;
   },
-  get_kpi_score_by_iin_base: async(inn) =>{
+  get_kpi_score_by_iin_base: async (inn) => {
     const max_year_gap_KKSON = 5;
     const max_year_gap_EsU = 1;
     const today = new Date();
@@ -810,7 +806,7 @@ ORDER BY
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_KKSON})
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year - max_year_gap_KKSON})
     and pl.nameru = 'Республиканского уровня'
     and tp.edition_index_db = 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)';
     `;
@@ -819,7 +815,7 @@ ORDER BY
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_EsU})
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year - max_year_gap_EsU})
     and pt.nameru = 'Научные статьи'
     and pl.nameru = 'Международного уровня';
     `;
@@ -831,17 +827,17 @@ ORDER BY
         KPICounter += 7;
         // get number from db
         //console.log(`republican publication (KKSON), +7`,KPICounter);
-      }             
+      }
     }
     if (res_pub_esu.length > 0) {
       for (let i = 0; i < res_pub_esu.length; i++) {
         KPICounter += 3;
         //console.log(`international publication, +3`,KPICounter);
-      }             
+      }
     }
     return KPICounter;
   },
-  get_kpi_score_by_iin_advanced: async (inn) =>{
+  get_kpi_score_by_iin_advanced: async (inn) => {
     const max_year_gap_pub = 5;
     const max_year_gap_nir = 3;
     const today = new Date();
@@ -854,7 +850,7 @@ ORDER BY
     JOIN tutors t ON t.TutorID = tp.TutorID
     JOIN publication_type pt ON tp.publication_type = pt.id
     JOIN publication_level pl ON tp.publication_level = pl.id
-    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year-max_year_gap_pub});
+    WHERE tp.tutorid = ${tutor_id} and tp.edition_year>=(${current_year - max_year_gap_pub});
     `;
     let [res_pub] = await query_f(query_str);
     let KPICounter = 0;
@@ -862,8 +858,8 @@ ORDER BY
       for (let i = 0; i < res_pub.length; i++) {
         if (res_pub[i].pubtype == "Научные статьи") {
           if (res_pub[i].edition_index_db == "Scopus" || res_pub[i].edition_index_db == "Web of Science") {
-              KPICounter += 10;
-              //console.log('scopus counted, +10', KPICounter);
+            KPICounter += 10;
+            //console.log('scopus counted, +10', KPICounter);
           }
         }
         if (res_pub[i].pubtype == "Научные монографии") {
@@ -874,15 +870,15 @@ ORDER BY
             //console.log('..it was also a scopus/wos, +10',KPICounter);
           }
         }
-      }             
+      }
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM tutor_inventive_activity tia
     WHERE tia.tutorid = ${tutor_id};
     `;
     let [res_inv] = await query_f(query_str);
-    if(res_inv.length>0){
-      KPICounter =KPICounter + parseInt(res_inv[0]["total"])*5;
+    if (res_inv.length > 0) {
+      KPICounter = KPICounter + parseInt(res_inv[0]["total"]) * 5;
       //console.log(`tia counted, +${parseInt(res_inv[0]["total"])*5}`,KPICounter);
     }
     query_str = `
@@ -894,22 +890,22 @@ ORDER BY
     SELECT COUNT(*) as 'total' FROM nirs n
       WHERE n.personid = ${tutor_id}
       and n.manager like '%${res_lastname.lastname}%'
-      and n.startdate>='${current_year-max_year_gap_nir}-01-01';
+      and n.startdate>='${current_year - max_year_gap_nir}-01-01';
     `;
     let [res_nirs] = await query_f(query_str);
-    if(res_nirs.length>0){
-      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*40;
+    if (res_nirs.length > 0) {
+      KPICounter = KPICounter + parseInt(res_nirs[0]["total"]) * 40;
       //console.log(`nirs manager counted, +${parseInt(res_nirs[0]["total"])*40}`,KPICounter);
     }
     query_str = `
     SELECT COUNT(*) as 'total' FROM nirs n
       WHERE n.personid = ${tutor_id}
       and n.manager not like '%${res_lastname.lastname}%'
-      and n.startdate>'${current_year-max_year_gap_nir}-01-01';
+      and n.startdate>'${current_year - max_year_gap_nir}-01-01';
     `;
     [res_nirs] = await query_f(query_str);
-    if(res_nirs.length>0){
-      KPICounter =KPICounter + parseInt(res_nirs[0]["total"])*20;
+    if (res_nirs.length > 0) {
+      KPICounter = KPICounter + parseInt(res_nirs[0]["total"]) * 20;
       //console.log(`nirs NOT manager counted, +${parseInt(res_nirs[0]["total"])*20}`,KPICounter);
     }
     return KPICounter;
