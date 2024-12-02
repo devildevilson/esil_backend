@@ -19,6 +19,16 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getbonuspoints',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const points = await db.get_bonus_points_by_id(userid);
+      return points;
+    },
+  },
+  {
+    method: 'GET',
     path: '/gettutordata',
     handler: async function (request, reply) {
       const params = request.query;

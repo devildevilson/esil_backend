@@ -180,38 +180,31 @@ module.exports = [
     url: '/bonusfile',
     preHandler: uploadBonus.single('file'),
     handler: async function (req, reply) {
-
-      // const canupload = await db.check_upload_eligibility(req.body.activity_id, req.body.user_id);
-      // const payload = req.file;
-      // console.log(payload);
-      // let cleared_filename = payload.filename;
-      // cleared_filename = cleared_filename.replace(/\s+/g, '-');
-      // if (canupload) {
-      //   const file_data = {
-      //     userid: req.body.user_id,
-      //     activityid: req.body.activity_id,
-      //     extradata1: req.body.info,
-      //     file_path: FILE_PATH + cleared_filename,
-      //     filename: cleared_filename,
-      //     upload_date: common.human_date(new Date()),
-      //   };
-      //   const file = await db.create_row("files", file_data);
-      //   //await res.code(200).send('processed');
-      //   const update = await db.update_kpi_for_user(req.body.user_id);
-      //   return { message: successful_upload };
-      // }
-      // else {
-      //   const file_storage = await deleteFile(cleared_filename);
-      //   //await reply.setHeader('message',cant_upload_unique_activity);
-      //   return { message: cant_upload_unique_activity };
-      // }
+      const payload = req.file;
+      //console.log(payload);
+      let cleared_filename = payload.filename;
+      const for_userid = req.body.for_user_id;
+      const by_userid = req.body.by_user_id;
+      const filetype = req.body.filetype;
+      cleared_filename = cleared_filename.replace(/\s+/g, '-');
+      const file_data = {
+        filename: cleared_filename,
+        filepath: BONUS_FILE_PATH + cleared_filename, 
+        upload_date: common.human_date(new Date()),
+        uploaded_by: by_userid,
+      };
+      console.log(file_data);
+      await db.create_row("bonussystem_files", file_data);
+      const fileid = await db.get_fileid_by_filename(cleared_filename);
+      await db.update_bonussystem_data(for_userid, filetype, fileid);
+      return { message: successful_upload };
     },
   },
   {
     method: 'POST',
     url: '/upload/pdf',
     preHandler: uploadPDF.single('file'),
-    handler: async function (req, reply) { 
+    handler: async function (req, reply) {
       //req.body.user_id
       const payload = req.body;
       let filename = req.file.filename;
@@ -273,7 +266,7 @@ module.exports = [
     handler: async function (request, reply) {
       let user = await db.find_user_by_id(request.params.user_id)
       const data = await db.check_photo_upload_eligibility(user.iin);
-      if(data) return 'true';
+      if (data) return 'true';
       return 'false';
     },
     schema: {
@@ -449,7 +442,7 @@ module.exports = [
       const roomnumber = request.query.dormRoomNumber;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       let messageEdited = 'Заявка принята.';
-      if (message!='') messageEdited = `Заявка принята. Сообщение: ${message}`;
+      if (message != '') messageEdited = `Заявка принята. Сообщение: ${message}`;
       if (requestQuery) {
         await db.approve_dorm_request_by_iin(iin, dormtype, message, roomnumber, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
@@ -491,7 +484,7 @@ module.exports = [
       const message = request.query.dormMessage;
       const requestQuery = await db.get_dorm_request_by_iin(iin);
       let messageEdited = 'Заявка отклонена.';
-      if (message!='') messageEdited = `Заявка отклонена по причине: "${message}"`;
+      if (message != '') messageEdited = `Заявка отклонена по причине: "${message}"`;
       if (requestQuery) {
         await db.deny_dorm_request_by_iin(iin, message, common.human_date(new Date()));
         const userid = await db.get_user_id_by_iin(iin);
@@ -608,7 +601,7 @@ module.exports = [
     method: 'GET',
     path: '/downloadbonusfile/:fileid',
     handler: async function (request, reply) {
-      const filename = await db.get_filename(request.params.fileid);
+      const filename = await db.get_filename_bonus(request.params.fileid);
       if (filename) {
         if (!filesystem.existsSync(BONUS_FILE_PATH + filename)) {
           reply.code(404).send({ error: 'File not found' });

@@ -454,7 +454,7 @@ module.exports = [
     path: '/editebook',
     handler: async function (request, reply) {
       const params = request.query;
-      await db.edit_e_book(params.id, params.Name, params.Author, params.Pages, params.LLC, params.Language, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.TypeOfBook, params.UDC);
+      await db.edit_e_book(params.id, params.Name, params.Author, params.Pages, params.ISBN, params.LLC, params.Language, params.PublishedCountryCity, params.PublishedTime, params.PublishingHouse, params.RLibraryCategoryRLibraryBook, params.UDC);
       return { message: successful_update };
     },
   },

@@ -18,4 +18,14 @@ module.exports = [
       return studentinfo;
     },
   },
+  {
+    method: 'GET',
+    path: '/getuserrole',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const user_id = params.user_id;
+      const user = await db.get_user_role(user_id);
+      return user;
+    },
+  },
 ];

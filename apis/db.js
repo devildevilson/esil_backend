@@ -300,11 +300,46 @@ const db = {
       return 'something went wrong: ', err;
     }
   },
-
+  get_user_role: async (user_id, role) => {
+    const query_str = `SELECT role FROM roles WHERE user_id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? undefined:res[0].role;
+  },
   find_user_role: async (user_id, role) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role = '${role}';`;
     const [res] = await query_f(query_str);
     return res[0];
+  },
+  get_fileid_by_filename: async (filename) => {
+    const query_str = `SELECT id from bonussystem_files where filename='${filename}';`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? undefined:res[0].id;
+  },
+  get_bonus_points_by_id: async (userid) => {
+    const query_str = `SELECT 
+    (
+        (CASE WHEN auditorium_percentage != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN umkd != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN course_development != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN dot_content != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN certificates != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN science_event != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN is_adviser != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN disciplinary_event != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN employer_cooperation != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN proforientation != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN commission_participation != 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN task_completion != 0 THEN 1 ELSE 0 END)
+    ) AS points
+FROM cafedra_bonus_general
+WHERE userid = ${userid};`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? undefined:res[0].points;
+  },
+  update_bonussystem_data: async(userid, filetype, fileid) => {
+    const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid};`;
+    const [res] = await query_f(query_str);
+    return res;
   },
   get_cafedra_manager_info: async (user_id) => {
     const query_str = `SELECT cafedraid from cafedra_manager_assignment cma join users u on u.id=cma.userid where u.id = ${user_id};`;
@@ -313,6 +348,11 @@ const db = {
   },  
   get_filename: async (file_id) => {
     const query_str = `SELECT filename from files where id=${file_id};`;
+    const [res] = await query_f(query_str);
+    return res[0].filename;
+  },
+  get_filename_bonus: async (file_id) => {
+    const query_str = `SELECT filename from bonussystem_files where id=${file_id};`;
     const [res] = await query_f(query_str);
     return res[0].filename;
   },
@@ -515,18 +555,18 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  edit_e_book: async (id, Name, Author, Pages, LLC, Language, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook, TypeOfBook, UDC) => {
-    const query_str = `update librarybooks 
+  edit_e_book: async (id, Name, Author, Pages, LLC, ISBN, Language, PublishedCountryCity, PublishedTime, PublishingHouse, RLibraryCategoryRLibraryBook, UDC) => {
+    const query_str = `update ebooks 
       set namerubook='${Name}',
       Author='${Author}',
       Pages='${Pages}', 
       LLC='${LLC}',
+      ISBN='${ISBN}',
       Language='${Language}',
       PublishedCountryCity='${PublishedCountryCity}',
       PublishedTime='${PublishedTime}',
       PublishingHouse='${PublishingHouse}',
       RLibraryCategoryRLibraryBook=${RLibraryCategoryRLibraryBook},
-      TypeOfBook='${TypeOfBook}', 
       UDC='${UDC}' 
       where id=${id};`;
     const [res] = await query_f(query_str);
