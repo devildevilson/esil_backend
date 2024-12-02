@@ -221,7 +221,7 @@ module.exports = [
         role = 'tutor';
         if (!plt_data){
           plt_data = await plt.find_employee_by_iin(iin);
-          role = 'employee';
+          role = 'employee'; 
           if (!plt_data) return reply.notFound('ИИН не найден в базе студентов, преподавателей и сотрудников.');
         }  
       }

@@ -650,7 +650,7 @@ ORDER BY
     return res.length !== 0 ? res[0] : undefined;
   },
   find_employee_by_iin: async (inn) => {
-    const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1 AND cafedraid = 0;`;
+    const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1 AND (cafedraid = 0 OR cafedraid IS NULL);`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
