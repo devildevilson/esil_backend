@@ -475,6 +475,22 @@ and t.CafedraID != 0;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_employee_data_for_library: async (iin) => {
+    const query_str = `
+    SELECT 
+        t.tutorid AS plt_id,
+        t.lastname AS lastname,
+        t.firstname AS firstname,
+        t.patronymic AS patronymic,
+        t.mobilePhone as phone,
+        t.iinplt as iin,
+        t.deleted as status
+      FROM tutors t
+      WHERE t.iinplt = '${iin}' order by t.TutorID desc limit 1;
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_relevant_studyforms: async (str_arr, con) => {
     const query_str = `
     SELECT DISTINCT

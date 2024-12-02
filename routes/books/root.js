@@ -219,7 +219,11 @@ module.exports = [
       if (!plt_data) {
         plt_data = await plt.find_tutor_by_iin(iin);
         role = 'tutor';
-        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        if (!plt_data){
+          plt_data = await plt.find_employee_by_iin(iin);
+          role = 'employee';
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        }  
       }
       let userdata;
       switch(role){
@@ -227,6 +231,8 @@ module.exports = [
           userdata = await plt.get_student_data_for_library(iin); break;
         case 'tutor':
           userdata = await plt.get_tutor_data_for_library(iin); break;
+        case 'employee':
+          userdata = await plt.get_employee_data_for_library(iin); break;
       }
       return userdata;
     },
@@ -275,7 +281,11 @@ module.exports = [
       if (!plt_data) {
         plt_data = await plt.find_tutor_by_iin(iin);
         role = 'tutor';
-        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        if (!plt_data){
+          plt_data = await plt.find_employee_by_iin(iin);
+          role = 'employee';
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        }  
       }
       
       const user = await db.get_user_id_by_iin(iin);
@@ -320,7 +330,11 @@ module.exports = [
       if (!plt_data) {
         plt_data = await plt.find_tutor_by_iin(iin);
         role = 'tutor';
-        if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        if (!plt_data){
+          plt_data = await plt.find_employee_by_iin(iin);
+          role = 'employee';
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+        }  
       }
       
       const user = await db.get_user_id_by_iin(iin);
