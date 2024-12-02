@@ -222,7 +222,7 @@ module.exports = [
         if (!plt_data){
           plt_data = await plt.find_employee_by_iin(iin);
           role = 'employee';
-          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов, преподавателей и сотрудников.');
         }  
       }
       let userdata;
@@ -284,7 +284,7 @@ module.exports = [
         if (!plt_data){
           plt_data = await plt.find_employee_by_iin(iin);
           role = 'employee';
-          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов, преподавателей и сотрудников.');
         }  
       }
       
@@ -333,7 +333,7 @@ module.exports = [
         if (!plt_data){
           plt_data = await plt.find_employee_by_iin(iin);
           role = 'employee';
-          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов и преподавателей.');
+          if (!plt_data) return reply.notFound('ИИН не найден в базе студентов, преподавателей и сотрудников.');
         }  
       }
       
