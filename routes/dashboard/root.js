@@ -31,7 +31,6 @@ module.exports = [
       }
     }
   },
-  //ac7wDqh20dA8j
   {
     method: 'GET',
     path: '/generate/platonus/student',
