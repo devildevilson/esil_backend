@@ -395,7 +395,7 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
-  generate_dashboard_data: async () => {
+  generate_dashboard_data_tutor: async () => {
     const query_str = `
     select concat(t.lastname,' ',t.firstname,' ',t.patronymic) as 'fio',
   s.NAMERU as 'gender',
@@ -422,6 +422,12 @@ left join tutor_cafedra tc on tc.tutorID = t.TutorID
 where t.deleted = 0
 and t.CafedraID != 0
 and tc.type is not null;
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  generate_dashboard_data_student: async () => {
+    const query_str = `
     `;
     const [res] = await query_f(query_str);
     return res;
