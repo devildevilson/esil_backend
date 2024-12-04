@@ -403,7 +403,12 @@ const db = {
   ast.nameru as 'academicstatus',
   c.cafedraNameRU as 'cafedra',
   f.facultyNameRU as 'faculty',
-  ws.NameRU as 'workstatus',
+  CASE 
+        WHEN tc.type = 0 THEN 'Штатный'
+        WHEN tc.type = 1 THEN 'Внутренний совместитель'
+        WHEN tc.type = 2 THEN 'Внешний совместитель'
+        ELSE '-'
+  END AS 'workstatus',
   cc.nameru as 'citizenship',
   t.maternity_leave
 from tutors t
@@ -412,10 +417,11 @@ left join academicstatus ast on t.AcademicStatusID = ast.id
 left join sexes s on t.SexID = s.ID
 left join cafedras c on t.CafedraID = c.cafedraID
 left join faculties f on f.FacultyID = c.FacultyID
-left join workstatus ws on t.work_status = ws.id
 left join center_countries cc on t.citizenshipID = cc.id
+left join tutor_cafedra tc on tc.tutorID = t.TutorID
 where t.deleted = 0
-and t.CafedraID != 0;
+and t.CafedraID != 0
+and tc.type is not null;
     `;
     const [res] = await query_f(query_str);
     return res;
