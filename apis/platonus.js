@@ -427,22 +427,26 @@ and tc.type is not null;
     return res;
   },
   generate_dashboard_data_student: async () => {
-    const query_str = `
-    select concat(s.lastname,' ',s.firstname,' ',s.patronymic) as 'fio',
-sx.NAMERU as 'gender',
-s.CourseNumber,
-s.GPA,
-sf.nameru as 'studyform',
-sp.nameru as 'specialization',
-cc.nameru as 'citizenship',
-ck.nameru as 'registration'
-from students s
-left join sexes sx on s.SexID = sx.ID
-left join studyforms sf on sf.id = s.studyformID
-left join specializations sp on sp.id = s.specializationID
-left join center_countries cc on s.sitizenshipID = cc.id
-left join center_kato ck on ck.id = s.registration_place_cato_id
-where s.isstudent = 1;
+    const query_str = `select concat(s.lastname,' ',s.firstname,' ',s.patronymic) as 'fio',
+    sx.NAMERU as 'gender',
+    s.CourseNumber,
+    s.GPA,
+    sf.nameru as 'studyform',
+    sp.nameru as 'specialization',
+    cf.cafedraNameRU as 'cafedra',
+    f.facultyNameRU as 'faculty',
+    cc.nameru as 'citizenship',
+    ck.nameru as 'registration'
+    from students s
+    left join sexes sx on s.SexID = sx.ID
+    left join studyforms sf on sf.id = s.studyformID
+    left join specializations sp on sp.id = s.specializationID
+    JOIN profession_cafedra pc ON sp.prof_caf_id = pc.id
+    JOIN cafedras cf ON pc.cafedraID = cf.cafedraID
+    left join faculties f on cf.FacultyID = f.FacultyID
+    left join center_countries cc on s.sitizenshipID = cc.id
+    left join center_kato ck on ck.id = s.registration_place_cato_id
+    where s.isstudent = 1;
     `;
     const [res] = await query_f(query_str);
     return res;
