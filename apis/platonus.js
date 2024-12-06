@@ -432,6 +432,7 @@ and tc.type is not null;
     s.CourseNumber,
     s.GPA,
     sf.nameru as 'studyform',
+    dt.nameru as 'degreetype',
     sl.NameRU as 'studylanguage',
     CASE 
             WHEN s.grant_type = -4 THEN 'Грант'
@@ -448,6 +449,7 @@ and tc.type is not null;
     from students s
     left join sexes sx on s.SexID = sx.ID
     left join studyforms sf on sf.id = s.studyformID
+    left join degree_types dt on sf.degreeID=dt.degreeid
     left join studylanguages sl on sl.Id = s.StudyLanguageID
     LEFT JOIN student_info si on s.studentid = si.studentid
     LEFT JOIN benefits b on b.id = si.benefit_quota_id
