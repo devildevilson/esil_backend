@@ -432,6 +432,14 @@ and tc.type is not null;
     s.CourseNumber,
     s.GPA,
     sf.nameru as 'studyform',
+    sl.NameRU as 'studylanguage',
+    CASE 
+            WHEN s.grant_type = -4 THEN 'Грант'
+            WHEN s.grant_type = -7 THEN 'Платное'
+            WHEN s.grant_type = 0 THEN 'В рамках обмена'
+            ELSE ''
+      END as 'granttype',
+    COALESCE(b.nameru, 'Без квоты') as benefits,
     sp.nameru as 'specialization',
     cf.cafedraNameRU as 'cafedra',
     f.facultyNameRU as 'faculty',
@@ -440,6 +448,9 @@ and tc.type is not null;
     from students s
     left join sexes sx on s.SexID = sx.ID
     left join studyforms sf on sf.id = s.studyformID
+    left join studylanguages sl on sl.Id = s.StudyLanguageID
+    LEFT JOIN student_info si on s.studentid = si.studentid
+    LEFT JOIN benefits b on b.id = si.benefit_quota_id
     left join specializations sp on sp.id = s.specializationID
     JOIN profession_cafedra pc ON sp.prof_caf_id = pc.id
     JOIN cafedras cf ON pc.cafedraID = cf.cafedraID
