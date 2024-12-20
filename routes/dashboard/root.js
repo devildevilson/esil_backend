@@ -13,7 +13,7 @@ module.exports = [
     path: '/generate/cloud',
     handler: async function (request, reply) {
       const pass = request.query.pass;
-      if (pass===DASHBOARD_PASS) {
+      if (pass === DASHBOARD_PASS) {
         const cloud_data = await db.get_dashboard_data();
         return cloud_data;
       }
@@ -36,7 +36,7 @@ module.exports = [
     path: '/generate/platonus/student',
     handler: async function (request, reply) {
       const pass = request.query.pass;
-      if (pass===DASHBOARD_PASS) {
+      if (pass === DASHBOARD_PASS) {
         const plt_data = await plt.generate_dashboard_data_student();
         return plt_data;
       }
@@ -59,7 +59,7 @@ module.exports = [
     path: '/generate/platonus',
     handler: async function (request, reply) {
       const pass = request.query.pass;
-      if (pass===DASHBOARD_PASS) {
+      if (pass === DASHBOARD_PASS) {
         const plt_data = await plt.generate_dashboard_data_tutor();
         return plt_data;
       }

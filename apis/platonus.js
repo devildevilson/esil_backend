@@ -398,54 +398,54 @@ const db = {
   generate_dashboard_data_tutor: async () => {
     const query_str = `
     select concat(t.lastname,' ',t.firstname,' ',t.patronymic) as 'fio',
-  s.NAMERU as 'gender',
-  sd.NAMERU as 'scientificdegree',
-  ast.nameru as 'academicstatus',
-  c.cafedraNameRU as 'cafedra',
-  f.facultyNameRU as 'faculty',
-  CASE 
-        WHEN tc.type = 0 THEN 'Штатный'
-        WHEN tc.type = 1 THEN 'Внутренний совместитель'
-        WHEN tc.type = 2 THEN 'Внешний совместитель'
-        ELSE '-'
-  END AS 'workstatus',
-  cc.nameru as 'citizenship',
-  t.maternity_leave
-from tutors t
-left join scientificdegree sd on t.ScientificDegreeID = sd.id
-left join academicstatus ast on t.AcademicStatusID = ast.id
-left join sexes s on t.SexID = s.ID
-left join cafedras c on t.CafedraID = c.cafedraID
-left join faculties f on f.FacultyID = c.FacultyID
-left join center_countries cc on t.citizenshipID = cc.id
-left join tutor_cafedra tc on tc.tutorID = t.TutorID
-where t.deleted = 0
-and t.CafedraID != 0
-and tc.type is not null;
+      s.NAMERU as 'gender',
+      sd.NAMERU as 'scientificdegree',
+      ast.nameru as 'academicstatus',
+      c.cafedraNameRU as 'cafedra',
+      f.facultyNameRU as 'faculty',
+      CASE 
+          WHEN tc.type = 0 THEN 'Штатный'
+          WHEN tc.type = 1 THEN 'Внутренний совместитель'
+          WHEN tc.type = 2 THEN 'Внешний совместитель'
+          ELSE '-'
+      END AS 'workstatus',
+      cc.nameru as 'citizenship',
+      t.maternity_leave
+    from tutors t
+    left join scientificdegree sd on t.ScientificDegreeID = sd.id
+    left join academicstatus ast on t.AcademicStatusID = ast.id
+    left join sexes s on t.SexID = s.ID
+    left join cafedras c on t.CafedraID = c.cafedraID
+    left join faculties f on f.FacultyID = c.FacultyID
+    left join center_countries cc on t.citizenshipID = cc.id
+    left join tutor_cafedra tc on tc.tutorID = t.TutorID
+    where t.deleted = 0
+    and t.CafedraID != 0
+    and tc.type is not null;
     `;
     const [res] = await query_f(query_str);
     return res;
   },
   generate_dashboard_data_student: async () => {
     const query_str = `select concat(s.lastname,' ',s.firstname,' ',s.patronymic) as 'fio',
-    sx.NAMERU as 'gender',
-    s.CourseNumber,
-    s.GPA,
-    sf.nameru as 'studyform',
-    dt.nameru as 'degreetype',
-    sl.NameRU as 'studylanguage',
-    CASE 
-            WHEN s.grant_type = -4 THEN 'Грант'
-            WHEN s.grant_type = -7 THEN 'Платное'
-            WHEN s.grant_type = 0 THEN 'В рамках обмена'
-            ELSE ''
+      sx.NAMERU as 'gender',
+      s.CourseNumber,
+      s.GPA,
+      sf.nameru as 'studyform',
+      dt.nameru as 'degreetype',
+      sl.NameRU as 'studylanguage',
+      CASE 
+        WHEN s.grant_type = -4 THEN 'Грант'
+        WHEN s.grant_type = -7 THEN 'Платное'
+        WHEN s.grant_type = 0 THEN 'В рамках обмена'
+        ELSE ''
       END as 'granttype',
-    COALESCE(b.nameru, 'Без квоты') as benefits,
-    sp.nameru as 'specialization',
-    cf.cafedraNameRU as 'cafedra',
-    f.facultyNameRU as 'faculty',
-    cc.nameru as 'citizenship',
-    ck.nameru as 'registration'
+      COALESCE(b.nameru, 'Без квоты') as benefits,
+      sp.nameru as 'specialization',
+      cf.cafedraNameRU as 'cafedra',
+      f.facultyNameRU as 'faculty',
+      cc.nameru as 'citizenship',
+      ck.nameru as 'registration'
     from students s
     left join sexes sx on s.SexID = sx.ID
     left join studyforms sf on sf.id = s.studyformID

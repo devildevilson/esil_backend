@@ -318,26 +318,33 @@ const db = {
   get_bonus_points_by_id: async (userid) => {
     const query_str = `SELECT 
     (
-        (CASE WHEN auditorium_percentage != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN umkd != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN course_development != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN dot_content != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN certificates != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN science_event != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN is_adviser != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN disciplinary_event != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN employer_cooperation != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN proforientation != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN commission_participation != 0 THEN 1 ELSE 0 END) +
-        (CASE WHEN task_completion != 0 THEN 1 ELSE 0 END)
+        (CASE WHEN auditorium_percentage > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN umkd > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN course_development > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN dot_content > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN certificates > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN science_event > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN is_adviser > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN disciplinary_event > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN employer_cooperation > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN commission_participation > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN task_completion > 0 THEN 1 ELSE 0 END)
     ) AS points
 FROM cafedra_bonus_general
 WHERE userid = ${userid};`;
     const [res] = await query_f(query_str);
-    return res.length === 0 ? undefined:res[0].points;
+    const prof_query = `select proforientation_student_count as points from cafedra_bonus_general where userid=${userid};`;
+    const [prof_res] = await query_f(prof_query);
+    const prof_ceiling = prof_res[0].points < 15 ? prof_res[0].points:15
+    return res.length === 0 ? undefined:res[0].points+Math.floor(prof_ceiling/3);
   },
   update_bonussystem_data: async(userid, filetype, fileid) => {
     const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  update_bonussystem_prof_data: async(userid, filetype, fileid, proforientation) => {
+    const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid}, proforientation_student_count=${proforientation} where userid=${userid};`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -406,22 +413,77 @@ WHERE userid = ${userid};`;
     bf12.filename AS task_completion_filename
 FROM 
     cafedra_bonus_general cbg
-LEFT JOIN bonussystem_files bf1 ON cbg.auditorium_percentage = bf1.id
-LEFT JOIN bonussystem_files bf2 ON cbg.umkd = bf2.id
-LEFT JOIN bonussystem_files bf3 ON cbg.course_development = bf3.id
-LEFT JOIN bonussystem_files bf4 ON cbg.dot_content = bf4.id
-LEFT JOIN bonussystem_files bf5 ON cbg.certificates = bf5.id
-LEFT JOIN bonussystem_files bf6 ON cbg.science_event = bf6.id
-LEFT JOIN bonussystem_files bf7 ON cbg.is_adviser = bf7.id
-LEFT JOIN bonussystem_files bf8 ON cbg.disciplinary_event = bf8.id
-LEFT JOIN bonussystem_files bf9 ON cbg.employer_cooperation = bf9.id
-LEFT JOIN bonussystem_files bf10 ON cbg.proforientation = bf10.id
-LEFT JOIN bonussystem_files bf11 ON cbg.commission_participation = bf11.id
-LEFT JOIN bonussystem_files bf12 ON cbg.task_completion = bf12.id
+LEFT JOIN bonussystem_files bf1 ON ABS(cbg.auditorium_percentage) = bf1.id
+LEFT JOIN bonussystem_files bf2 ON ABS(cbg.umkd) = bf2.id
+LEFT JOIN bonussystem_files bf3 ON ABS(cbg.course_development) = bf3.id
+LEFT JOIN bonussystem_files bf4 ON ABS(cbg.dot_content) = bf4.id
+LEFT JOIN bonussystem_files bf5 ON ABS(cbg.certificates) = bf5.id
+LEFT JOIN bonussystem_files bf6 ON ABS(cbg.science_event) = bf6.id
+LEFT JOIN bonussystem_files bf7 ON ABS(cbg.is_adviser) = bf7.id
+LEFT JOIN bonussystem_files bf8 ON ABS(cbg.disciplinary_event) = bf8.id
+LEFT JOIN bonussystem_files bf9 ON ABS(cbg.employer_cooperation) = bf9.id
+LEFT JOIN bonussystem_files bf10 ON ABS(cbg.proforientation) = bf10.id
+LEFT JOIN bonussystem_files bf11 ON ABS(cbg.commission_participation) = bf11.id
+LEFT JOIN bonussystem_files bf12 ON ABS(cbg.task_completion) = bf12.id
 WHERE 
-    cbg.userid = ${id};`;
+    cbg.userid = ${id};
+`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res : undefined;
+  },
+  get_tutor_proforientation_data_by_user_id: async (id) =>{
+    const query_str = `select proforientation_student_count from cafedra_bonus_general where userid=${id};`;
+    const [res] = await query_f(query_str);
+    return res[0];
+  },
+  confirm_if_fileless_category_unconfirmed: async(confirmed_for,category) =>{
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
+    const [res] = await query_f(query_str);
+    if (Object.values(res[0]) < 1){
+      query_str = `update cafedra_bonus_general set ${category}=1 where userid=${confirmed_for};`;
+      const [result] = await query_f(query_str);
+      return result;
+    }
+    else{
+      return 'Already confirmed';
+    }
+  },
+  confirm_if_category_unconfirmed: async(confirmed_for,category) =>{
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
+    const [res] = await query_f(query_str);
+    if (Object.values(res[0]) < 0){
+      query_str = `update cafedra_bonus_general set ${category}=${Object.values(res[0])*-1} where userid=${confirmed_for};`;
+      const [result] = await query_f(query_str);
+      return result;
+    }
+    else{
+      return 'Already confirmed';
+    }
+  },
+  deny_if_category_unconfirmed: async(denied_for,category) =>{
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
+    const [res] = await query_f(query_str);
+    if (Object.values(res[0]) < 0){
+      query_str = `update cafedra_bonus_general set ${category}=0 where userid=${denied_for};`;
+      const [result] = await query_f(query_str);
+      return result;
+    }
+    else{
+      return 'Already denied / does not exist';
+    }
+  },
+  get_bonus_filename_by_category: async (denied_for,category) => {
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
+    let [res] = await query_f(query_str);
+    const fileid = Object.values(res[0])*-1;
+    query_str = `select filename from bonussystem_files where id=${fileid};`;
+    [res] = await query_f(query_str);
+    return res[0].filename;
+  },
+  delete_bonus_file_from_db_by_filename: async (filename) =>{
+    const query_str = `delete from bonussystem_files where filename='${filename}';`;
+    let [res] = await query_f(query_str);
+    return res;
   },
   get_dashboard_data: async() => {
     const query_str=`SELECT 
