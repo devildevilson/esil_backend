@@ -582,6 +582,18 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_tutorpubs: async (iin) => {
+    const current_year = new Date().getFullYear();
+    const year_frame = 3;
+    const query_str = `select pubid,tp.tutorid,theme,pubdate,pt.nameru as 'publication_type',edition_index_db from tutorpubs tp
+    join publication_type pt on pt.id = tp.publication_type
+    join tutors t on tp.tutorid = t.TutorID
+    where pubdate>='${current_year-year_frame}-09-01' and
+    t.iinplt = '${iin}'
+    order by pubid desc;`
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res : undefined;
+  },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [res] = await query_f(query_str);
@@ -591,6 +603,11 @@ const db = {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 2;`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
+  },
+  get_debt_data_by_iin: async (iin) => {
+    const query_str = `SELECT iin, otherBalance as 'debt' from student_payments where iin=${iin};`;
+    const [res] = await query_f(query_str);
+    return res ? [Object.assign(res[0],{overall:'undefined'})] : undefined;
   },
   form_admission_stats: async () => {
     const d = new Date();

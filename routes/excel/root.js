@@ -65,7 +65,9 @@ module.exports = [
     path: '/getdebtdata/:user_id',
     handler: async function (request, reply) {
       const iin = await db.get_iin_by_user_id(request.params.user_id);
-      const debtdata = await db.get_debt_data_by_iin(iin.iin);
+      const debtdata = await plt.get_debt_data_by_iin(iin.iin);
+      // оплата теперь берется из платонуса, поэтому комменчу следующую строчку
+      // const debtdata = await db.get_debt_data_by_iin(iin.iin);
       return debtdata;
     },
     schema: {

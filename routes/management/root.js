@@ -46,6 +46,46 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/gettutorpubdata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const tutorpubs = await plt.get_tutorpubs(iin.iin);
+      const academicstatus = await plt.get_tutor_academic_degree_by_iin(iin.iin);
+      let a = '';
+      if (academicstatus) {
+        switch (academicstatus.AcademicStatusID) {
+          case 0: case 1: {
+            a = 'Без звания'; 
+            
+          }
+          break;
+          case 2: {
+            a = 'Доцент'; 
+          
+          }
+          break;
+          case 3: {
+            a = 'Профессор'; 
+
+          } 
+          break;
+          case 4: {
+            a = 'Ассоциированный профессор (доцент)'; 
+
+          }
+          break;
+          default: {
+            
+          }
+        }
+      }
+      return a;
+    },
+  },
+  {
+    method: 'GET',
     path: '/gettutordataproforientation',
     handler: async function (request, reply) {
       const params = request.query;

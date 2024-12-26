@@ -335,7 +335,8 @@ WHERE userid = ${userid};`;
     const [res] = await query_f(query_str);
     const prof_query = `select proforientation_student_count as points from cafedra_bonus_general where userid=${userid};`;
     const [prof_res] = await query_f(prof_query);
-    const prof_ceiling = prof_res[0].points < 15 ? prof_res[0].points:15
+    const max_applicants = 9;
+    const prof_ceiling = prof_res[0].points < max_applicants ? prof_res[0].points:max_applicants
     return res.length === 0 ? undefined:res[0].points+Math.floor(prof_ceiling/3);
   },
   update_bonussystem_data: async(userid, filetype, fileid) => {
