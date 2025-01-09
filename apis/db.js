@@ -391,8 +391,8 @@ WHERE userid = ${userid};`;
     await query_f(insert_query);
     return 'update complete';
   },
-  get_attendance_data_by_iin: async (iin) => {
-    const query_str = `select date,checkin,checkout from student_attendance where iin='${iin}' order by date desc limit 8;`;
+  get_attendance_data_by_iin: async (iin, limit) => {
+    const query_str = `select date,checkin,checkout from student_attendance where iin='${iin}' order by date desc limit ${limit};`;
     const [res] = await query_f(query_str);
     return res;
   },
