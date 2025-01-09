@@ -9,6 +9,17 @@ const successful_upload = "Книга успешно добавлена";
 module.exports = [
   {
     method: 'GET',
+    path: '/getattendanceinfo',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const user_id = params.user_id;
+      const iin = await db.get_iin_by_user_id(user_id);
+      const attendance_data = await db.get_attendance_data_by_iin(iin.iin);
+      return attendance_data;
+    },
+  },
+  {
+    method: 'GET',
     path: '/getstudentinfo',
     handler: async function (request, reply) {
       const params = request.query;

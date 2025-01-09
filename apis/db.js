@@ -212,15 +212,15 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  approve_dorm_request_by_iin: async (iin,dormtype,message,roomnumber,datemodified) => {
+  approve_dorm_request_by_iin: async (iin, dormtype, message, roomnumber, datemodified) => {
     let ishostel;
-    if(dormtype=='dorm') ishostel='0';
-    if(dormtype=='hostel') ishostel='1';
+    if (dormtype == 'dorm') ishostel = '0';
+    if (dormtype == 'hostel') ishostel = '1';
     const query_str = `update dormrequests set approved = 1, ishostel = ${ishostel}, notification_message = '${message}', roomnumber = '${roomnumber}', datemodified = '${datemodified}' where iin = '${iin}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
-  deny_dorm_request_by_iin: async (iin,message,datemodified) => {
+  deny_dorm_request_by_iin: async (iin, message, datemodified) => {
     const query_str = `update dormrequests set approved = -1, notification_message = '${message}', datemodified = '${datemodified}' where iin = '${iin}';`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
@@ -230,15 +230,15 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
-  check_book_transfer_eligibility: async (user_id, book_id) =>{
+  check_book_transfer_eligibility: async (user_id, book_id) => {
     const query_str = `SELECT count(*) as sum from booktransfer where userid=${user_id} and bookid=${book_id} and resolved='false';`;
     const [res] = await query_f(query_str);
     return res;
   },
-  check_photo_upload_eligibility: async (iin) =>{
+  check_photo_upload_eligibility: async (iin) => {
     const query_str = `SELECT count(*) as sum from photos where iin='${iin}';`;
     const [res] = await query_f(query_str);
-    return res[0].sum==0;
+    return res[0].sum == 0;
   },
   // roles - это массив
   get_user_roles_specific: async (user_id, roles) => {
@@ -303,7 +303,7 @@ const db = {
   get_user_role: async (user_id, role) => {
     const query_str = `SELECT role FROM roles WHERE user_id = ${user_id};`;
     const [res] = await query_f(query_str);
-    return res.length === 0 ? undefined:res[0].role;
+    return res.length === 0 ? undefined : res[0].role;
   },
   find_user_role: async (user_id, role) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id} AND role = '${role}';`;
@@ -313,7 +313,7 @@ const db = {
   get_fileid_by_filename: async (filename) => {
     const query_str = `SELECT id from bonussystem_files where filename='${filename}';`;
     const [res] = await query_f(query_str);
-    return res.length === 0 ? undefined:res[0].id;
+    return res.length === 0 ? undefined : res[0].id;
   },
   get_bonus_points_by_id: async (userid) => {
     const query_str = `SELECT 
@@ -336,15 +336,15 @@ WHERE userid = ${userid};`;
     const prof_query = `select proforientation_student_count as points from cafedra_bonus_general where userid=${userid};`;
     const [prof_res] = await query_f(prof_query);
     const max_applicants = 9;
-    const prof_ceiling = prof_res[0].points < max_applicants ? prof_res[0].points:max_applicants
-    return res.length === 0 ? undefined:res[0].points+Math.floor(prof_ceiling/3);
+    const prof_ceiling = prof_res[0].points < max_applicants ? prof_res[0].points : max_applicants
+    return res.length === 0 ? undefined : res[0].points + Math.floor(prof_ceiling / 3);
   },
-  update_bonussystem_data: async(userid, filetype, fileid) => {
+  update_bonussystem_data: async (userid, filetype, fileid) => {
     const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid};`;
     const [res] = await query_f(query_str);
     return res;
   },
-  update_bonussystem_prof_data: async(userid, filetype, fileid, proforientation) => {
+  update_bonussystem_prof_data: async (userid, filetype, fileid, proforientation) => {
     const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid}, proforientation_student_count=${proforientation} where userid=${userid};`;
     const [res] = await query_f(query_str);
     return res;
@@ -352,8 +352,8 @@ WHERE userid = ${userid};`;
   get_cafedra_manager_info: async (user_id) => {
     const query_str = `SELECT cafedraid from cafedra_manager_assignment cma join users u on u.id=cma.userid where u.id = ${user_id};`;
     const [res] = await query_f(query_str);
-    return res.length === 0 ? 0:res[0].cafedraid;
-  },  
+    return res.length === 0 ? 0 : res[0].cafedraid;
+  },
   get_filename: async (file_id) => {
     const query_str = `SELECT filename from files where id=${file_id};`;
     const [res] = await query_f(query_str);
@@ -377,6 +377,24 @@ WHERE userid = ${userid};`;
       await query_f(insert_query);
     }
     return 'update complete';
+  },
+  attendance_update: async (attendance_data) => {
+    const values = attendance_data
+      .map(row => {
+        const rowValues = Object.values(row)
+          .map(value => (typeof value === "string" ? `'${value}'` : value))
+          .join(", ");
+        return `(${rowValues})`;
+      })
+      .join(",\n");
+    const insert_query = `INSERT INTO student_attendance (firstname,lastname,iin,department,date,checkin,checkout) VALUES\n${values};`;
+    await query_f(insert_query);
+    return 'update complete';
+  },
+  get_attendance_data_by_iin: async (iin) => {
+    const query_str = `select date,checkin,checkout from student_attendance where iin='${iin}' order by date desc limit 8;`;
+    const [res] = await query_f(query_str);
+    return res;
   },
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
@@ -432,62 +450,62 @@ WHERE
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res : undefined;
   },
-  get_tutor_proforientation_data_by_user_id: async (id) =>{
+  get_tutor_proforientation_data_by_user_id: async (id) => {
     const query_str = `select proforientation_student_count from cafedra_bonus_general where userid=${id};`;
     const [res] = await query_f(query_str);
     return res[0];
   },
-  confirm_if_fileless_category_unconfirmed: async(confirmed_for,category) =>{
+  confirm_if_fileless_category_unconfirmed: async (confirmed_for, category) => {
     let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
     const [res] = await query_f(query_str);
-    if (Object.values(res[0]) < 1){
+    if (Object.values(res[0]) < 1) {
       query_str = `update cafedra_bonus_general set ${category}=1 where userid=${confirmed_for};`;
       const [result] = await query_f(query_str);
       return result;
     }
-    else{
+    else {
       return 'Already confirmed';
     }
   },
-  confirm_if_category_unconfirmed: async(confirmed_for,category) =>{
+  confirm_if_category_unconfirmed: async (confirmed_for, category) => {
     let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
     const [res] = await query_f(query_str);
-    if (Object.values(res[0]) < 0){
-      query_str = `update cafedra_bonus_general set ${category}=${Object.values(res[0])*-1} where userid=${confirmed_for};`;
+    if (Object.values(res[0]) < 0) {
+      query_str = `update cafedra_bonus_general set ${category}=${Object.values(res[0]) * -1} where userid=${confirmed_for};`;
       const [result] = await query_f(query_str);
       return result;
     }
-    else{
+    else {
       return 'Already confirmed';
     }
   },
-  deny_if_category_unconfirmed: async(denied_for,category) =>{
+  deny_if_category_unconfirmed: async (denied_for, category) => {
     let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
     const [res] = await query_f(query_str);
-    if (Object.values(res[0]) < 0){
+    if (Object.values(res[0]) < 0) {
       query_str = `update cafedra_bonus_general set ${category}=0 where userid=${denied_for};`;
       const [result] = await query_f(query_str);
       return result;
     }
-    else{
+    else {
       return 'Already denied / does not exist';
     }
   },
-  get_bonus_filename_by_category: async (denied_for,category) => {
+  get_bonus_filename_by_category: async (denied_for, category) => {
     let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
     let [res] = await query_f(query_str);
-    const fileid = Object.values(res[0])*-1;
+    const fileid = Object.values(res[0]) * -1;
     query_str = `select filename from bonussystem_files where id=${fileid};`;
     [res] = await query_f(query_str);
     return res[0].filename;
   },
-  delete_bonus_file_from_db_by_filename: async (filename) =>{
+  delete_bonus_file_from_db_by_filename: async (filename) => {
     const query_str = `delete from bonussystem_files where filename='${filename}';`;
     let [res] = await query_f(query_str);
     return res;
   },
-  get_dashboard_data: async() => {
-    const query_str=`SELECT 
+  get_dashboard_data: async () => {
+    const query_str = `SELECT 
     (SELECT COUNT(id) FROM librarybooks WHERE DeletedUndeleted = 'true') AS 'librarybook_count',
     (SELECT COUNT(id) FROM ebooks WHERE DeletedUndeleted = 'true') AS 'ebook_count',
     (SELECT COUNT(id) FROM dormrequests WHERE approved = 1) AS 'student_dorm_count',
@@ -659,7 +677,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  resolve_book_transfer: async (id,date) => {
+  resolve_book_transfer: async (id, date) => {
     const query_str = `update booktransfer set resolved='true', dateresolved='${date}' where id=${id};`;
     const [res] = await query_f(query_str);
     return res;
@@ -682,20 +700,20 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  get_e_book_page_count: async () =>{
+  get_e_book_page_count: async () => {
     const query_str = `select count(*) as count from ebooks where deletedundeleted='true' and ebookpath not like '%:%';`;
     const [res] = await query_f(query_str);
-    return Math.floor(res[0].count/1000+1)
+    return Math.floor(res[0].count / 1000 + 1)
   },
   get_e_books_per_page: async (page) => {
-    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and ebookpath not like '%:%' order by eb.namerubook limit 1000 offset ${(page-1)*1000};`;
+    const query_str = `select eb.*, bc.name as bookcat from ebooks eb join bookcategory bc on bc.id = eb.RLibraryCategoryRLibraryBook where deletedundeleted='true' and ebookpath not like '%:%' order by eb.namerubook limit 1000 offset ${(page - 1) * 1000};`;
     const [res] = await query_f(query_str);
     return res;
-  }, 
-  get_physical_book_page_count: async () =>{
+  },
+  get_physical_book_page_count: async () => {
     const query_str = `select count(*) as count from librarybooks where deletedundeleted='true';`;
     const [res] = await query_f(query_str);
-    return Math.floor(res[0].count/1000+1)
+    return Math.floor(res[0].count / 1000 + 1)
   },
   // get_all_physical_books: async () => {
   //   const query_str = `select lb.id, NameRuBook,Author,Annotation,Subject,InventoryNumber,Barcode,KeyWords,Language,Pages,Price,TypeOfBook,RLibraryCategoryRLibraryBook,PublishedTime,PublishedCountryCity,ISBN, PublishingHouse, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.id desc;`;
@@ -738,10 +756,10 @@ WHERE
     return res;
   },
   get_physical_books_per_page: async (page) => {
-    const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.namerubook limit 1000 offset ${(page-1)*1000};`;
+    const query_str = `select lb.*, bc.name as bookcat from librarybooks lb join bookcategory bc on bc.id = lb.RLibraryCategoryRLibraryBook where deletedundeleted='true' order by lb.namerubook limit 1000 offset ${(page - 1) * 1000};`;
     const [res] = await query_f(query_str);
     return res;
-  }, 
+  },
   get_physical_book_by_id: async (id) => {
     const query_str = `select * from librarybooks where id=${id};`;
     const [res] = await query_f(query_str);
@@ -757,7 +775,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  duplicate_book_by_id: async(id)=>{
+  duplicate_book_by_id: async (id) => {
     const query_str = `INSERT INTO librarybooks (
       AdditionalInformation, Annotation, ArrivingAct, Author, Barcode, CopyrightSigns,
       CoverPage, DateCreated, DeletedUndeleted, DepartingAct, EditedBy, Exchanged, Heading,
@@ -781,9 +799,9 @@ WHERE
   get_library_statistics_by_year: async (year) => {
     let nYear = parseInt(year);
     const query_str = `SELECT 
-    COUNT(CASE WHEN DateCreated>'${nYear}-09-01 00:00:00' and DateCreated<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksgiven,
+    COUNT(CASE WHEN DateCreated>'${nYear}-09-01 00:00:00' and DateCreated<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksgiven,
     COUNT(CASE WHEN resolved = 'false' THEN 1 END) AS booksonhand,
-    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear+1}-08-31 23:59:00' THEN 1 END) AS booksreturned
+    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksreturned
 FROM 
     booktransfer;`;
     const [res] = await query_f(query_str);
@@ -794,7 +812,7 @@ FROM
     const [res] = await query_f(query_str);
     return res;
   },
-  find_photo_data_for_admin: async (iin) =>{
+  find_photo_data_for_admin: async (iin) => {
     const query_str = `select photos.id,photos.iin,name,lastname,middlename,DateCreated from users
     join photos on photos.iin = users.iin
     where photos.iin='${iin}';`;
@@ -812,7 +830,7 @@ FROM
     return res;
   },
 
-  get_notification_icon_data : async (user_id) => {
+  get_notification_icon_data: async (user_id) => {
     const query_str = `SELECT 
     COUNT(n.id) AS notif_count,
     IFNULL(SUM(n.viewed = 0), 0) AS unread_count,
@@ -826,7 +844,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  get_notifications_for_user: async (user_id) =>{
+  get_notifications_for_user: async (user_id) => {
     const query_str = `select n.id,u.lastname,u.name,nt.name as notification_name, n.message, nt.ispersonal, isimportant, n.date_sent, n.date_viewed, n.viewed from notifications n 
     join notificationtypes nt on n.notificationtype_id=nt.id
     left join users u on u.id = n.sender_id
@@ -834,7 +852,7 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
-  mark_notification_as_read_by_id: async (id,date) =>{
+  mark_notification_as_read_by_id: async (id, date) => {
     const query_str = `update notifications set viewed=1, date_viewed='${date}' where id=${id};`
     const [res] = await query_f(query_str);
     return res;
