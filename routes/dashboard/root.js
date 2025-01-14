@@ -33,6 +33,33 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/generate/attendance',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const params = request.query;
+        const iin = params.iin;
+        const attendance_data = await db.get_attendance_data_by_iin(iin,1000);
+        return attendance_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }
+      
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+    
+  },
+  {
+    method: 'GET',
     path: '/generate/platonus/student',
     handler: async function (request, reply) {
       const pass = request.query.pass;
