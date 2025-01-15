@@ -39,8 +39,8 @@ module.exports = [
       const pass = request.query.pass;
       if (pass === DASHBOARD_PASS) {
         const params = request.query;
-        const iin = params.iin;
-        const attendance_data = await db.get_attendance_data_by_iin(iin,1000);
+        const firstname = params.lastname;
+        const attendance_data = await db.get_attendance_data_by_lastname(firstname,1000);
         return attendance_data;
       }
       else {
@@ -103,12 +103,19 @@ module.exports = [
           previousyear = year - 1;
         }
         const attendance_data = await db.get_attendance_data_specialties(previousmonth, previousyear);
+        for(row of attendance_data){
+          const studentcount = await plt.get_student_count_by_specialization(row.department);
+          row.maxcount = studentcount;
+          const percentage = (row.count/studentcount * 100).toFixed(2);
+          if (percentage > 100) row.percentage = 'Ожидание зачисления студентов';
+          else row.percentage = (row.count/studentcount * 100).toFixed(2)+'%';
+          // 🥺
+        }
         return attendance_data;
       }
       else {
         return reply.unauthorized('Access denied');
       }
-      
     },
     schema: {
       querystring: {

@@ -49,6 +49,14 @@ function format_date(date) {
   return `${yyyy}-${mm}-${dd} ${hh}:${MM}:${ss}`;
 }
 
+function getLastDayOfMonth(year, month) {
+  const lastDay = new Date(year, month, 0);
+  const yearStr = lastDay.getFullYear();
+  const monthStr = String(lastDay.getMonth() + 1).padStart(2, '0');
+  const dayStr = String(lastDay.getDate()).padStart(2, '0');
+
+  return `${yearStr}-${monthStr}-${dayStr}`;
+}
 //const user_roles = [ "plt_student", "plt_tutor" ];
 
 const query_f = (str) => pool.query(str);
@@ -316,6 +324,11 @@ const db = {
     return res.length === 0 ? undefined : res[0].id;
   },
   get_bonus_points_by_id: async (userid) => {
+    const d = new Date();
+    const current_month = d.getMonth()+1;
+    const current_year = d.getFullYear();
+    let current_study_year = d.getFullYear();
+    if ((d.getMonth() + 1) < 9) current_study_year-=1;
     const query_str = `SELECT 
     (
         (CASE WHEN auditorium_percentage > 0 THEN 1 ELSE 0 END) +
@@ -331,12 +344,18 @@ const db = {
         (CASE WHEN task_completion > 0 THEN 1 ELSE 0 END)
     ) AS points
 FROM cafedra_bonus_general
-WHERE userid = ${userid};`;
+WHERE userid = ${userid}
+and relevant_date>='${current_year}-${current_month}-01'
+and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
-    const prof_query = `select proforientation_student_count as points from cafedra_bonus_general where userid=${userid};`;
+    const prof_query = `select proforientation_student_count as points from cafedra_bonus_proforientation where userid=${userid}
+    and relevant_date>='${current_study_year}-06-01'
+    and relevant_date<='${current_study_year+1}-05-31';`;
     const [prof_res] = await query_f(prof_query);
+    let prof_points = 0;
+    if (prof_res.length != 0) prof_points = prof_res[0].points
     const max_applicants = 9;
-    const prof_ceiling = prof_res[0].points < max_applicants ? prof_res[0].points : max_applicants
+    const prof_ceiling = prof_points < max_applicants ? prof_points : max_applicants;
     return res.length === 0 ? undefined : res[0].points + Math.floor(prof_ceiling / 3);
   },
   update_bonussystem_data: async (userid, filetype, fileid) => {
@@ -344,8 +363,15 @@ WHERE userid = ${userid};`;
     const [res] = await query_f(query_str);
     return res;
   },
-  update_bonussystem_prof_data: async (userid, filetype, fileid, proforientation) => {
-    const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid}, proforientation_student_count=${proforientation} where userid=${userid};`;
+  update_bonussystem_prof_data: async (userid, proforientation) => {
+    const d = new Date();
+    let current_study_year = d.getFullYear();
+    if ((d.getMonth() + 1) < 9) current_study_year-=1;
+    const query_str = `UPDATE cafedra_bonus_proforientation
+    SET proforientation_student_count=${proforientation}
+    where userid=${userid}
+    and relevant_date>='${current_study_year}-06-01'
+    and relevant_date<='${current_study_year+1}-05-31';`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -396,13 +422,26 @@ WHERE userid = ${userid};`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_attendance_data_by_lastname: async (lastname, limit) => {
+    const query_str = `select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from student_attendance where firstname like '%${lastname.trim()}%' order by date desc limit ${limit};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_attendance_data_by_iin_employee: async (iin, limit) => {
     const query_str = `select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from employee_attendance where iin='${iin}' order by date desc limit ${limit};`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_attendance_data_specialties: async (month,year) => {
-    const query_str = `select count(*) from student_attendance where date>='${year}-${month}-01' and date<='${year}-${month}-31';`;
+    const query_str = `SELECT department,COUNT(*) AS count
+    FROM (
+        SELECT DISTINCT department, firstname, lastname, iin
+        FROM yii_form.student_attendance
+        where date>='${year}-${month}-01'
+        and date<='${getLastDayOfMonth(year,month)}'
+        and department not in ('Students','Бизнеса и управления','Прикладных наук')
+    ) AS unique_records
+    group by department;`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -414,6 +453,9 @@ WHERE userid = ${userid};`;
     return res;
   },
   get_tutor_bonus_data_by_user_id: async (id) => {
+    const date = new Date();
+    const current_month = date.getMonth()+1;
+    const current_year = date.getFullYear();
     const query_str = `SELECT 
     cbg.userid,
     cbg.auditorium_percentage AS auditorium_percentage_fileid,
@@ -455,13 +497,21 @@ LEFT JOIN bonussystem_files bf10 ON ABS(cbg.proforientation) = bf10.id
 LEFT JOIN bonussystem_files bf11 ON ABS(cbg.commission_participation) = bf11.id
 LEFT JOIN bonussystem_files bf12 ON ABS(cbg.task_completion) = bf12.id
 WHERE 
-    cbg.userid = ${id};
+    cbg.userid = ${id}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';
 `;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res : undefined;
   },
   get_tutor_proforientation_data_by_user_id: async (id) => {
-    const query_str = `select proforientation_student_count from cafedra_bonus_general where userid=${id};`;
+    const d = new Date();
+    let current_year = d.getFullYear();
+    if ((d.getMonth() + 1) < 9) current_year-=1;
+    const query_str = `select proforientation_student_count from cafedra_bonus_proforientation 
+    where userid=${id}
+    and relevant_date>='${current_year}-06-01'
+    and relevant_date<='${current_year+1}-05-31';`;
     const [res] = await query_f(query_str);
     return res[0];
   },

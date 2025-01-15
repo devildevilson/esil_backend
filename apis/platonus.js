@@ -72,6 +72,13 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_student_count_by_specialization: async(specialization_name) =>{
+    const query_str = `select count(studentid) as count from students s
+    join specializations sp on sp.id = s.specializationID
+    where sp.nameru='${specialization_name}' and isStudent=1;`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0].count : undefined;
+  },
   get_student_data_by_qr: async (student_id) => {
     const query_str = `
     SELECT 
