@@ -1,6 +1,7 @@
 const common = require('@core/common');
 const db = require('@apis/db');
 const plt = require('@apis/platonus');
+const mdl = require('@apis/moodle');
 const bcrypt = require("bcryptjs");
 const fs = require('fs').promises;
 
@@ -44,6 +45,68 @@ module.exports = [
       }
       else {
         return reply.unauthorized('Access denied');
+      }     
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/generate/attendance/employee',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const params = request.query;
+        const iin = params.iin;
+        const attendance_data = await db.get_attendance_data_by_iin_employee(iin,1000);
+        return attendance_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+    
+  },
+  {
+    method: 'GET',
+    path: '/generate/attendance/specialties',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const date = new Date()
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        let previousmonth = 1;
+        let previousyear = 1;
+        if (month != 1){ 
+          previousmonth = month - 1;
+          previousyear = year;
+        }
+        else {
+          previousmonth = 12;
+          previousyear = year - 1;
+        }
+        const attendance_data = await db.get_attendance_data_specialties(previousmonth, previousyear);
+        return attendance_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
       }
       
     },
@@ -57,6 +120,56 @@ module.exports = [
       }
     }
     
+  },
+  {
+    method: 'GET',
+    path: '/generate/moodle/tests',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const term = request.query.term;
+        if (term != 1 && term != 2) return reply.unauthorized('Term accepted values are 1, 2');
+        const tests_data = await mdl.get_moodle_tests_data(term);
+        return tests_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/generate/moodle/files',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const term = request.query.term;
+        if (term != 1 && term != 2) return reply.unauthorized('Term accepted values are 1, 2');
+        const tests_data = await mdl.get_moodle_files_data(term);
+        return tests_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
   },
   {
     method: 'GET',

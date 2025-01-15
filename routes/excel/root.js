@@ -61,6 +61,68 @@ module.exports = [
     },
   },
   {
+    method: 'POST',
+    url: '/excel/upload/attendance/students',
+    preHandler: upload.single('file'),
+    handler: async function (req, reply) {
+      const payload = req.file;
+      console.log(payload);
+      if (!payload) {
+        reply.code(400).send({ error: 'No file uploaded' });
+        return;
+      }
+      const workbook = XLSX.read(payload.buffer, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      jsonData.splice(0, 8);
+      let formattedData = [];
+      for (let i = 0; i < jsonData.length; i++) {
+        formattedData.push({
+          'firstname': jsonData[i][0],
+          'lastname': jsonData[i][1],
+          'iin': jsonData[i][2],
+          'department': jsonData[i][3].substring(jsonData[i][3].lastIndexOf(">") + 1).trim(),
+          'date': jsonData[i][5],
+          'checkin': jsonData[i][12],
+          'checkout': jsonData[i][13]
+        });
+      }
+      await db.attendance_update(formattedData,'student_attendance');
+      reply.send('data inserted');
+    },
+  },
+  {
+    method: 'POST',
+    url: '/excel/upload/attendance/employees',
+    preHandler: upload.single('file'),
+    handler: async function (req, reply) {
+      const payload = req.file;
+      console.log(payload);
+      if (!payload) {
+        reply.code(400).send({ error: 'No file uploaded' });
+        return;
+      }
+      const workbook = XLSX.read(payload.buffer, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      jsonData.splice(0, 8);
+      let formattedData = [];
+      for (let i = 0; i < jsonData.length; i++) {
+        formattedData.push({
+          'firstname': jsonData[i][0],
+          'lastname': jsonData[i][1],
+          'iin': jsonData[i][2],
+          'department': jsonData[i][3].substring(jsonData[i][3].lastIndexOf(">") + 1).trim(),
+          'date': jsonData[i][5],
+          'checkin': jsonData[i][12],
+          'checkout': jsonData[i][13]
+        });
+      }
+      await db.attendance_update(formattedData,'employee_attendance');
+      reply.send('data inserted');
+    },
+  },
+  {
     method: 'GET',
     path: '/getdebtdata/:user_id',
     handler: async function (request, reply) {
