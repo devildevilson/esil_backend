@@ -428,6 +428,17 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
+  delete_employee_attendance_duplicates: async () => {
+    const query_str = `WITH unique_rows AS (
+      SELECT MIN(id) AS id
+      FROM employee_attendance
+      GROUP BY iin, firstname, lastname, date, checkin, checkout
+    )
+    DELETE FROM employee_attendance
+    WHERE id NOT IN (SELECT id FROM unique_rows);`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_attendance_data_by_iin: async (iin, limit) => {
     const query_str = `select concat(firstname,' ',lastname) as fio,date,checkin,checkout from student_attendance where iin='${iin}' order by date desc limit ${limit};`;
     const [res] = await query_f(query_str);

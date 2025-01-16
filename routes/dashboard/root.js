@@ -180,6 +180,31 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/generate/moodle/percentage',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const term = request.query.term;
+        if (term != 1 && term != 2) return reply.unauthorized('Term accepted values are 1, 2');
+        const tests_data = await mdl.get_moodle_files_data_cafedras(term);
+        return tests_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+  },
+  {
+    method: 'GET',
     path: '/generate/platonus/student',
     handler: async function (request, reply) {
       const pass = request.query.pass;

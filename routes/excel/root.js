@@ -88,6 +88,7 @@ module.exports = [
         });
       }
       await db.attendance_update(formattedData,'student_attendance');
+      await db.delete_student_attendance_duplicates();
       reply.send('data inserted');
     },
   },
@@ -119,6 +120,7 @@ module.exports = [
         });
       }
       await db.attendance_update(formattedData,'employee_attendance');
+      await db.delete_employee_attendance_duplicates();
       reply.send('data inserted');
     },
   },

@@ -583,6 +583,16 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_tutor_cafedra_by_tutorid: async (tutorid) => {
+    const query_str = `SELECT c.cafedraid, c.cafedraNameRU as cafedra
+    FROM tutors t 
+    JOIN tutor_cafedra tc ON t.TutorID = tc.tutorID
+    JOIN cafedras c ON tc.cafedraid = c.cafedraID
+    WHERE t.deleted = 0 and t.tutorid=${tutorid};`
+    const [res] = await query_f(query_str);
+    const cafedra_default = {cafedraid: 0, cafedra: 'empty'}
+    return res.length !== 0 ? res[0] : cafedra_default;
+  },
   get_tutor_academic_degree_by_iin: async (iin) => {
     const query_str = `SELECT AcademicStatusID FROM tutors t 
     WHERE t.deleted = 0 and t.iinplt=${iin};`
