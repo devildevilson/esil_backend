@@ -614,6 +614,7 @@ const db = {
   get_debt_data_by_iin: async (iin) => {
     const query_str = `SELECT iin, otherBalance as 'debt' from student_payments where iin=${iin};`;
     const [res] = await query_f(query_str);
+    if (res[0].debt==null) return [];
     return res.length>0 ? [Object.assign(res[0],{overall:'undefined'})] : [];
   },
   form_admission_stats: async () => {
