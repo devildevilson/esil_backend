@@ -70,34 +70,61 @@ const db = {
         return sortedDataTests;
     },
     get_moodle_files_data: async (term) => {
-        const selectFiles = `SELECT c.fullname AS "subject",
-  (
-    SELECT DISTINCT concat(u.lastname, ' ', u.firstname)
-    FROM mdl_role_assignments ra
-    JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
-    JOIN mdl_context ctx ON ctx.id = ra.contextid
-    WHERE ra.roleid = 3 AND ctx.instanceid = c.id AND ctx.contextlevel = 50 and u.suspended=0 LIMIT 1
-  ) AS "tutor",
-  (
-    SELECT DISTINCT idnumber
-    FROM mdl_role_assignments ra
-    JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
-    JOIN mdl_context ctx ON ctx.id = ra.contextid
-    WHERE ra.roleid = 3 AND ctx.instanceid = c.id AND ctx.contextlevel = 50 and u.suspended=0 LIMIT 1
-  ) AS "tutorid",
-  (SELECT COUNT(*) FROM mdl_course_modules cm INNER JOIN mdl_modules m ON cm.module = m.id WHERE cm.course = c.id AND (m.name = 'resource' OR m.name = 'lesson')) AS "filecount",
-  concat('dl.esil.edu.kz/course/view.php?id=',c.id) AS "link"
-  FROM mdl_course c
-  JOIN mdl_course_categories cc ON cc.id = c.category
-  JOIN mdl_course_modules mcm ON mcm.course = c.id
-  WHERE c.idnumber LIKE '%-%-%' 
-  AND mcm.idnumber = 'exam-term${term}'
-  and c.fullname not like '%research%' 
-  and c.fullname not like '%производственная%' 
-  and c.fullname not like '%өндірістік%'
-  and c.fullname not like '%exam preparation%'
-  GROUP BY c.id
-  ORDER BY cc.name ASC;`;
+        const selectFiles = `SELECT 
+        c.fullname AS "subject",
+        (
+            SELECT DISTINCT concat(u.lastname, ' ', u.firstname)
+            FROM mdl_role_assignments ra
+            JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
+            JOIN mdl_context ctx ON ctx.id = ra.contextid
+            WHERE ra.roleid = 3
+              AND ctx.instanceid = c.id
+              AND ctx.contextlevel = 50
+              AND u.suspended = 0 
+            LIMIT 1
+        ) AS "tutor",
+        (
+            SELECT DISTINCT idnumber
+            FROM mdl_role_assignments ra
+            JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
+            JOIN mdl_context ctx ON ctx.id = ra.contextid
+            WHERE ra.roleid = 3
+              AND ctx.instanceid = c.id
+              AND ctx.contextlevel = 50
+              AND u.suspended = 0 
+            LIMIT 1
+        ) AS "tutorid",
+        (
+            SELECT COUNT(*)
+            FROM mdl_course_modules cm
+            INNER JOIN mdl_modules m ON cm.module = m.id
+            WHERE cm.course = c.id 
+              AND (m.name = 'resource' OR m.name = 'lesson')
+        ) AS "filecount",
+        (
+            SELECT COUNT(qs.id)
+            FROM mdl_quiz q
+            JOIN mdl_quiz_slots qs ON q.id = qs.quizid
+            WHERE q.course = c.id
+        ) AS "question_count",
+        concat('dl.esil.edu.kz/course/view.php?id=', c.id) AS "link"
+    FROM 
+        mdl_course c
+    JOIN 
+        mdl_course_categories cc ON cc.id = c.category
+    JOIN 
+        mdl_course_modules mcm ON mcm.course = c.id
+    WHERE 
+        c.idnumber LIKE '%-%-%' 
+        AND mcm.idnumber = 'exam-term${term}'
+        AND c.fullname NOT LIKE '%research%' 
+        AND c.fullname NOT LIKE '%производственная%' 
+        AND c.fullname NOT LIKE '%өндірістік%'
+        AND c.fullname NOT LIKE '%exam preparation%'
+    GROUP BY 
+        c.id
+    ORDER BY 
+        cc.name ASC;`;
         const [res_select_files] = await query_f(selectFiles);
         let reconstructedFilesObj = [];
         for (const res of res_select_files) {
@@ -115,39 +142,70 @@ const db = {
             console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
-            row.percentage = row.filecount >= 18 ? '100%' : (row.filecount / required_filecount * 100).toFixed(2)+'%';
+            row.percentage = (row.filecount >= 18 && row.question_count > 0)
+    ? '100%' 
+    : (row.filecount === 0 && row.question_count > 0)
+    ? (3 / 21 * 100).toFixed(2) + '%' 
+    : ((Math.min(row.filecount, 18) / 21) * 100).toFixed(2) + '%';
         }
         return sortedDataFiles;
     },
     get_moodle_files_data_cafedras: async (term) => {
-        const selectFiles = `SELECT c.fullname AS "subject",
-  (
-    SELECT DISTINCT concat(u.lastname, ' ', u.firstname)
-    FROM mdl_role_assignments ra
-    JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
-    JOIN mdl_context ctx ON ctx.id = ra.contextid
-    WHERE ra.roleid = 3 AND ctx.instanceid = c.id AND ctx.contextlevel = 50 and u.suspended=0 LIMIT 1
-  ) AS "tutor",
-  (
-    SELECT DISTINCT idnumber
-    FROM mdl_role_assignments ra
-    JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
-    JOIN mdl_context ctx ON ctx.id = ra.contextid
-    WHERE ra.roleid = 3 AND ctx.instanceid = c.id AND ctx.contextlevel = 50 and u.suspended=0 LIMIT 1
-  ) AS "tutorid",
-  (SELECT COUNT(*) FROM mdl_course_modules cm INNER JOIN mdl_modules m ON cm.module = m.id WHERE cm.course = c.id AND (m.name = 'resource' OR m.name = 'lesson')) AS "filecount",
-  concat('dl.esil.edu.kz/course/view.php?id=',c.id) AS "link"
-  FROM mdl_course c
-  JOIN mdl_course_categories cc ON cc.id = c.category
-  JOIN mdl_course_modules mcm ON mcm.course = c.id
-  WHERE c.idnumber LIKE '%-%-%' 
-  AND mcm.idnumber = 'exam-term${term}'
-  and c.fullname not like '%research%' 
-  and c.fullname not like '%производственная%' 
-  and c.fullname not like '%өндірістік%'
-  and c.fullname not like '%exam preparation%'
-  GROUP BY c.id
-  ORDER BY cc.name ASC;`;
+        const selectFiles = `SELECT 
+        c.fullname AS "subject",
+        (
+            SELECT DISTINCT concat(u.lastname, ' ', u.firstname)
+            FROM mdl_role_assignments ra
+            JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
+            JOIN mdl_context ctx ON ctx.id = ra.contextid
+            WHERE ra.roleid = 3
+              AND ctx.instanceid = c.id
+              AND ctx.contextlevel = 50
+              AND u.suspended = 0 
+            LIMIT 1
+        ) AS "tutor",
+        (
+            SELECT DISTINCT idnumber
+            FROM mdl_role_assignments ra
+            JOIN mdl_user u ON ra.userid = u.id AND u.suspended = 0
+            JOIN mdl_context ctx ON ctx.id = ra.contextid
+            WHERE ra.roleid = 3
+              AND ctx.instanceid = c.id
+              AND ctx.contextlevel = 50
+              AND u.suspended = 0 
+            LIMIT 1
+        ) AS "tutorid",
+        (
+            SELECT COUNT(*)
+            FROM mdl_course_modules cm
+            INNER JOIN mdl_modules m ON cm.module = m.id
+            WHERE cm.course = c.id 
+              AND (m.name = 'resource' OR m.name = 'lesson')
+        ) AS "filecount",
+        (
+            SELECT COUNT(qs.id)
+            FROM mdl_quiz q
+            JOIN mdl_quiz_slots qs ON q.id = qs.quizid
+            WHERE q.course = c.id
+        ) AS "question_count",
+        concat('dl.esil.edu.kz/course/view.php?id=', c.id) AS "link"
+    FROM 
+        mdl_course c
+    JOIN 
+        mdl_course_categories cc ON cc.id = c.category
+    JOIN 
+        mdl_course_modules mcm ON mcm.course = c.id
+    WHERE 
+        c.idnumber LIKE '%-%-%' 
+        AND mcm.idnumber = 'exam-term${term}'
+        AND c.fullname NOT LIKE '%research%' 
+        AND c.fullname NOT LIKE '%производственная%' 
+        AND c.fullname NOT LIKE '%өндірістік%'
+        AND c.fullname NOT LIKE '%exam preparation%'
+    GROUP BY 
+        c.id
+    ORDER BY 
+        cc.name ASC;`;
         const [res_select_files] = await query_f(selectFiles);
         let reconstructedFilesObj = [];
         for (const res of res_select_files) {
@@ -166,8 +224,12 @@ const db = {
             console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
-            row.percentage = row.filecount >= 18 ? '100' : (row.filecount / required_filecount * 100).toFixed(2);
-            if(row.cafedra!='empty') cafedra_results.push({ "cafedra": row.cafedra, "percentage": row.percentage });
+            row.percentage = (row.filecount >= 18 && row.question_count > 0)
+    ? '100' 
+    : (row.filecount === 0 && row.question_count > 0)
+    ? (3 / 21 * 100).toFixed(2)
+    : ((Math.min(row.filecount, 18) / 21) * 100).toFixed(2);
+            if(row.cafedra != 'empty') cafedra_results.push({ "cafedra": row.cafedra, "percentage": row.percentage });
         }
         const cafedraStats = {};
         cafedra_results.forEach(({ cafedra, percentage }) => {
