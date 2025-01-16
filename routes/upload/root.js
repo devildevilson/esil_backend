@@ -201,31 +201,42 @@ module.exports = [
     },
   },
   {
-    method: 'POST',
-    url: '/bonusfileproforientation',
-    preHandler: uploadBonus.single('file'),
-    handler: async function (req, reply) {
-      const payload = req.file;
-      //console.log(payload);
-      let cleared_filename = payload.filename;
-      const for_userid = req.body.for_user_id;
-      const by_userid = req.body.by_user_id;
-      const filetype = req.body.filetype;
-      const proforientation = req.body.student_count;
-      cleared_filename = cleared_filename.replace(/\s+/g, '-');
-      const file_data = {
-        filename: cleared_filename,
-        filepath: BONUS_FILE_PATH + cleared_filename, 
-        upload_date: common.human_date(new Date()),
-        uploaded_by: by_userid,
-      };
-      console.log(file_data);
-      await db.create_row("bonussystem_files", file_data);
-      const fileid = await db.get_fileid_by_filename(cleared_filename);
-      await db.update_bonussystem_prof_data(for_userid, filetype, fileid, proforientation);
-      return { message: successful_upload };
+    method: 'GET',
+    path: '/bonusfileproforientation',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const for_userid = params.for_userid;
+      const proforientation = params.student_count;
+      await db.update_bonussystem_prof_data(for_userid,proforientation);
+      return { message: 'Данные обновлены' };
     },
   },
+  // {
+  //   method: 'POST',
+  //   url: '/bonusfileproforientation',
+  //   preHandler: uploadBonus.single('file'),
+  //   handler: async function (req, reply) {
+  //     const payload = req.file;
+  //     //console.log(payload);
+  //     let cleared_filename = payload.filename;
+  //     const for_userid = req.body.for_user_id;
+  //     const by_userid = req.body.by_user_id;
+  //     const filetype = req.body.filetype;
+  //     const proforientation = req.body.student_count;
+  //     cleared_filename = cleared_filename.replace(/\s+/g, '-');
+  //     const file_data = {
+  //       filename: cleared_filename,
+  //       filepath: BONUS_FILE_PATH + cleared_filename, 
+  //       upload_date: common.human_date(new Date()),
+  //       uploaded_by: by_userid,
+  //     };
+  //     console.log(file_data);
+  //     await db.create_row("bonussystem_files", file_data);
+  //     const fileid = await db.get_fileid_by_filename(cleared_filename);
+  //     await db.update_bonussystem_prof_data(for_userid, filetype, fileid, proforientation);
+  //     return { message: successful_upload };
+  //   },
+  // },
   {
     method: 'POST',
     url: '/upload/pdf',

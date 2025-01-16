@@ -36,7 +36,8 @@ module.exports = [
       const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
       if(!tutordata) {
         const empty_data = {
-          userid: userid,
+          userid: userid, 
+          relevant_date: common.human_date(new Date())
         };
         await db.create_row("cafedra_bonus_general", empty_data);
         return await db.get_tutor_bonus_data_by_user_id(userid);
@@ -94,8 +95,9 @@ module.exports = [
       if(!tutordata) {
         const empty_data = {
           userid: userid,
+          relevant_date: common.human_date(new Date())
         };
-        await db.create_row("cafedra_bonus_general", empty_data);
+        await db.create_row("cafedra_bonus_proforientation", empty_data);
         return await db.get_tutor_proforientation_data_by_user_id(userid).proforientation_student_count;
       }
       return tutordata.proforientation_student_count;

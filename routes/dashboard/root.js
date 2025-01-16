@@ -108,8 +108,8 @@ module.exports = [
           row.maxcount = studentcount;
           const percentage = (row.count/studentcount * 100).toFixed(2);
           if (percentage > 100) row.percentage = 'Ожидание зачисления студентов';
-          else row.percentage = (row.count/studentcount * 100).toFixed(2)+'%';
-          // 🥺
+          else row.percentage = percentage + '%';
+          // 🥺👉👈
         }
         return attendance_data;
       }
