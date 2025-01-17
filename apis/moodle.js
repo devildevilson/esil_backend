@@ -138,15 +138,17 @@ const db = {
             return 0;
         });
         const required_filecount = 18;
+        const tests_added_value = 3;
+        const required_overall_count = 21;
         for (const row of sortedDataFiles) {
             console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
-            row.percentage = (row.filecount >= 18 && row.question_count > 0)
-    ? '100%' 
-    : (row.filecount === 0 && row.question_count > 0)
-    ? (3 / 21 * 100).toFixed(2) + '%' 
-    : ((Math.min(row.filecount, 18) / 21) * 100).toFixed(2) + '%';
+            row.percentage = (row.filecount >= required_filecount && row.question_count > 0)
+            ? '100%' 
+            : (row.filecount === 0 && row.question_count > 0)
+            ? (tests_added_value / required_overall_count * 100).toFixed(2) + '%' 
+            : ((Math.min(row.filecount, required_filecount) / required_overall_count) * 100).toFixed(2) + '%';
         }
         return sortedDataFiles;
     },
@@ -219,16 +221,18 @@ const db = {
             return 0;
         });
         const required_filecount = 18;
+        const tests_added_value = 3;
+        const required_overall_count = 21;
         let cafedra_results = [];
         for (const row of sortedDataFiles) {
             console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
-            row.percentage = (row.filecount >= 18 && row.question_count > 0)
-    ? '100' 
-    : (row.filecount === 0 && row.question_count > 0)
-    ? (3 / 21 * 100).toFixed(2)
-    : ((Math.min(row.filecount, 18) / 21) * 100).toFixed(2);
+            row.percentage = (row.filecount >= required_filecount && row.question_count > 0)
+            ? '100' 
+            : (row.filecount === 0 && row.question_count > 0)
+            ? (tests_added_value / required_overall_count * 100).toFixed(2)
+            : ((Math.min(row.filecount, required_filecount) / required_overall_count) * 100).toFixed(2);
             if(row.cafedra != 'empty') cafedra_results.push({ "cafedra": row.cafedra, "percentage": row.percentage });
         }
         const cafedraStats = {};

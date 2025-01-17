@@ -439,6 +439,15 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_student_attendance_data_for_prev_month: async (month, year) => {
+    const query_str = `
+    select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from student_attendance
+    where date>='${year}-${month}-01'
+    and date<='${getLastDayOfMonth(year,month)}';
+    `;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_attendance_data_by_iin: async (iin, limit) => {
     const query_str = `select concat(firstname,' ',lastname) as fio,date,checkin,checkout from student_attendance where iin='${iin}' order by date desc limit ${limit};`;
     const [res] = await query_f(query_str);

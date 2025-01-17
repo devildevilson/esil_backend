@@ -59,6 +59,42 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/generate/attendance/students',
+    handler: async function (request, reply) {
+      const pass = request.query.pass;
+      if (pass === DASHBOARD_PASS) {
+        const date = new Date()
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        let previousmonth = 1;
+        let previousyear = 1;
+        if (month != 1){ 
+          previousmonth = month - 1;
+          previousyear = year;
+        }
+        else {
+          previousmonth = 12;
+          previousyear = year - 1;
+        }
+        const attendance_data = await db.get_student_attendance_data_for_prev_month(previousmonth,previousyear);
+        return attendance_data;
+      }
+      else {
+        return reply.unauthorized('Access denied');
+      }     
+    },
+    schema: {
+      querystring: {
+        type: "object",
+        required: [ "pass" ],
+        properties: {
+          token: { type: "string" }
+        } 
+      }
+    }
+  },
+  {
+    method: 'GET',
     path: '/generate/attendance/employee',
     handler: async function (request, reply) {
       const pass = request.query.pass;
