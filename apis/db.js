@@ -441,7 +441,7 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
   },
   get_student_attendance_data_for_prev_month: async (month, year) => {
     const query_str = `
-    select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from student_attendance
+    select concat(firstname,' ',lastname) as fio, department, DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from student_attendance
     where date>='${year}-${month}-01'
     and date<='${getLastDayOfMonth(year,month)}';
     `;
