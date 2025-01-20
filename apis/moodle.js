@@ -132,7 +132,7 @@ const db = {
                 reconstructedFilesObj.push(res);
             }
         }
-        const sortedDataFiles = reconstructedFilesObj.sort((a, b) => {
+        let sortedDataFiles = reconstructedFilesObj.sort((a, b) => {
             if (a.tutor < b.tutor) return -1;
             if (a.tutor > b.tutor) return 1;
             return 0;
@@ -141,7 +141,6 @@ const db = {
         const tests_added_value = 3;
         const required_overall_count = 21;
         for (const row of sortedDataFiles) {
-            console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
             row.percentage = (row.filecount >= required_filecount && row.question_count > 0)
@@ -150,6 +149,7 @@ const db = {
             ? (tests_added_value / required_overall_count * 100).toFixed(2) + '%' 
             : ((Math.min(row.filecount, required_filecount) / required_overall_count) * 100).toFixed(2) + '%';
         }
+        sortedDataFiles = sortedDataFiles.filter(item => item.cafedra !== 'empty');
         return sortedDataFiles;
     },
     get_moodle_files_data_cafedras: async (term) => {

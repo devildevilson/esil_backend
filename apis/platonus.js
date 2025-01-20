@@ -588,7 +588,7 @@ const db = {
     FROM tutors t 
     JOIN tutor_cafedra tc ON t.TutorID = tc.tutorID
     JOIN cafedras c ON tc.cafedraid = c.cafedraID
-    WHERE t.deleted = 0 and t.tutorid=${tutorid};`
+    WHERE t.tutorid=${tutorid};`
     const [res] = await query_f(query_str);
     const cafedra_default = {cafedraid: 0, cafedra: 'empty'}
     return res.length !== 0 ? res[0] : cafedra_default;
