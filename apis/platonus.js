@@ -600,17 +600,196 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
   get_tutorpubs: async (iin) => {
+    console.log(`debugging for iin ${iin}`);
     const current_year = new Date().getFullYear();
     const year_frame = 3;
-    const query_str = `select pubid,tp.tutorid,theme,pubdate,pt.nameru as 'publication_type',edition_index_db from tutorpubs tp
-    join publication_type pt on pt.id = tp.publication_type
-    join tutors t on tp.tutorid = t.TutorID
-    where pubdate>='${current_year-year_frame}-09-01' and
-    t.iinplt = '${iin}'
-    order by pubid desc;`
-    const [res] = await query_f(query_str);
-    return res.length !== 0 ? res : undefined;
+    let query_str = `select * from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+    join tutors t on t.tutorid=ip.tutorID
+    join tutorpubs tp on ip.pubID = tp.pubID
+    join publication_type pt ON tp.publication_type = pt.id
+    join publication_level pl ON tp.publication_level = pl.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.edition_year>=${current_year - year_frame}
+    UNION ALL
+    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+    join tutors t on t.tutorid=tp.tutorID
+    join publication_type pt ON tp.publication_type = pt.id
+    join publication_level pl ON tp.publication_level = pl.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.edition_year>=${current_year - year_frame}) as tem;`
+    const [publications] = await query_f(query_str);
+    console.log(`found ${publications.length} publications`);
+    if (publications.length == 0) return 0;
+    query_str = `SELECT AcademicStatusID FROM tutors t 
+    WHERE t.deleted = 0 and t.iinplt = '${iin}';`
+    const [academicstatus] = await query_f(query_str);
+    console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
+    if (academicstatus) {
+      switch (academicstatus[0].AcademicStatusID) {
+        case 0: case 1: {
+          let counter = 0;
+          // 'Без звания'; 
+          if (publications.length >= 5){
+            console.log(`5 or more publications`);
+            for (const pub of publications){
+              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+                counter++;
+                console.log(`found suited pub, adding up to ${counter}`);
+                if (counter == 2 && publications.length >= 10) return 2;
+              }
+            }
+            if (counter > 0) return 1
+            else return 0;
+          }
+          else {
+            console.log(`${publications.length} wasn't enough`);
+            return 0
+          };
+        }
+        break;
+        case 2: {
+          // 'Доцент'; 
+          let counter = 0;
+          if (publications.length >= 5){
+            for (const pub of publications){
+              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+                counter++;
+                console.log(`found suited pub, adding up to ${counter}`);
+                if (counter == 6 && publications.length >= 10) return 2;
+              }
+            }
+            if (counter >= 3){ 
+              return 1;
+            }
+            else {
+              console.log(`${counter} wasn't enough`);
+              return 0;
+            }
+          }
+          else {
+            console.log(`${publications.length} wasn't enough`);
+            return 0
+          };     
+        }
+        break;
+        case 3: {
+          // 'Профессор'; 
+          let counter = 0;
+          if (publications.length >= 7){
+            for (const pub of publications){
+              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+                counter++;
+                console.log(`found suited pub, adding up to ${counter}`);
+                if (counter == 10 && publications.length >= 14) return 2;
+              }
+            }
+            if (counter >= 5){ 
+              return 1;
+            }
+            else {
+              console.log(`${counter} wasn't enough`);
+              return 0;
+            }
+          }
+          else {
+            console.log(`${publications.length} wasn't enough`);
+            return 0
+          };
+          
+        } 
+        break;
+        case 4: {
+          // 'Ассоциированный профессор (доцент)'; 
+          let counter = 0;
+          if (publications.length >= 7){
+            for (const pub of publications){
+              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+                counter++;
+              }
+            }
+            if (counter >= 5){ 
+              return 1;
+            }
+            else {
+              console.log(`${counter} wasn't enough`);
+              return 0;
+            }
+          }
+          else {
+            console.log(`${publications.length} wasn't enough`);
+            return 0
+          };  
+        }
+        break;
+        default: {
+          return 0;
+        }
+      }
+    }
   },
+  get_tutorliterature: async (iin) => {
+    console.log(`debugging for iin ${iin}`);
+    const current_year = new Date().getFullYear();
+    const year_frame = 5;
+    let query_str = `select count(*) as count from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+    join tutors t on t.tutorid=ip.tutorID
+    join tutorpubs tp on ip.pubID = tp.pubID
+    join publication_type pt ON tp.publication_type = pt.id
+    join publication_level pl ON tp.publication_level = pl.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.publication_type = 5
+    and tp.edition_year>=${current_year - year_frame}
+    UNION ALL
+    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+    join tutors t on t.tutorid=tp.tutorID
+    join publication_type pt ON tp.publication_type = pt.id
+    join publication_level pl ON tp.publication_level = pl.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.publication_type = 5
+    and tp.edition_year>=${current_year - year_frame}) as tem;`
+    const [publications] = await query_f(query_str);
+    if (publications.length == 0 || publications[0].count == 0) return 0;
+    console.log(`count is ${publications[0].count}`);
+    query_str = `SELECT AcademicStatusID FROM tutors t 
+    WHERE t.deleted = 0 and t.iinplt = '${iin}';`
+    const [academicstatus] = await query_f(query_str);
+    console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
+    if (academicstatus) {
+      switch (academicstatus[0].AcademicStatusID) {
+        case 0: case 1: {
+          // 'Без звания'; 
+          if(publications[0].count >= 2) return 2
+          else if (publications[0].count == 1) return 1
+          else return 0;
+        }
+        break;
+        case 2: {
+          // 'Доцент'; 
+          if(publications[0].count >= 2) return 2
+          else if (publications[0].count == 1) return 1
+          else return 0;
+        }
+        break;
+        case 3: {
+          // 'Профессор'; 
+          if(publications[0].count >= 2) return 2
+          else if (publications[0].count == 1) return 1
+          else return 0;
+        } 
+        break;
+        case 4: {
+          // 'Ассоциированный профессор (доцент)'; 
+          if(publications[0].count >= 2) return 2
+          else if (publications[0].count == 1) return 1
+          else return 0;
+        }
+        break;
+        default: {
+          return 0;
+        }
+      }
+    }
+  }, 
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [res] = await query_f(query_str);

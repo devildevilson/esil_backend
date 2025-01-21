@@ -1,6 +1,7 @@
 const common = require('@core/common');
 const db = require('@apis/db');
 const plt = require('@apis/platonus');
+const mdl = require('@apis/moodle');
 const fs = require('fs').promises;
 
 
@@ -23,8 +24,16 @@ module.exports = [
     handler: async function (request, reply) {
       const params = request.query;
       const userid = params.userid;
-      const points = await db.get_bonus_points_by_id(userid);
-      return points;
+      const iin = await db.get_iin_by_user_id(userid);
+      const tutor = await plt.find_tutor_by_iin(iin.iin);
+      const tutorid = tutor.plt_id;
+      const percentage = await mdl.calculate_percentage_by_tutorid(tutorid);
+      const points_db = await db.get_bonus_points_by_id(userid);
+      const points_plt_pubs = await plt.get_tutorpubs(iin.iin);
+      const points_plt_literature = await plt.get_tutorliterature(iin.iin);
+      let moodle_points = 0;
+      if (percentage > -1) if (percentage > 99) moodle_points = 1;
+      return points_db + points_plt_pubs + points_plt_literature + moodle_points;
     },
   },
   {
@@ -47,42 +56,37 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/gettutormoodlepercentage',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const tutor = await plt.find_tutor_by_iin(iin.iin);
+      const tutorid = tutor.plt_id;
+      const percentage = await mdl.calculate_percentage_by_tutorid(tutorid);
+      return percentage;
+    },
+  },
+  {
+    method: 'GET',
     path: '/gettutorpubdata',
     handler: async function (request, reply) {
       const params = request.query;
       const userid = params.userid;
       const iin = await db.get_iin_by_user_id(userid);
-      const tutorpubs = await plt.get_tutorpubs(iin.iin);
-      const academicstatus = await plt.get_tutor_academic_degree_by_iin(iin.iin);
-      let a = '';
-      if (academicstatus) {
-        switch (academicstatus.AcademicStatusID) {
-          case 0: case 1: {
-            a = 'Без звания'; 
-            
-          }
-          break;
-          case 2: {
-            a = 'Доцент'; 
-          
-          }
-          break;
-          case 3: {
-            a = 'Профессор'; 
-
-          } 
-          break;
-          case 4: {
-            a = 'Ассоциированный профессор (доцент)'; 
-
-          }
-          break;
-          default: {
-            
-          }
-        }
-      }
-      return a;
+      const score = await plt.get_tutorpubs(iin.iin);
+      return score;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/gettutorliteraturedata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const score = await plt.get_tutorliterature(iin.iin);
+      return score;
     },
   },
   {

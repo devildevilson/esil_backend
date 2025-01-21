@@ -10,7 +10,7 @@ const connection_config = {
     user: process.env.MDL_DATABASE_USER,
     password: process.env.MDL_DATABASE_PASSWORD,
     database: process.env.MDL_DATABASE_NAME,
-    connectionLimit: 10,
+    connectionLimit: 15,
     connectTimeout: 100000,
 };
 
@@ -249,6 +249,54 @@ const db = {
             averages[cafedra] = (sum / count).toFixed(2)+'%';
         }
         return averages;
+    },
+    calculate_percentage_by_tutorid: async (tutorid) => {
+        const selectFiles = `SELECT 
+        c.fullname AS "subject",
+        COALESCE(CONCAT(u.lastname, ' ', u.firstname), 'No Tutor Found') AS "tutor",
+        (
+            SELECT COUNT(*)
+            FROM mdl_course_modules cm
+            INNER JOIN mdl_modules m ON cm.module = m.id
+            WHERE cm.course = c.id 
+              AND m.name IN ('resource', 'lesson')
+        ) AS "filecount",
+        (
+            SELECT COUNT(qs.id)
+            FROM mdl_quiz q
+            JOIN mdl_quiz_slots qs ON q.id = qs.quizid
+            WHERE q.course = c.id
+        ) AS "question_count",
+        CONCAT('dl.esil.edu.kz/course/view.php?id=', c.id) AS "link"
+    FROM 
+        mdl_course c
+    JOIN 
+        mdl_context ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+    JOIN 
+        mdl_role_assignments ra ON ra.contextid = ctx.id AND ra.roleid = 3
+    JOIN 
+        mdl_user u ON u.id = ra.userid AND u.suspended = 0
+    WHERE 
+        u.idnumber = 't${tutorid}'
+    ORDER BY 
+        c.fullname ASC;`;
+        const [res_select_files] = await query_f(selectFiles);
+        if (res_select_files.length == 0) return -1; 
+        const required_filecount = 18;
+        const tests_added_value = 3;
+        const required_overall_count = 21;
+        let overall_percentage = 0;
+        for (const row of res_select_files) {
+            const percentage = (row.filecount >= required_filecount && row.question_count > 0)
+            ? 100 
+            : (row.filecount === 0 && row.question_count > 0)
+            ? (tests_added_value / required_overall_count * 100).toFixed(2) 
+            : ((Math.min(row.filecount, required_filecount) / required_overall_count) * 100).toFixed(2);
+            row.percentage = percentage;
+            overall_percentage += parseFloat(percentage);
+        }
+
+        return (overall_percentage / res_select_files.length).toFixed(2);
     },
 };
 
