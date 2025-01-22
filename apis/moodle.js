@@ -10,7 +10,7 @@ const connection_config = {
     user: process.env.MDL_DATABASE_USER,
     password: process.env.MDL_DATABASE_PASSWORD,
     database: process.env.MDL_DATABASE_NAME,
-    connectionLimit: 15,
+    connectionLimit: 20,
     connectTimeout: 100000,
 };
 

@@ -10,7 +10,7 @@ const connection_config = {
   user: process.env.CLOUD_DATABASE_USER,
   password: process.env.CLOUD_DATABASE_PASSWORD,
   database: process.env.CLOUD_DATABASE_NAME,
-  connectionLimit: 10,
+  connectionLimit: 20,
   connectTimeout: 100000,
 };
 

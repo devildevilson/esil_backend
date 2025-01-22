@@ -9,7 +9,7 @@ const connection_config = {
   user: process.env.PLT_DATABASE_USER,
   password: process.env.PLT_DATABASE_PASSWORD,
   database: process.env.PLT_DATABASE_NAME,
-  connectionLimit: 10,
+  connectionLimit: 20,
   connectTimeout: 100000,
 };
 
