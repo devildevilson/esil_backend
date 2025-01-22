@@ -486,9 +486,11 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
   get_tutor_bonus_data_userids: async (month,year) => {
     const query_str = `select userid from cafedra_bonus_general cbg
     join users u on u.id = cbg.userid
+    join roles r on r.user_id = u.id
     where relevant_date>='${year}-${month}-01'
     and relevant_date<='${getLastDayOfMonth(year, month)}'
-    and u.suspended = 0;`;
+    and u.suspended = 0
+    and r.role = 'plt_tutor';`;
     const [res] = await query_f(query_str);
     return res;
   },

@@ -66,6 +66,7 @@ module.exports = [
       for (const user of tutordata){  
         const iin = await db.get_iin_by_user_id(user.userid);
         const tutor = await plt.find_tutor_by_iin(iin.iin);
+        if (!tutor) continue;
         const tutorid = tutor.plt_id;
         const percentage = await mdl.calculate_percentage_by_tutorid(tutorid);
         const points_db = await db.get_bonus_points_by_id(user.userid);
