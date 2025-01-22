@@ -148,7 +148,7 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
   find_user_by_id: async (userid) => {
-    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,iin,suspended,alt_id FROM users WHERE id = '${userid}';`;
+    const query_str = `SELECT id,auth_type,name,lastname,middlename,username,iin,suspended,alt_id FROM users WHERE id = '${userid}' and suspended = 0;`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -479,14 +479,16 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
     join kpi_scores ks on u.id = ks.userid
-    where ks.cafedra = ${cafedraid} and u.suspended=0 order by ks.score desc;`;
+    where ks.cafedra = ${cafedraid} and u.suspended = 0 order by ks.score desc;`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_tutor_bonus_data_userids: async (month,year) => {
-    const query_str = `select userid from cafedra_bonus_general
+    const query_str = `select userid from cafedra_bonus_general cbg
+    join users u on u.id = cbg.userid
     where relevant_date>='${year}-${month}-01'
-    and relevant_date<='${getLastDayOfMonth(year, month)}';`;
+    and relevant_date<='${getLastDayOfMonth(year, month)}'
+    and u.suspended = 0;`;
     const [res] = await query_f(query_str);
     return res;
   },

@@ -139,6 +139,7 @@ module.exports = [
         lastname: user_data.lastname,
         middlename: user_data.middlename,
         username: user_data.username,
+        suspended: user_data.suspended,
         cafedraname,
         cafedraid,
         role_str,
