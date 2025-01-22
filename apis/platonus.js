@@ -38,11 +38,8 @@ const db = {
     const query_str = `
       SELECT 
         s.firstname AS name,
-        s.firstname_en as name_en,
         s.lastname,
-        s.lastname_en,
         s.patronymic AS middlename,
-        s.patronymic_en as middlename_en,
         s.iinplt AS iin,
         s.StartDate AS start_date,
         s.BirthDate AS birth_date,
