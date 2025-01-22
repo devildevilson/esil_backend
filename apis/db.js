@@ -483,6 +483,13 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutor_bonus_data_userids: async (month,year) => {
+    const query_str = `select userid from cafedra_bonus_general
+    where relevant_date>='${year}-${month}-01'
+    and relevant_date<='${getLastDayOfMonth(year, month)}';`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_tutor_bonus_data_by_user_id: async (id) => {
     const date = new Date();
     const current_month = date.getMonth()+1;
@@ -684,6 +691,12 @@ WHERE
     order by scoresum desc;`;
     const [res] = await query_f(query_str);
     return res;
+  },
+  get_bonus_level: async (score) => {
+    if (score >= 0 && score < 6) return 0;
+    if (score >= 6 && score < 12) return 1;
+    if (score >= 12) return 2;
+    return -1;
   },
   find_cert_record: async (cert_id) => {
     const query_str = `SELECT * FROM cert_records WHERE id = ${cert_id};`;

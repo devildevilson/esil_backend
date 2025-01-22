@@ -38,6 +38,52 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getalltutordata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const month_query = params.month_query;
+      const date = new Date();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      let tutordata;
+      if (month_query == 'previous'){
+        let previousmonth = 1;
+        let previousyear = 1;
+        if (month != 1){ 
+          previousmonth = month - 1;
+          previousyear = year;
+        }
+        else {
+          previousmonth = 12;
+          previousyear = year - 1;
+        }
+        tutordata = await db.get_tutor_bonus_data_userids(previousmonth,previousyear);
+      }
+      else {
+        tutordata = await db.get_tutor_bonus_data_userids(month,year);
+      }
+      let final_arr = [];
+      for (const user of tutordata){  
+        const iin = await db.get_iin_by_user_id(user.userid);
+        const tutor = await plt.find_tutor_by_iin(iin.iin);
+        const tutorid = tutor.plt_id;
+        const percentage = await mdl.calculate_percentage_by_tutorid(tutorid);
+        const points_db = await db.get_bonus_points_by_id(user.userid);
+        const points_plt_pubs = await plt.get_tutorpubs(iin.iin);
+        const points_plt_literature = await plt.get_tutorliterature(iin.iin);
+        let moodle_points = 0;
+        if (percentage > -1) if (percentage > 99) moodle_points = 1;
+        const finalscore = points_db + points_plt_pubs + points_plt_literature + moodle_points;
+        final_arr.push({"userid":user.userid, "fio":tutor.lastname+' '+tutor.name+' '+tutor.middlename, "score":finalscore,"bonus": await db.get_bonus_level(finalscore)});
+      }
+      
+      const sortedData = final_arr.sort((a, b) => b.score - a.score);
+
+      return sortedData;
+    },
+  },
+  {
+    method: 'GET',
     path: '/gettutordata',
     handler: async function (request, reply) {
       const params = request.query;
