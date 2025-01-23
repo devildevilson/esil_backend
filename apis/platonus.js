@@ -632,7 +632,11 @@ const db = {
           if (publications.length >= 5){
             console.log(`5 or more publications`);
             for (const pub of publications){
-              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+              if(pub.edition_index_db == 'Scopus' || 
+              pub.edition_index_db == 'Web of Science' ||
+              pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
+              pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)'
+              ) {
                 counter++;
                 console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 2 && publications.length >= 10) return 2;
@@ -652,7 +656,8 @@ const db = {
           let counter = 0;
           if (publications.length >= 5){
             for (const pub of publications){
-              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
+              pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
                 console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 6 && publications.length >= 10) return 2;
@@ -677,7 +682,8 @@ const db = {
           let counter = 0;
           if (publications.length >= 7){
             for (const pub of publications){
-              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
+              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
+              pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
                 console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 10 && publications.length >= 14) return 2;
