@@ -72,7 +72,7 @@ module.exports = [
           try {
             cafedraname = tutorCafedra.cafedraNameRU;
             cafedraid = tutorCafedra.cafedraid;
-            academicdegreeid = tutorAcademicDegree.AcademicDegreeID;
+            academicdegreeid = tutorAcademicDegree.AcademicStatusID;
           }
           catch {
 
