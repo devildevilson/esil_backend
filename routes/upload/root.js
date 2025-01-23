@@ -390,6 +390,14 @@ module.exports = [
     path: '/getscore/:user_id',
     handler: async function (request, reply) {
       const file_datas = await db.get_kpiscore_by_userid(request.params.user_id);
+      if (!file_datas) {
+        const empty_data = {
+          userid: request.params.user_id
+        };
+        await db.create_row("kpi_scores", empty_data);
+        await db.update_kpi_for_user(request.params.user_id);
+        return await db.get_kpiscore_by_userid(request.params.user_id);
+      }
       return file_datas;
     },
     schema: {
