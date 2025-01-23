@@ -337,6 +337,8 @@ const db = {
         (CASE WHEN dot_content > 0 THEN 1 ELSE 0 END) +
         (CASE WHEN certificates > 0 THEN 1 ELSE 0 END) +
         (CASE WHEN science_event > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN grants > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN nirs > 0 THEN 1 ELSE 0 END) +
         (CASE WHEN is_adviser > 0 THEN 1 ELSE 0 END) +
         (CASE WHEN disciplinary_event > 0 THEN 1 ELSE 0 END) +
         (CASE WHEN employer_cooperation > 0 THEN 1 ELSE 0 END) +
@@ -372,6 +374,51 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     where userid=${userid}
     and relevant_date>='${current_study_year}-06-01'
     and relevant_date<='${current_study_year+1}-05-31';`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_tutors_CSEI_list: async () => {
+    const query_str = `SELECT 
+    u.id AS userid,
+    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    COALESCE(cbg.grants, 0) AS grants,
+    cbg.relevant_date
+FROM 
+    users u
+join roles r on r.user_id=u.id
+LEFT JOIN 
+    cafedra_bonus_general cbg
+ON 
+    u.id = cbg.userid
+WHERE 
+    r.role = 'plt_tutor' and u.suspended=0 and
+    (cbg.relevant_date IS NULL OR 
+    (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
+     YEAR(cbg.relevant_date) = YEAR(CURDATE())))
+order by grants desc, fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  update_CSEI_data: async (userid, number) => {
+    const d = new Date();
+    const current_month = d.getMonth()+1;
+    const current_year = d.getFullYear();
+    const query_find = `select userid from cafedra_bonus_general
+    where userid = ${userid} and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
+    const [find_res] = await query_f(query_find);
+    if (find_res.length == 0) {
+      const empty_data = {
+        userid: userid, 
+        relevant_date: common.human_date(new Date())
+      };
+      await db.create_row("cafedra_bonus_general", empty_data);
+    }
+    const query_str = `UPDATE cafedra_bonus_general
+    SET grants = ${number}
+    where userid = ${userid}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -476,6 +523,47 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutors_penalty_list: async () => {
+    const query_str = `SELECT 
+    u.id AS userid,
+    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    COALESCE(tp.penalty_hr, 0) AS penalty_hr,
+    COALESCE(tp.penalty_ed, 0) AS penalty_ed,
+    tp.relevant_date
+FROM 
+    users u
+join roles r on r.user_id=u.id
+LEFT JOIN 
+    tutor_penalties tp
+ON 
+    u.id = tp.userid
+WHERE 
+    r.role = 'plt_tutor' and u.suspended=0 and
+    (tp.relevant_date IS NULL OR 
+    (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
+     YEAR(tp.relevant_date) = YEAR(CURDATE())))
+     order by penalty_hr desc, penalty_ed desc, fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  find_penalty_record_for_current_month: async (userid) => {
+    const query_str = `select * from tutor_penalties tp
+    where userid = ${userid} and
+        (tp.relevant_date IS NULL OR 
+        (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
+         YEAR(tp.relevant_date) = YEAR(CURDATE())));`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0]:undefined;
+  },
+  update_existing_penalty_record: async (userid,penalty_type,number) => {
+    const query_str = `update tutor_penalties tp set ${penalty_type} = ${number}
+    where userid = ${userid} and
+        (tp.relevant_date IS NULL OR 
+        (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
+         YEAR(tp.relevant_date) = YEAR(CURDATE())));`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_tutors_by_cafedra_id: async (cafedraid) => {
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ks.score from users u
     join kpi_scores ks on u.id = ks.userid
@@ -512,6 +600,10 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     bf5.filename AS certificates_filename,
     cbg.science_event AS science_event_fileid,
     bf6.filename AS science_event_filename,
+    cbg.nirs AS nirs_fileid,
+    bf13.filename AS nirs_filename,
+    cbg.grants AS grants_fileid,
+    bf14.filename AS grants_filename,
     cbg.is_adviser AS is_adviser_fileid,
     bf7.filename AS is_adviser_filename,
     cbg.disciplinary_event AS disciplinary_event_fileid,
@@ -538,6 +630,8 @@ LEFT JOIN bonussystem_files bf9 ON ABS(cbg.employer_cooperation) = bf9.id
 LEFT JOIN bonussystem_files bf10 ON ABS(cbg.proforientation) = bf10.id
 LEFT JOIN bonussystem_files bf11 ON ABS(cbg.commission_participation) = bf11.id
 LEFT JOIN bonussystem_files bf12 ON ABS(cbg.task_completion) = bf12.id
+LEFT JOIN bonussystem_files bf13 ON ABS(cbg.nirs) = bf13.id
+LEFT JOIN bonussystem_files bf14 ON ABS(cbg.grants) = bf14.id
 WHERE 
     cbg.userid = ${id}
     and relevant_date>='${current_year}-${current_month}-01'

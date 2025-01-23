@@ -5,19 +5,6 @@ const fs = require('fs').promises;
 
 
 const successful_photo_deletion = "Фото успешно удалено";
-const successful_upload = "Книга успешно добавлена";
-const successful_update = "Книга успешно обновлена";
-const successful_deletion = "Книга успешно удалена";
-const successful_duplication = "Книга успешно дублирована";
-const successful_transfer = "Книга успешно выдана пользователю";
-const successful_transfer_batch = "Все книги успешно выданы пользователю";
-const transfer_resolved = "Книга успешно откреплена от пользователя";
-const book_already_on_hand = "Эта книга уже выдана этому пользователю";
-const book_already_on_hand_specific = "Книги не выданы! Некоторые книги из корзины уже есть у этого пользователя. Штрихкоды: ";
-const book_upload_error = "Внутренняя ошибка загрузки новой книги";
-const book_deletion_error = "Внутренняя ошибка удаления книги";
-const book_assignment_error = "Внутренняя ошибка создания прикрепления";
-const book_assignment_removal_error = "Внутренняя ошибка удаления прикрепления";
 
 
 module.exports = [
@@ -27,6 +14,93 @@ module.exports = [
     handler: async function (request, reply) {
       const employees = await plt.get_employees_for_hr();
       return employees;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/tutorlistpenalty',
+    handler: async function (request, reply) {
+      const tutors = await db.get_tutors_penalty_list();
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/tutorlistcsei',
+    handler: async function (request, reply) {
+      const tutors = await db.get_tutors_CSEI_list();
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/createpenalty',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const penalty_type = params.penalty_type;
+      const penalty_record = await db.find_penalty_record_for_current_month(userid);
+      if(!penalty_record){
+        if (penalty_type == 'penalty_ed'){
+          let data;
+          data = {
+            userid: userid, 
+            penalty_ed: 1,
+            relevant_date: common.human_date(new Date())
+          };
+        }
+        else if (penalty_type == 'penalty_hr'){
+          data = {
+            userid: userid, 
+            penalty_hr: 1,
+            relevant_date: common.human_date(new Date())
+          };
+        }
+        await db.create_row("tutor_penalties", data);
+      }
+      else{
+        await db.update_existing_penalty_record(userid,penalty_type,1);
+      }
+      return 'success';
+    },
+  },
+  {
+    method: 'GET',
+    path: '/deletepenalty',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const penalty_type = params.penalty_type;
+      await db.update_existing_penalty_record(userid,penalty_type,0);
+      return 'success';
+    },
+  },
+  {
+    method: 'GET',
+    path: '/approvegrants',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
+      if(!tutordata) {
+        const empty_data = {
+          userid: userid, 
+          relevant_date: common.human_date(new Date())
+        };
+        await db.create_row("cafedra_bonus_general", empty_data);
+      }
+      await db.update_CSEI_data(userid,1);
+      return 'success';
+    },
+  },
+  {
+    method: 'GET',
+    path: '/denygrants',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      await db.update_CSEI_data(userid,0);
+      return 'success';
     },
   },
 ];

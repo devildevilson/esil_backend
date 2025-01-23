@@ -31,9 +31,15 @@ module.exports = [
       const points_db = await db.get_bonus_points_by_id(userid);
       const points_plt_pubs = await plt.get_tutorpubs(iin.iin);
       const points_plt_literature = await plt.get_tutorliterature(iin.iin);
+      const tutor_penalties = await db.find_penalty_record_for_current_month(userid);
+      let penalty_score = 0;
+      if (tutor_penalties) {
+        if(tutor_penalties.penalty_hr == 1) penalty_score -=1;
+        if(tutor_penalties.penalty_ed == 1) penalty_score -=1;
+      }
       let moodle_points = 0;
       if (percentage > -1) if (percentage > 99) moodle_points = 1;
-      return points_db + points_plt_pubs + points_plt_literature + moodle_points;
+      return points_db + points_plt_pubs + points_plt_literature + moodle_points + penalty_score;
     },
   },
   {
@@ -74,7 +80,13 @@ module.exports = [
         const points_plt_literature = await plt.get_tutorliterature(iin.iin);
         let moodle_points = 0;
         if (percentage > -1) if (percentage > 99) moodle_points = 1;
-        const finalscore = points_db + points_plt_pubs + points_plt_literature + moodle_points;
+        const tutor_penalties = await db.find_penalty_record_for_current_month(user.userid);
+        let penalty_score = 0;
+        if (tutor_penalties) {
+          if(tutor_penalties.penalty_hr == 1) penalty_score -=1;
+          if(tutor_penalties.penalty_ed == 1) penalty_score -=1;
+        }
+        const finalscore = points_db + points_plt_pubs + points_plt_literature + moodle_points + penalty_score;
         final_arr.push({"userid":user.userid, "fio":tutor.lastname+' '+tutor.name+' '+tutor.middlename, "score":finalscore,"bonus": await db.get_bonus_level(finalscore)});
       }
       

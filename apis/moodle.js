@@ -278,6 +278,10 @@ const db = {
         mdl_user u ON u.id = ra.userid AND u.suspended = 0
     WHERE 
         u.idnumber = 't${tutorid}'
+        AND c.fullname NOT LIKE '%research%' 
+        AND c.fullname NOT LIKE '%производственная%' 
+        AND c.fullname NOT LIKE '%өндірістік%'
+        AND c.fullname NOT LIKE '%exam preparation%'
     ORDER BY 
         c.fullname ASC;`;
         const [res_select_files] = await query_f(selectFiles);
