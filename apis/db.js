@@ -142,6 +142,11 @@ const db = {
     }
     return res;
   },
+  suspend_tutor: async (userid) => {
+    const query_str = `update users set suspended = 1 where id=${userid};`;
+    await query_f(query_str);
+    return 1;;
+  },
   find_user_by_username: async (username) => {
     const query_str = `SELECT id,auth_type,name,lastname,middlename,username,password,suspended,alt_id FROM users WHERE username = '${mysql_real_escape_string(username)}';`;
     const [res] = await query_f(query_str);
