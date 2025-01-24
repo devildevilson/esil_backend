@@ -651,7 +651,7 @@ const db = {
           };
         }
         break;
-        case 2: {
+        case 2: case 4: {
           // 'Доцент'; 
           let counter = 0;
           if (publications.length >= 5){
@@ -703,29 +703,6 @@ const db = {
           };
           
         } 
-        break;
-        case 4: {
-          // 'Ассоциированный профессор (доцент)'; 
-          let counter = 0;
-          if (publications.length >= 7){
-            for (const pub of publications){
-              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)') {
-                counter++;
-              }
-            }
-            if (counter >= 5){ 
-              return 1;
-            }
-            else {
-              console.log(`${counter} wasn't enough`);
-              return 0;
-            }
-          }
-          else {
-            console.log(`${publications.length} wasn't enough`);
-            return 0
-          };  
-        }
         break;
         default: {
           return 0;
