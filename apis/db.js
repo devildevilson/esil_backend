@@ -404,6 +404,28 @@ order by grants desc, fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutors_EPHQ_list: async () => {
+    const query_str = `SELECT 
+    u.id AS userid,
+    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    COALESCE(cbg.auditorium_percentage, 0) AS auditorium_percentage,
+    cbg.relevant_date
+FROM 
+    users u
+join roles r on r.user_id=u.id
+LEFT JOIN 
+    cafedra_bonus_general cbg
+ON 
+    u.id = cbg.userid
+WHERE 
+    r.role = 'plt_tutor' and u.suspended=0 and
+    (cbg.relevant_date IS NULL OR 
+    (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
+     YEAR(cbg.relevant_date) = YEAR(CURDATE())))
+order by auditorium_percentage desc, fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   update_CSEI_data: async (userid, number) => {
     const d = new Date();
     const current_month = d.getMonth()+1;
@@ -421,6 +443,29 @@ order by grants desc, fio;`;
     }
     const query_str = `UPDATE cafedra_bonus_general
     SET grants = ${number}
+    where userid = ${userid}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  update_EPHQ_data: async (userid, number) => {
+    const d = new Date();
+    const current_month = d.getMonth()+1;
+    const current_year = d.getFullYear();
+    const query_find = `select userid from cafedra_bonus_general
+    where userid = ${userid} and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
+    const [find_res] = await query_f(query_find);
+    if (find_res.length == 0) {
+      const empty_data = {
+        userid: userid, 
+        relevant_date: common.human_date(new Date())
+      };
+      await db.create_row("cafedra_bonus_general", empty_data);
+    }
+    const query_str = `UPDATE cafedra_bonus_general
+    SET auditorium_percentage = ${number}
     where userid = ${userid}
     and relevant_date>='${current_year}-${current_month}-01'
     and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;

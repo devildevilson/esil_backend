@@ -34,6 +34,14 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/tutorlistephq',
+    handler: async function (request, reply) {
+      const tutors = await db.get_tutors_EPHQ_list();
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
     path: '/createpenalty',
     handler: async function (request, reply) {
       const params = request.query;
@@ -100,6 +108,34 @@ module.exports = [
       const params = request.query;
       const userid = params.userid;
       await db.update_CSEI_data(userid,0);
+      return 'success';
+    },
+  },
+  {
+    method: 'GET',
+    path: '/approveauditorium',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
+      if(!tutordata) {
+        const empty_data = {
+          userid: userid, 
+          relevant_date: common.human_date(new Date())
+        };
+        await db.create_row("cafedra_bonus_general", empty_data);
+      }
+      await db.update_EPHQ_data(userid,1);
+      return 'success';
+    },
+  },
+  {
+    method: 'GET',
+    path: '/denyauditorium',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      await db.update_EPHQ_data(userid,0);
       return 'success';
     },
   },
