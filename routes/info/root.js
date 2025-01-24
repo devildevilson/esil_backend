@@ -1,6 +1,7 @@
 const common = require('@core/common');
 const db = require('@apis/db');
 const plt = require('@apis/platonus');
+const mdl = require('@apis/moodle');
 const fs = require('fs').promises;
 
 
@@ -48,6 +49,19 @@ module.exports = [
       const user_id = params.user_id;
       const user = await db.get_user_role(user_id);
       return user;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getmoodleinfotutor',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const tutor = await plt.find_tutor_by_iin(iin.iin);
+      const tutorid = tutor.plt_id;
+      const info = await mdl.calculate_percentage_by_tutorid_info(tutorid);
+      return info;
     },
   },
 ];

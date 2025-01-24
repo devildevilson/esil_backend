@@ -302,6 +302,59 @@ const db = {
 
         return (overall_percentage / res_select_files.length).toFixed(2);
     },
+    calculate_percentage_by_tutorid_info: async (tutorid) => {
+        const selectFiles = `SELECT 
+        c.fullname AS "subject",
+        COALESCE(CONCAT(u.lastname, ' ', u.firstname), 'No Tutor Found') AS "tutor",
+        (
+            SELECT COUNT(*)
+            FROM mdl_course_modules cm
+            INNER JOIN mdl_modules m ON cm.module = m.id
+            WHERE cm.course = c.id 
+              AND m.name IN ('resource', 'lesson')
+        ) AS "filecount",
+        (
+            SELECT COUNT(qs.id)
+            FROM mdl_quiz q
+            JOIN mdl_quiz_slots qs ON q.id = qs.quizid
+            WHERE q.course = c.id
+        ) AS "question_count",
+        CONCAT('dl.esil.edu.kz/course/view.php?id=', c.id) AS "link"
+    FROM 
+        mdl_course c
+    JOIN 
+        mdl_context ctx ON ctx.instanceid = c.id AND ctx.contextlevel = 50
+    JOIN 
+        mdl_role_assignments ra ON ra.contextid = ctx.id AND ra.roleid = 3
+    JOIN 
+        mdl_user u ON u.id = ra.userid AND u.suspended = 0
+    WHERE 
+        u.idnumber = 't${tutorid}'
+        AND c.fullname NOT LIKE '%research%' 
+        AND c.fullname NOT LIKE '%производственная%' 
+        AND c.fullname NOT LIKE '%өндірістік%'
+        AND c.fullname NOT LIKE '%exam preparation%'
+    ORDER BY 
+        c.fullname ASC;`;
+        const [res_select_files] = await query_f(selectFiles);
+        if (res_select_files.length == 0) return -1; 
+        const required_filecount = 18;
+        const tests_added_value = 3;
+        const required_overall_count = 21;
+        let info_array = [];
+        for (const row of res_select_files) {
+            const percentage = (row.filecount >= required_filecount && row.question_count > 0)
+            ? 100 
+            : (row.filecount === 0 && row.question_count > 0)
+            ? (tests_added_value / required_overall_count * 100).toFixed(2) 
+            : ((Math.min(row.filecount, required_filecount) / required_overall_count) * 100).toFixed(2);
+            if (percentage < 100){
+                row.percentage = percentage;
+                info_array.push({"subject":row.subject,"filecount":row.filecount,"question_count":row.question_count,"percentage":row.percentage, "link":row.link});
+            }
+        }
+        return info_array;
+    },
 };
 
 module.exports = db;
