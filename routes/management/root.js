@@ -91,6 +91,7 @@ module.exports = [
       let final_arr = [];
       for (const user of tutordata){  
         const iin = await db.get_iin_by_user_id(user.userid);
+        const cafedra = await db.get_tutor_cafedra_by_id(user.userid);
         const tutor = await plt.find_tutor_by_iin(iin.iin);
         if (!tutor) continue;
         const tutorid = tutor.plt_id;
@@ -107,7 +108,7 @@ module.exports = [
           if(tutor_penalties.penalty_ed == 1) penalty_score -=1;
         }
         const finalscore = points_db + points_plt_pubs + points_plt_literature + moodle_points + penalty_score;
-        final_arr.push({"userid":user.userid, "fio":tutor.lastname+' '+tutor.name+' '+tutor.middlename, "score":finalscore,"bonus": await db.get_bonus_level(finalscore)});
+        final_arr.push({"userid":user.userid, "fio":tutor.lastname+' '+tutor.name+' '+tutor.middlename, "cafedra":cafedra, "score":finalscore,"bonus": await db.get_bonus_level(finalscore)});
       }
       
       const sortedData = final_arr.sort((a, b) => b.score - a.score);

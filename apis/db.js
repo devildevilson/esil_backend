@@ -808,6 +808,11 @@ WHERE
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutor_cafedra_by_id: async (userid) => {
+    const query_str = `SELECT c.cafedranameru as cafedra from kpi_scores ks join cafedras c on c.id = ks.cafedra where userid=${userid};`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0].cafedra : undefined;
+  },
   get_bonus_level: async (score) => {
     if (score >= 0 && score < 6) return 0;
     if (score >= 6 && score < 12) return 1;
