@@ -20,6 +20,16 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/gettutorsbyfaculty',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const tutors = await db.get_tutors_by_faculty(userid);
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
     path: '/suspendtutor',
     handler: async function (request, reply) {
       const params = request.query;

@@ -432,6 +432,11 @@ order by grants desc, fio;`;
     const [res] = await query_f(query_str);
     return res.length === 0 ? 0 : res[0].cafedraid;
   },
+  get_faculty_manager_info: async (user_id) => {
+    const query_str = `SELECT cafedraid from dean_assignment da join users u on u.id=da.userid where u.id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? 0 : res[0].cafedraid;
+  },
   get_filename: async (file_id) => {
     const query_str = `SELECT filename from files where id=${file_id};`;
     const [res] = await query_f(query_str);
@@ -721,7 +726,15 @@ WHERE
     const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ast.nameru as 'academicstatus' from users u
     join kpi_scores ks on u.id = ks.userid
     join academicstatus ast on ks.academicstatusid = ast.id
-    where ks.cafedra = ${cafedraid} and u.suspended=0 order by fio;`;
+    where ks.cafedra = ${cafedraid} and u.suspended=0 and u.id not in (select userid from cafedra_manager_assignment) order by fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  get_tutors_by_faculty: async (userid) => {
+    const query_str = `SELECT ks.userid, CONCAT(u.lastname,' ',u.name, ' ', u.middlename) as 'fio', ast.nameru as 'academicstatus' from users u
+    join kpi_scores ks on u.id = ks.userid
+    join academicstatus ast on ks.academicstatusid = ast.id
+    where ks.cafedra in (select cafedraid from dean_assignment where userid=${userid}) and u.suspended=0 and u.id in (select userid from cafedra_manager_assignment) order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },

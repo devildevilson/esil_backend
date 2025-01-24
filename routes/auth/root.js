@@ -173,4 +173,13 @@ module.exports = [
       return managerinfo;
     },
   },
+  {
+    method: 'GET',
+    path: '/getfacultystatus',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const deaninfo = await db.get_faculty_manager_info(params.user_id);
+      return deaninfo.length > 0;
+    },
+  },
 ];
