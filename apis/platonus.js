@@ -603,7 +603,7 @@ const db = {
     console.log(`debugging for iin ${iin}`);
     const current_year = new Date().getFullYear();
     const year_frame = 3;
-    let query_str = `select * from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+    let query_str = `select * from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db, tp.refDBID from internal_pubcoauthorships ip
     join tutors t on t.tutorid=ip.tutorID
     join tutorpubs tp on ip.pubID = tp.pubID
     join publication_type pt ON tp.publication_type = pt.id
@@ -611,7 +611,7 @@ const db = {
     where t.iinplt = '${iin}' and t.deleted = 0
     and tp.edition_year>=${current_year - year_frame}
     UNION ALL
-    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db, tp.refDBID from tutorpubs tp
     join tutors t on t.tutorid=tp.tutorID
     join publication_type pt ON tp.publication_type = pt.id
     join publication_level pl ON tp.publication_level = pl.id
@@ -632,7 +632,8 @@ const db = {
           if (publications.length >= 5){
             console.log(`5 or more publications`);
             for (const pub of publications){
-              if(pub.edition_index_db == 'Scopus' || 
+              if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 ||
+                pub.edition_index_db == 'Scopus' || 
               pub.edition_index_db == 'Web of Science' ||
               pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)'
@@ -656,7 +657,7 @@ const db = {
           let counter = 0;
           if (publications.length >= 5){
             for (const pub of publications){
-              if(pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
+              if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
                 console.log(`found suited pub, adding up to ${counter}`);
@@ -682,7 +683,7 @@ const db = {
           let counter = 0;
           if (publications.length >= 7){
             for (const pub of publications){
-              if(pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
+              if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 || pub.pubtype == 'Научные монографии' || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
                 console.log(`found suited pub, adding up to ${counter}`);
@@ -714,7 +715,7 @@ const db = {
     console.log(`debugging for iin ${iin}`);
     const current_year = new Date().getFullYear();
     const year_frame = 5;
-    let query_str = `select count(*) as count from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from internal_pubcoauthorships ip
+    let query_str = `select count(*) as count from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db, tp.refDBID from internal_pubcoauthorships ip
     join tutors t on t.tutorid=ip.tutorID
     join tutorpubs tp on ip.pubID = tp.pubID
     join publication_type pt ON tp.publication_type = pt.id
@@ -723,7 +724,7 @@ const db = {
     and tp.publication_type = 5
     and tp.edition_year>=${current_year - year_frame}
     UNION ALL
-    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db from tutorpubs tp
+    select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db, tp.refDBID from tutorpubs tp
     join tutors t on t.tutorid=tp.tutorID
     join publication_type pt ON tp.publication_type = pt.id
     join publication_level pl ON tp.publication_level = pl.id
