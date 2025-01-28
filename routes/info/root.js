@@ -64,4 +64,15 @@ module.exports = [
       return info;
     },
   },
+  {
+    method: 'GET',
+    path: '/gettutortestids',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const lastname = params.lastname;
+      const info = await plt.get_tutor_tests_by_lastname(lastname);
+      return info;
+    },
+  },
+  
 ];

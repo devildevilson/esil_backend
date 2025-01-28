@@ -85,10 +85,11 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/approvegrants',
+    path: '/approvecsei',
     handler: async function (request, reply) {
       const params = request.query;
       const userid = params.userid;
+      const category = params.category;
       const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
       if(!tutordata) {
         const empty_data = {
@@ -97,18 +98,19 @@ module.exports = [
         };
         await db.create_row("cafedra_bonus_general", empty_data);
       }
-      await db.update_CSEI_data(userid,1);
-      return 'success';
+      await db.update_CSEI_data(userid,category,1);
+      return await db.get_tutors_CSEI_list();;
     },
   },
   {
     method: 'GET',
-    path: '/denygrants',
+    path: '/denycsei',
     handler: async function (request, reply) {
       const params = request.query;
       const userid = params.userid;
-      await db.update_CSEI_data(userid,0);
-      return 'success';
+      const category = params.category;
+      await db.update_CSEI_data(userid,category,0);
+      return await db.get_tutors_CSEI_list();;
     },
   },
   {

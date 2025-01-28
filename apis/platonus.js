@@ -599,6 +599,22 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_tutor_tests_by_lastname: async (lastname)=>{
+    const query_str = `select ts.testid, 
+    ts.testname,
+    case
+    when (ts.languageID = 1 or ts.languageid = 3) then subjects.SubjectNameRU
+    when ts.languageID = 2 then subjects.SubjectNameKZ
+    else 'Язык не указан' end as subject,
+    created,
+    easy as questioncount from tests ts
+        join tutors tr on tr.tutorID=ts.tutorID
+        join subjects on ts.subjectID = subjects.subjectID
+        where tr.lastname like '%${lastname}%'
+        order by ts.testID desc limit 10;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_tutorpubs: async (iin) => {
     console.log(`debugging for iin ${iin}`);
     const current_year = new Date().getFullYear();

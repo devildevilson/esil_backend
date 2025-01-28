@@ -387,6 +387,8 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     u.id AS userid,
     concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
     COALESCE(cbg.grants, 0) AS grants,
+    COALESCE(cbg.nirs, 0) AS nirs,
+    COALESCE(cbg.science_event, 0) AS science_event,
     cbg.relevant_date
 FROM 
     users u
@@ -400,7 +402,7 @@ WHERE
     (cbg.relevant_date IS NULL OR 
     (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
      YEAR(cbg.relevant_date) = YEAR(CURDATE())))
-order by grants desc, fio;`;
+order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -426,7 +428,7 @@ order by auditorium_percentage desc, fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
-  update_CSEI_data: async (userid, number) => {
+  update_CSEI_data: async (userid, category, number) => {
     const d = new Date();
     const current_month = d.getMonth()+1;
     const current_year = d.getFullYear();
@@ -442,7 +444,7 @@ order by auditorium_percentage desc, fio;`;
       await db.create_row("cafedra_bonus_general", empty_data);
     }
     const query_str = `UPDATE cafedra_bonus_general
-    SET grants = ${number}
+    SET ${category} = ${number}
     where userid = ${userid}
     and relevant_date>='${current_year}-${current_month}-01'
     and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
