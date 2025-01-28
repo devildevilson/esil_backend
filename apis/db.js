@@ -424,7 +424,7 @@ WHERE
     (cbg.relevant_date IS NULL OR 
     (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
      YEAR(cbg.relevant_date) = YEAR(CURDATE())))
-order by auditorium_percentage desc, fio;`;
+order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
@@ -599,7 +599,7 @@ WHERE
     (tp.relevant_date IS NULL OR 
     (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
      YEAR(tp.relevant_date) = YEAR(CURDATE())))
-     order by penalty_hr desc, penalty_ed desc, fio;`;
+     order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },

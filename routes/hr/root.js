@@ -69,7 +69,7 @@ module.exports = [
       else{
         await db.update_existing_penalty_record(userid,penalty_type,1);
       }
-      return 'success';
+      return await db.get_tutors_penalty_list();
     },
   },
   {
@@ -80,7 +80,7 @@ module.exports = [
       const userid = params.userid;
       const penalty_type = params.penalty_type;
       await db.update_existing_penalty_record(userid,penalty_type,0);
-      return 'success';
+      return await db.get_tutors_penalty_list();
     },
   },
   {
@@ -128,7 +128,7 @@ module.exports = [
         await db.create_row("cafedra_bonus_general", empty_data);
       }
       await db.update_EPHQ_data(userid,1);
-      return 'success';
+      return await db.get_tutors_EPHQ_list();
     },
   },
   {
@@ -138,7 +138,7 @@ module.exports = [
       const params = request.query;
       const userid = params.userid;
       await db.update_EPHQ_data(userid,0);
-      return 'success';
+      return await db.get_tutors_EPHQ_list();
     },
   },
 ];
