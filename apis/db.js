@@ -406,6 +406,28 @@ order by fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutors_science_secretary_list: async () => {
+    const query_str = `SELECT 
+    u.id AS userid,
+    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    COALESCE(cbg.commission_participation, 0) AS commission_participation,
+    cbg.relevant_date
+FROM 
+    users u
+join roles r on r.user_id=u.id
+LEFT JOIN 
+    cafedra_bonus_general cbg
+ON 
+    u.id = cbg.userid
+WHERE 
+    r.role = 'plt_tutor' and u.suspended=0 and
+    (cbg.relevant_date IS NULL OR 
+    (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
+     YEAR(cbg.relevant_date) = YEAR(CURDATE())))
+order by fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_tutors_EPHQ_list: async () => {
     const query_str = `SELECT 
     u.id AS userid,

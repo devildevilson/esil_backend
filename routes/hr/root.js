@@ -34,6 +34,14 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/tutorlistsciencesec',
+    handler: async function (request, reply) {
+      const tutors = await db.get_tutors_science_secretary_list();
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
     path: '/tutorlistephq',
     handler: async function (request, reply) {
       const tutors = await db.get_tutors_EPHQ_list();
@@ -111,6 +119,36 @@ module.exports = [
       const category = params.category;
       await db.update_CSEI_data(userid,category,0);
       return await db.get_tutors_CSEI_list();;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/approvesciencesec',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const category = params.category;
+      const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
+      if(!tutordata) {
+        const empty_data = {
+          userid: userid, 
+          relevant_date: common.human_date(new Date())
+        };
+        await db.create_row("cafedra_bonus_general", empty_data);
+      }
+      await db.update_CSEI_data(userid,category,1);
+      return await db.get_tutors_science_secretary_list();
+    },
+  },
+  {
+    method: 'GET',
+    path: '/denysciencesec',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const category = params.category;
+      await db.update_CSEI_data(userid,category,0);
+      return await db.get_tutors_science_secretary_list();
     },
   },
   {
