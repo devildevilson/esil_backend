@@ -216,7 +216,7 @@ module.exports = [
           await db.create_row("cafedra_bonus_proforientation", empty_data);
         }
       await db.update_bonussystem_prof_data(for_userid,proforientation);
-      return { message: 'Данные обновлены' };
+      return await db.get_tutors_proforientation_list();
     },
   },
   // {
