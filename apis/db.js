@@ -382,6 +382,28 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_tutors_proforientation_list: async () => {
+    const query_str = `SELECT 
+    u.id AS userid,
+    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    COALESCE(cbp.proforientation_student_count, 0) AS proforientation,
+    cbp.relevant_date
+FROM 
+    users u
+join roles r on r.user_id = u.id
+LEFT JOIN 
+    cafedra_bonus_proforientation cbp
+ON 
+    u.id = cbp.userid
+WHERE 
+    r.role = 'plt_tutor' and u.suspended=0 and
+    (cbp.relevant_date IS NULL OR 
+    (MONTH(cbp.relevant_date) = MONTH(CURDATE()) AND 
+     YEAR(cbp.relevant_date) = YEAR(CURDATE())))
+order by fio;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_tutors_CSEI_list: async () => {
     const query_str = `SELECT 
     u.id AS userid,

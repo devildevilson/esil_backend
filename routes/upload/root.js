@@ -207,6 +207,14 @@ module.exports = [
       const params = request.query;
       const for_userid = params.for_userid;
       const proforientation = params.student_count;
+      const tutordata = await db.get_tutor_proforientation_data_by_user_id(for_userid);
+        if(!tutordata) {
+          const empty_data = {
+            userid: for_userid,
+            relevant_date: common.human_date(new Date())
+          };
+          await db.create_row("cafedra_bonus_proforientation", empty_data);
+        }
       await db.update_bonussystem_prof_data(for_userid,proforientation);
       return { message: 'Данные обновлены' };
     },

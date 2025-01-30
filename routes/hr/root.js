@@ -26,6 +26,14 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/tutorlistadmission',
+    handler: async function (request, reply) {
+      const tutors = await db.get_tutors_proforientation_list();
+      return tutors;
+    },
+  },
+  {
+    method: 'GET',
     path: '/tutorlistcsei',
     handler: async function (request, reply) {
       const tutors = await db.get_tutors_CSEI_list();
