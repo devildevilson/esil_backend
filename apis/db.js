@@ -333,7 +333,7 @@ const db = {
     const current_month = d.getMonth()+1;
     const current_year = d.getFullYear();
     let current_study_year = d.getFullYear();
-    if ((d.getMonth() + 1) < 9) current_study_year-=1;
+    if ((d.getMonth() + 1) < 6) current_study_year-=1;
     const query_str = `SELECT 
     (
         (CASE WHEN auditorium_percentage > 0 THEN 1 ELSE 0 END) +
@@ -373,7 +373,7 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
   update_bonussystem_prof_data: async (userid, proforientation) => {
     const d = new Date();
     let current_study_year = d.getFullYear();
-    if ((d.getMonth() + 1) < 9) current_study_year-=1;
+    if ((d.getMonth() + 1) < 6) current_study_year-=1;
     const query_str = `UPDATE cafedra_bonus_proforientation
     SET proforientation_student_count=${proforientation}
     where userid=${userid}
@@ -383,6 +383,9 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     return res;
   },
   get_tutors_proforientation_list: async () => {
+    const d = new Date();
+    let current_year = d.getFullYear();
+    if ((d.getMonth() + 1) < 6) current_year-=1;
     const query_str = `SELECT 
     u.id AS userid,
     concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
@@ -398,8 +401,7 @@ ON
 WHERE 
     r.role = 'plt_tutor' and u.suspended=0 and
     (cbp.relevant_date IS NULL OR 
-    (MONTH(cbp.relevant_date) = MONTH(CURDATE()) AND 
-     YEAR(cbp.relevant_date) = YEAR(CURDATE())))
+    (cbp.relevant_date>='${current_year}-06-01' and cbp.relevant_date<='${current_year+1}-05-31'))
 order by fio;`;
     const [res] = await query_f(query_str);
     return res;
@@ -744,7 +746,7 @@ WHERE
   get_tutor_proforientation_data_by_user_id: async (id) => {
     const d = new Date();
     let current_year = d.getFullYear();
-    if ((d.getMonth() + 1) < 9) current_year-=1;
+    if ((d.getMonth() + 1) < 6) current_year-=1;
     const query_str = `select proforientation_student_count from cafedra_bonus_proforientation 
     where userid=${id}
     and relevant_date>='${current_year}-06-01'

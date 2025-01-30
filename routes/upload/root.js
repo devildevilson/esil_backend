@@ -330,6 +330,18 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/removetutorcategory',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const denied_by = params.denied_by;
+      const denied_for = params.denied_for;
+      const category = params.category;
+      await db.update_CSEI_data(denied_for,category,0);
+      return { message: `Denied category ${category} for userid ${denied_for} by ${denied_by}` };
+    },
+  },
+  {
+    method: 'GET',
     path: '/checkphotoeligibility/:user_id',
     handler: async function (request, reply) {
       let user = await db.find_user_by_id(request.params.user_id)
