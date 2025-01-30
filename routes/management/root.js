@@ -96,12 +96,16 @@ module.exports = [
         if (!tutor) continue;
         const tutorid = tutor.plt_id;
         const percentage = await mdl.calculate_percentage_by_tutorid(tutorid);
-        const points_db = await db.get_bonus_points_by_id(user.userid);
+        let points_db = 0;
+        if (month_query == 'previous') points_db = await db.get_bonus_points_by_id_prevmonth(user.userid);
+        else points_db = await db.get_bonus_points_by_id(user.userid);
         const points_plt_pubs = await plt.get_tutorpubs(iin.iin);
         const points_plt_literature = await plt.get_tutorliterature(iin.iin);
         let moodle_points = 0;
         if (percentage > -1) if (percentage > 99) moodle_points = 1;
-        const tutor_penalties = await db.find_penalty_record_for_current_month(user.userid);
+        let tutor_penalties;
+        if (month_query == 'previous') tutor_penalties = await db.find_penalty_record_for_previous_month(user.userid);
+        else tutor_penalties = await db.find_penalty_record_for_current_month(user.userid);
         let penalty_score = 0;
         if (tutor_penalties) {
           if(tutor_penalties.penalty_hr == 1) penalty_score -=1;

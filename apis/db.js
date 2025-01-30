@@ -365,6 +365,50 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const prof_ceiling = prof_points < max_applicants ? prof_points : max_applicants;
     return res.length === 0 ? undefined : res[0].points + Math.floor(prof_ceiling / 3);
   },
+  get_bonus_points_by_id_prevmonth: async (userid) => {
+    const d = new Date();
+    let current_month = d.getMonth()+1;
+    let current_year = d.getFullYear();
+    if (current_month != 1){ 
+      current_month = current_month - 1;
+    }
+    else {
+      current_month = 12;
+      current_year = current_year - 1;
+    }
+    let current_study_year = d.getFullYear();
+    if (current_month < 6) current_study_year-=1;
+    const query_str = `SELECT 
+    (
+        (CASE WHEN auditorium_percentage > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN umkd > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN course_development > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN dot_content > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN certificates > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN science_event > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN grants > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN nirs > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN is_adviser > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN disciplinary_event > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN employer_cooperation > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN commission_participation > 0 THEN 1 ELSE 0 END) +
+        (CASE WHEN task_completion > 0 THEN 1 ELSE 0 END)
+    ) AS points
+FROM cafedra_bonus_general
+WHERE userid = ${userid}
+and relevant_date>='${current_year}-${current_month}-01'
+and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
+    const [res] = await query_f(query_str);
+    const prof_query = `select proforientation_student_count as points from cafedra_bonus_proforientation where userid=${userid}
+    and relevant_date>='${current_study_year}-06-01'
+    and relevant_date<='${current_study_year+1}-05-31';`;
+    const [prof_res] = await query_f(prof_query);
+    let prof_points = 0;
+    if (prof_res.length != 0) prof_points = prof_res[0].points
+    const max_applicants = 9;
+    const prof_ceiling = prof_points < max_applicants ? prof_points : max_applicants;
+    return res.length === 0 ? undefined : res[0].points + Math.floor(prof_ceiling / 3);
+  },
   update_bonussystem_data: async (userid, filetype, fileid) => {
     const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid};`;
     const [res] = await query_f(query_str);
@@ -655,6 +699,24 @@ WHERE
         (tp.relevant_date IS NULL OR 
         (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
          YEAR(tp.relevant_date) = YEAR(CURDATE())));`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0]:undefined;
+  },
+  find_penalty_record_for_previous_month: async (userid) => {
+    const d = new Date();
+    let current_month = d.getMonth()+1;
+    let current_year = d.getFullYear();
+    if (current_month != 1){ 
+      current_month = current_month - 1;
+    }
+    else {
+      current_month = 12;
+      current_year = current_year - 1;
+    }
+    const query_str = `select * from tutor_penalties tp
+    where userid = ${userid} and
+        (tp.relevant_date IS NULL OR 
+        (tp.relevant_date >= '${current_year}-${current_month}-01' and tp.relevant_date <= '${getLastDayOfMonth(current_year,current_month)}'));`;
     const [res] = await query_f(query_str);
     return res.length > 0 ? res[0]:undefined;
   },
