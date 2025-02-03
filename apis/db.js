@@ -673,23 +673,20 @@ ORDER BY fio;`;
   get_tutors_penalty_list: async () => {
     const query_str = `SELECT 
     u.id AS userid,
-    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    CONCAT(u.lastname, ' ', u.name, ' ', u.middlename) AS fio,
     COALESCE(tp.penalty_hr, 0) AS penalty_hr,
-    COALESCE(tp.penalty_ed, 0) AS penalty_ed,
-    tp.relevant_date
+    COALESCE(tp.penalty_ed, 0) AS penalty_ed
 FROM 
     users u
-join roles r on r.user_id=u.id
-LEFT JOIN 
-    tutor_penalties tp
-ON 
-    u.id = tp.userid
+JOIN roles r ON r.user_id = u.id
+LEFT JOIN tutor_penalties tp 
+    ON u.id = tp.userid 
+    AND MONTH(tp.relevant_date) = MONTH(CURDATE()) 
+    AND YEAR(tp.relevant_date) = YEAR(CURDATE())
 WHERE 
-    r.role = 'plt_tutor' and u.suspended=0 and
-    (tp.relevant_date IS NULL OR 
-    (MONTH(tp.relevant_date) = MONTH(CURDATE()) AND 
-     YEAR(tp.relevant_date) = YEAR(CURDATE())))
-     order by fio;`;
+    r.role = 'plt_tutor' 
+    AND u.suspended = 0
+ORDER BY fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
