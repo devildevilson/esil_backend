@@ -32,6 +32,28 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getemployeeattendanceinfoshort',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const user_id = params.user_id;
+      const iin = await db.get_iin_by_user_id(user_id);
+      const attendance_data = await db.get_attendance_data_by_iin_employee(iin.iin,6);
+      return attendance_data;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getemployeeattendanceinfo',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const user_id = params.user_id;
+      const iin = await db.get_iin_by_user_id(user_id);
+      const attendance_data = await db.get_attendance_data_by_iin_employee(iin.iin,1000);
+      return attendance_data;
+    },
+  },
+  {
+    method: 'GET',
     path: '/getstudentinfo',
     handler: async function (request, reply) {
       const params = request.query;
