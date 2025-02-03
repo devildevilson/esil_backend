@@ -453,46 +453,41 @@ order by fio;`;
   get_tutors_CSEI_list: async () => {
     const query_str = `SELECT 
     u.id AS userid,
-    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
+    CONCAT(u.lastname, ' ', u.name, ' ', u.middlename) AS fio,
     COALESCE(cbg.grants, 0) AS grants,
     COALESCE(cbg.nirs, 0) AS nirs,
-    COALESCE(cbg.science_event, 0) AS science_event,
-    cbg.relevant_date
+    COALESCE(cbg.science_event, 0) AS science_event
 FROM 
     users u
-join roles r on r.user_id=u.id
-LEFT JOIN 
-    cafedra_bonus_general cbg
-ON 
-    u.id = cbg.userid
+JOIN roles r ON r.user_id = u.id
+LEFT JOIN cafedra_bonus_general cbg 
+    ON u.id = cbg.userid 
+    AND MONTH(cbg.relevant_date) = MONTH(CURDATE()) 
+    AND YEAR(cbg.relevant_date) = YEAR(CURDATE())
 WHERE 
-    r.role = 'plt_tutor' and u.suspended=0 and
-    (cbg.relevant_date IS NULL OR 
-    (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
-     YEAR(cbg.relevant_date) = YEAR(CURDATE())))
-order by fio;`;
+    r.role = 'plt_tutor' 
+    AND u.suspended = 0
+ORDER BY fio;
+`;
     const [res] = await query_f(query_str);
     return res;
   },
   get_tutors_science_secretary_list: async () => {
     const query_str = `SELECT 
     u.id AS userid,
-    concat(u.lastname,' ',u.name,' ',u.middlename) as fio,
-    COALESCE(cbg.commission_participation, 0) AS commission_participation,
-    cbg.relevant_date
+    CONCAT(u.lastname, ' ', u.name, ' ', u.middlename) AS fio,
+    COALESCE(cbg.commission_participation, 0) AS commission_participation
 FROM 
     users u
-join roles r on r.user_id=u.id
-LEFT JOIN 
-    cafedra_bonus_general cbg
-ON 
-    u.id = cbg.userid
+JOIN roles r ON r.user_id = u.id
+LEFT JOIN cafedra_bonus_general cbg 
+    ON u.id = cbg.userid 
+    AND MONTH(cbg.relevant_date) = MONTH(CURDATE()) 
+    AND YEAR(cbg.relevant_date) = YEAR(CURDATE())
 WHERE 
-    r.role = 'plt_tutor' and u.suspended=0 and
-    (cbg.relevant_date IS NULL OR 
-    (MONTH(cbg.relevant_date) = MONTH(CURDATE()) AND 
-     YEAR(cbg.relevant_date) = YEAR(CURDATE())))
-order by fio;`;
+    r.role = 'plt_tutor' 
+    AND u.suspended = 0
+ORDER BY fio;`;
     const [res] = await query_f(query_str);
     return res;
   },
