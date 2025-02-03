@@ -648,7 +648,7 @@ ORDER BY fio;`;
     return res;
   },
   get_attendance_data_by_iin_employee: async (iin, limit) => {
-    const query_str = `select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from employee_attendance ea where iin='${iin}' order by ea.date desc limit ${limit};`;
+    const query_str = `select concat(firstname,' ',lastname) as fio,DATE_FORMAT(date, '%d.%m.%Y') as date,checkin,checkout from employee_attendance ea where iin='${iin}' and ea.date>='2025-01-01' order by ea.date desc limit ${limit};`;
     const [res] = await query_f(query_str);
     return res;
   },
