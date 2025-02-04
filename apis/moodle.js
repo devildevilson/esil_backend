@@ -121,6 +121,8 @@ const db = {
         AND c.fullname NOT LIKE '%производственная%' 
         AND c.fullname NOT LIKE '%өндірістік%'
         AND c.fullname NOT LIKE '%exam preparation%'
+        AND c.fullname NOT LIKE '%физическая культура%'
+        AND c.fullname NOT LIKE '%дене шынықтыру%'
     GROUP BY 
         c.id
     ORDER BY 
@@ -204,6 +206,8 @@ const db = {
         AND c.fullname NOT LIKE '%производственная%' 
         AND c.fullname NOT LIKE '%өндірістік%'
         AND c.fullname NOT LIKE '%exam preparation%'
+        AND c.fullname NOT LIKE '%физическая культура%'
+        AND c.fullname NOT LIKE '%дене шынықтыру%'
     GROUP BY 
         c.id
     ORDER BY 
@@ -282,6 +286,8 @@ const db = {
         AND c.fullname NOT LIKE '%производственная%' 
         AND c.fullname NOT LIKE '%өндірістік%'
         AND c.fullname NOT LIKE '%exam preparation%'
+        AND c.fullname NOT LIKE '%физическая культура%'
+        AND c.fullname NOT LIKE '%дене шынықтыру%'
     ORDER BY 
         c.fullname ASC;`;
         const [res_select_files] = await query_f(selectFiles);
@@ -334,6 +340,8 @@ const db = {
         AND c.fullname NOT LIKE '%производственная%' 
         AND c.fullname NOT LIKE '%өндірістік%'
         AND c.fullname NOT LIKE '%exam preparation%'
+        AND c.fullname NOT LIKE '%физическая культура%'
+        AND c.fullname NOT LIKE '%дене шынықтыру%'
     ORDER BY 
         c.fullname ASC;`;
         const [res_select_files] = await query_f(selectFiles);
