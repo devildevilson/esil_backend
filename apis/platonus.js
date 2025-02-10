@@ -909,6 +909,19 @@ ORDER BY
     const [res] = await query_f(query_str);
     return res;
   },
+  find_student_group: async (studentid) => {
+    const query_str = `select g.name as groupname from students s
+    join \`groups\` g on g.groupID = s.groupID
+    where s.StudentID=${studentid};`;
+    let res;
+    try{
+      [res] = await query_f(query_str);
+    }
+    catch{
+      return undefined;
+    }
+    return res.length !== 0 ? res[0] : undefined;
+  },
   find_tutor_by_iin: async (inn) => {
     const query_str = `SELECT tutorid AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM tutors WHERE iinplt = '${inn}' AND has_access = 1 AND cafedraid != 0;`;
     const [res] = await query_f(query_str);

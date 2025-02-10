@@ -8,6 +8,19 @@ const fs = require('fs').promises;
 const successful_upload = "Книга успешно добавлена";
 
 module.exports = [
+  
+  {
+    method: 'GET',
+    path: '/getextradatacert',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const user_id = params.user_id;
+      const data = await db.find_user_role(user_id,'plt_student');
+      const groupdata = await plt.find_student_group(data.assotiated_id);
+      if(groupdata) return groupdata.groupname
+      else return undefined;
+    },
+  },
   {
     method: 'GET',
     path: '/getattendanceinfoshort',
