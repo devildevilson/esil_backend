@@ -1173,7 +1173,10 @@ WHERE
     const query_str = `SELECT 
     COUNT(CASE WHEN DateCreated>'${nYear}-09-01 00:00:00' and DateCreated<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksgiven,
     COUNT(CASE WHEN resolved = 'false' THEN 1 END) AS booksonhand,
-    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksreturned
+    COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksreturned,
+    COUNT(DISTINCT CASE 
+      WHEN DateCreated > '${nYear}-09-01 00:00:00' AND DateCreated < '${nYear + 1}-08-31 23:59:00' THEN userid 
+  END) AS unique_users_this_year
 FROM 
     booktransfer;`;
     const [res] = await query_f(query_str);
