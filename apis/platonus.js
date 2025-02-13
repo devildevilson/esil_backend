@@ -33,7 +33,10 @@ const db = {
   close: async () => {
     await pool.end();
   },
-
+  generic_query: async (query_str) =>{
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res : undefined;
+  },
   find_student_data_for_certificate: async (student_id) => {
     const query_str = `
       SELECT 
