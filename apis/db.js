@@ -1176,7 +1176,9 @@ WHERE
     COUNT(CASE WHEN resolved = 'true' and DateResolved>'${nYear}-09-01 00:00:00' and DateResolved<'${nYear + 1}-08-31 23:59:00' THEN 1 END) AS booksreturned,
     COUNT(DISTINCT CASE 
       WHEN DateCreated > '${nYear}-09-01 00:00:00' AND DateCreated < '${nYear + 1}-08-31 23:59:00' THEN userid 
-  END) AS unique_users_this_year
+  END) AS unique_users_this_year,
+  (SELECT COUNT(id) FROM librarybooks) AS total_books,
+  (SELECT COUNT(id) FROM ebooks) AS total_ebooks
 FROM 
     booktransfer;`;
     const [res] = await query_f(query_str);
