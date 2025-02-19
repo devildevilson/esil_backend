@@ -105,6 +105,32 @@ const db = {
     const [res] = await query_f(query_str);
     return res;
   },
+  get_student_statement_data: async (studentid) => {
+    const query_str = `select concat('Факультет ',f.facultynameru) as faculty, concat(lastname,' ',firstname,' ',patronymic) as fio, mobilePhone as phonenumber from students s
+    LEFT JOIN specializations AS spec
+    ON s.specializationID = spec.id
+    LEFT JOIN profession_cafedra pc 
+    ON pc.id = spec.prof_caf_id
+    LEFT JOIN cafedras c ON pc.cafedraID = c.cafedraID
+    LEFT JOIN faculties f ON f.FacultyID = c.FacultyID
+    where StudentID=${studentid};`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0]:undefined;
+  },
+  get_student_card_data: async (studentid) => {
+    const query_str = `select concat(lastname,' ',firstname,' ',patronymic) as fio, s.BirthDate as birthdate, concat('Факультет ',f.facultynameru) as faculty, spec.nameru as specialization, s.CourseNumber as course, g.name as \`group\`, sl.NameRU as studylanguage, s.icnumber, s.icdate, s.icdepartment, s.iinplt, mobilePhone as phonenumber from students s
+    LEFT JOIN specializations AS spec
+    ON s.specializationID = spec.id
+    LEFT JOIN profession_cafedra pc 
+    ON pc.id = spec.prof_caf_id
+    LEFT JOIN cafedras c ON pc.cafedraID = c.cafedraID
+    LEFT JOIN faculties f ON f.FacultyID = c.FacultyID
+    left join \`groups\` g on s.groupID = g.groupID
+    left join studylanguages sl on s.StudyLanguageID = sl.id
+    where StudentID=${studentid};`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0]:undefined;
+  },
   get_employees_for_hr: async () => {
     const query_str = `Select t.iinplt as iin,
     t.lastname, t.firstname, t.patronymic, 

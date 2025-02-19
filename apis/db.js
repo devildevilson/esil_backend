@@ -211,12 +211,23 @@ const db = {
     return res.length !== 0 ? res[0] : undefined;
   },
   get_all_dorm_requests: async (iin) => {
-    const query_str = `SELECT * from dormrequests;`;
+    const query_str = `select dr.*, dd.statementdata, dd.carddata, dd.parentsdata from dormrequests dr
+    left join users u on dr.iin = u.iin
+    left join dormdocuments dd on u.id = dd.userid;`;
     const [res] = await query_f(query_str);
     return res;
   },
+  get_student_dorm_room_number: async (iin) => {
+    const query_str = `select roomnumber from dormrequests
+    where iin = ${iin}`;
+    const [res] = await query_f(query_str);
+    return res.length > 0 ? res[0].roomnumber : '______';
+  },
   get_dorm_request_by_iin: async (iin) => {
-    const query_str = `SELECT * from dormrequests where iin = '${iin}';`;
+    const query_str = `select dr.*, dd.statementdata, dd.carddata, dd.parentsdata from dormrequests dr
+    left join users u on dr.iin = u.iin
+    left join dormdocuments dd on u.id = dd.userid
+    where dr.iin = ${iin}`;
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
@@ -240,6 +251,16 @@ const db = {
   },
   get_user_roles: async (user_id) => {
     const query_str = `SELECT id,user_id,role,assotiated_id,assotiated_str,granted_by,created FROM roles WHERE user_id = ${user_id};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  find_student_dorm_docs: async (userid) => {
+    const query_str = `SELECT * FROM dormdocuments WHERE userid = ${userid};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
+  update_student_dorm_docs: async (userid,statementdata,carddata,parentsdata) => {
+    const query_str = `update dormdocuments set statementdata='${statementdata}', carddata='${carddata}', parentsdata='${parentsdata}' WHERE userid = ${userid};`;
     const [res] = await query_f(query_str);
     return res;
   },

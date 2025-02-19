@@ -372,6 +372,9 @@ module.exports = [
         const dormreq = await db.get_dorm_request_by_iin(users[i].iin);
         if (dormreq != undefined) {
           Object.assign(users[i], {
+            statementdata: dormreq.statementdata,
+            carddata: dormreq.carddata,
+            parentsdata: dormreq.parentsdata,
             approved: dormreq.approved,
             datecreated: dormreq.datecreated,
             datemodified: dormreq.datemodified,
