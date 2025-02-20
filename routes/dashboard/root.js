@@ -307,6 +307,12 @@ module.exports = [
       , ck.nameru  AS 'Населенный пункт, проживания'
       , a.city AS 'Населенный пункт, откуда прибыл'
       , stud.from_region AS 'Районный центр, откуда прибыл'
+      , CASE 
+        WHEN end_school = 1 THEN 'Школа'
+        WHEN end_college = 1 THEN 'Колледж'
+        WHEN end_high_school = 1 THEN 'ВУЗ'
+        WHEN end_other = 1 THEN 'Другое'
+        END AS 'Окончил'
       , stud.from_area AS 'Область' 
       , a.phone AS 'Телефон'
       , a.mail AS 'E-mail'
