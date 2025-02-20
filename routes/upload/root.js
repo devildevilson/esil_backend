@@ -27,7 +27,7 @@ const user_not_found = "Пользователь не найден";
 const success = "Успешно";
 
 function sanitizeFilename(filename) {
-  return filename.replace(/[\\\/:*?"<>|\s]/g, '_');
+  return filename.replace(/[\\\/:*#?"<>|\s]/g, '_');
 }
 
 var storage = Multer.diskStorage({
