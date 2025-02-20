@@ -431,7 +431,11 @@ and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     return res.length === 0 ? undefined : res[0].points + Math.floor(prof_ceiling / 3);
   },
   update_bonussystem_data: async (userid, filetype, fileid) => {
-    const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid};`;
+    const d = new Date();
+    let current_month = d.getMonth()+1;
+    let current_year = d.getFullYear();
+    const query_str = `UPDATE cafedra_bonus_general SET ${filetype}=${fileid} where userid=${userid} and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     return res;
   },

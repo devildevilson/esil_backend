@@ -161,6 +161,46 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/approvegrantsbulk',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userids = params.userid.split(',');
+      for (const userid of userids) {
+        const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
+        if (!tutordata) {
+          const empty_data = {
+            userid: userid,
+            relevant_date: common.human_date(new Date())
+          };
+          await db.create_row("cafedra_bonus_general", empty_data);
+        }
+        await db.update_CSEI_data(userid, 'grants', 1);
+      }
+      return { message: 'done' };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/approvesciencebulk',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userids = params.userid.split(',');
+      for (const userid of userids) {
+        const tutordata = await db.get_tutor_bonus_data_by_user_id(userid);
+        if (!tutordata) {
+          const empty_data = {
+            userid: userid,
+            relevant_date: common.human_date(new Date())
+          };
+          await db.create_row("cafedra_bonus_general", empty_data);
+        }
+        await db.update_CSEI_data(userid, 'science_event', 1);
+      }
+      return { message: 'done' };
+    },
+  },
+  {
+    method: 'GET',
     path: '/approveauditoriumbulk',
     handler: async function (request, reply) {
       const params = request.query;

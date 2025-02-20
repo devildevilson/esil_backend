@@ -663,19 +663,19 @@ const db = {
     where t.iinplt = '${iin}' and t.deleted = 0
     and tp.edition_year>=${current_year - year_frame}) as tem;`
     const [publications] = await query_f(query_str);
-    console.log(`found ${publications.length} publications`);
+    //console.log(`found ${publications.length} publications`);
     if (publications.length == 0) return 0;
     query_str = `SELECT AcademicStatusID FROM tutors t 
     WHERE t.deleted = 0 and t.iinplt = '${iin}';`
     const [academicstatus] = await query_f(query_str);
-    console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
+    //console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
     if (academicstatus) {
       switch (academicstatus[0].AcademicStatusID) {
         case 0: case 1: {
           let counter = 0;
           // 'Без звания'; 
           if (publications.length >= 5){
-            console.log(`5 or more publications`);
+            //console.log(`5 or more publications`);
             for (const pub of publications){
               if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 ||
                 pub.edition_index_db == 'Scopus' || 
@@ -684,7 +684,7 @@ const db = {
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)'
               ) {
                 counter++;
-                console.log(`found suited pub, adding up to ${counter}`);
+                //console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 2 && publications.length >= 10) return 2;
               }
             }
@@ -692,7 +692,7 @@ const db = {
             else return 0;
           }
           else {
-            console.log(`${publications.length} wasn't enough`);
+            //console.log(`${publications.length} wasn't enough`);
             return 0
           };
         }
@@ -705,7 +705,7 @@ const db = {
               if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
-                console.log(`found suited pub, adding up to ${counter}`);
+                //console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 6 && publications.length >= 10) return 2;
               }
             }
@@ -713,12 +713,12 @@ const db = {
               return 1;
             }
             else {
-              console.log(`${counter} wasn't enough`);
+              //console.log(`${counter} wasn't enough`);
               return 0;
             }
           }
           else {
-            console.log(`${publications.length} wasn't enough`);
+            //console.log(`${publications.length} wasn't enough`);
             return 0
           };     
         }
@@ -731,14 +731,14 @@ const db = {
               if(pub.refDBID == 1 || pub.refDBID == 2 || pub.refDBID == 3 || pub.edition_index_db == 'Scopus' || pub.edition_index_db == 'Web of Science' || pub.edition_index_db == 'Комитет по контролю в сфере образования и науки Министерства образования и науки Республики Казахстан (ККСОН МОН РК)' ||
               pub.edition_index_db == 'Комитет по обеспечению качества в сфере науки и высшего образования Министерства науки и высшего образования Республики Казахстан (КОКСНВО МНВО РК)') {
                 counter++;
-                console.log(`found suited pub, adding up to ${counter}`);
+                //console.log(`found suited pub, adding up to ${counter}`);
                 if (counter == 10 && publications.length >= 14) return 2;
               }
             }
             for (const pub of publications){
               if(pub.pubtype == 'Научные монографии') {
                 counter++;
-                console.log(`found suited monograph, adding up to ${counter}`);
+                //console.log(`found suited monograph, adding up to ${counter}`);
                 if (counter == 10 && publications.length >= 14) return 2;
               }
             }
@@ -746,12 +746,12 @@ const db = {
               return 1;
             }
             else {
-              console.log(`${counter} wasn't enough`);
+              //console.log(`${counter} wasn't enough`);
               return 0;
             }
           }
           else {
-            console.log(`${publications.length} wasn't enough`);
+            //console.log(`${publications.length} wasn't enough`);
             return 0
           };
           
@@ -764,7 +764,7 @@ const db = {
     }
   },
   get_tutorliterature: async (iin) => {
-    console.log(`debugging for iin ${iin}`);
+    //console.log(`debugging for iin ${iin}`);
     const current_year = new Date().getFullYear();
     const year_frame = 5;
     let query_str = `select count(*) as count from (select tp.pubID, tp.theme, tp.edition_year, t.lastname,  t.firstname, pt.nameru AS 'pubtype', pl.nameru as 'publevel', tp.impact_factor as 'impact_factor',tp.edition_index_db, tp.refDBID from internal_pubcoauthorships ip
@@ -785,11 +785,11 @@ const db = {
     and tp.edition_year>=${current_year - year_frame}) as tem;`
     const [publications] = await query_f(query_str);
     if (publications.length == 0 || publications[0].count == 0) return 0;
-    console.log(`count is ${publications[0].count}`);
+    //console.log(`count is ${publications[0].count}`);
     query_str = `SELECT AcademicStatusID FROM tutors t 
     WHERE t.deleted = 0 and t.iinplt = '${iin}';`
     const [academicstatus] = await query_f(query_str);
-    console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
+    //console.log(`academicstatus is ${academicstatus[0].AcademicStatusID}`);
     if (academicstatus) {
       switch (academicstatus[0].AcademicStatusID) {
         case 0: case 1: {

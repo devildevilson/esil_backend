@@ -229,7 +229,7 @@ const db = {
         const required_overall_count = 21;
         let cafedra_results = [];
         for (const row of sortedDataFiles) {
-            console.log(row);
+            //console.log(row);
             const cafedra_res = await plt.get_tutor_cafedra_by_tutorid(row.tutorid.substring(1));
             row.cafedra = cafedra_res.cafedra;
             row.percentage = (row.filecount >= required_filecount && row.question_count > 0)
