@@ -830,10 +830,17 @@ WHERE
     return res[0];
   },
   confirm_if_fileless_category_unconfirmed: async (confirmed_for, category) => {
-    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
+    const date = new Date();
+    const current_month = date.getMonth()+1;
+    const current_year = date.getFullYear();
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     if (Object.values(res[0]) < 1) {
-      query_str = `update cafedra_bonus_general set ${category}=1 where userid=${confirmed_for};`;
+      query_str = `update cafedra_bonus_general set ${category}=1 where userid=${confirmed_for}
+      and relevant_date>='${current_year}-${current_month}-01'
+      and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
       const [result] = await query_f(query_str);
       return result;
     }
@@ -842,10 +849,17 @@ WHERE
     }
   },
   confirm_if_category_unconfirmed: async (confirmed_for, category) => {
-    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for};`;
+    const date = new Date();
+    const current_month = date.getMonth()+1;
+    const current_year = date.getFullYear();
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${confirmed_for}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     if (Object.values(res[0]) < 0) {
-      query_str = `update cafedra_bonus_general set ${category}=${Object.values(res[0]) * -1} where userid=${confirmed_for};`;
+      query_str = `update cafedra_bonus_general set ${category}=${Object.values(res[0]) * -1} where userid=${confirmed_for}
+      and relevant_date>='${current_year}-${current_month}-01'
+      and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
       const [result] = await query_f(query_str);
       return result;
     }
@@ -854,10 +868,18 @@ WHERE
     }
   },
   deny_if_category_unconfirmed: async (denied_for, category) => {
-    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
+    const date = new Date();
+    const current_month = date.getMonth()+1;
+    const current_year = date.getFullYear();
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     const [res] = await query_f(query_str);
     if (Object.values(res[0]) < 0) {
-      query_str = `update cafedra_bonus_general set ${category}=0 where userid=${denied_for};`;
+      query_str = `update cafedra_bonus_general set ${category}=0 where userid=${denied_for}
+      and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';
+      `;
       const [result] = await query_f(query_str);
       return result;
     }
@@ -866,7 +888,12 @@ WHERE
     }
   },
   get_bonus_filename_by_category: async (denied_for, category) => {
-    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for};`;
+    const date = new Date();
+    const current_month = date.getMonth()+1;
+    const current_year = date.getFullYear();
+    let query_str = `select ${category} from cafedra_bonus_general where userid=${denied_for}
+    and relevant_date>='${current_year}-${current_month}-01'
+    and relevant_date<='${getLastDayOfMonth(current_year, current_month)}';`;
     let [res] = await query_f(query_str);
     const fileid = Object.values(res[0]) * -1;
     query_str = `select filename from bonussystem_files where id=${fileid};`;
