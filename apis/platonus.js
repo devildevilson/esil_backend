@@ -826,6 +826,13 @@ const db = {
       }
     }
   }, 
+  get_student_agreement_data: async (iin) => {
+    const query_str = `select concat(lastname,' ',firstname,' ',patronymic) as fio, CourseNumber as coursenumber, concat(sp.specializationCode,' ',sp.nameru) as specializationru, concat(sp.specializationCode,' ',sp.namekz) as specializationkz, s.icnumber, s.icdepartment, s.icdate, s.iinplt as iin, s.living_adress as address from students s
+    join specializations sp on s.specializationID = sp.id
+    where iinplt=${iin} and isStudent=1;`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res : undefined;
+  },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [res] = await query_f(query_str);

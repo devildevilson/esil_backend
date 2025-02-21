@@ -129,6 +129,15 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/getagreementdata',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const data = await plt.get_student_agreement_data(params.iin);
+      return data;
+    },
+  },
+  {
+    method: 'GET',
     path: '/createdormdocs',
     handler: async function (request, reply) {
       const params = request.query;
