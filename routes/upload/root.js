@@ -189,14 +189,14 @@ module.exports = [
       cleared_filename = cleared_filename.replace(/\s+/g, '-');
       const file_data = {
         filename: cleared_filename,
-        filepath: BONUS_FILE_PATH + cleared_filename, 
+        filepath: BONUS_FILE_PATH + cleared_filename,
         upload_date: common.human_date(new Date()),
         uploaded_by: by_userid,
       };
       console.log(file_data);
       await db.create_row("bonussystem_files", file_data);
       const fileid = await db.get_fileid_by_filename(cleared_filename);
-      await db.update_bonussystem_data(for_userid, filetype, fileid*-1);
+      await db.update_bonussystem_data(for_userid, filetype, fileid * -1);
       return { message: successful_upload };
     },
   },
@@ -208,14 +208,14 @@ module.exports = [
       const for_userid = params.for_userid;
       const proforientation = params.student_count;
       const tutordata = await db.get_tutor_proforientation_data_by_user_id(for_userid);
-        if(!tutordata) {
-          const empty_data = {
-            userid: for_userid,
-            relevant_date: common.human_date(new Date())
-          };
-          await db.create_row("cafedra_bonus_proforientation", empty_data);
-        }
-      await db.update_bonussystem_prof_data(for_userid,proforientation);
+      if (!tutordata) {
+        const empty_data = {
+          userid: for_userid,
+          relevant_date: common.human_date(new Date())
+        };
+        await db.create_row("cafedra_bonus_proforientation", empty_data);
+      }
+      await db.update_bonussystem_prof_data(for_userid, proforientation);
       return await db.get_tutors_proforientation_list();
     },
   },
@@ -336,7 +336,7 @@ module.exports = [
       const denied_by = params.denied_by;
       const denied_for = params.denied_for;
       const category = params.category;
-      await db.update_CSEI_data(denied_for,category,0);
+      await db.update_CSEI_data(denied_for, category, 0);
       return { message: `Denied category ${category} for userid ${denied_for} by ${denied_by}` };
     },
   },
@@ -707,6 +707,37 @@ module.exports = [
           case '.pdf': type = 'application.pdf'; break;
           case '.doc': type = 'application/msword'; break;
           case '.docx': type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
+          case '.gif': type = 'image/gif'; break;
+          case '.bmp': type = 'image/bmp'; break;
+          case '.tiff': type = 'image/tiff'; break;
+          case '.svg': type = 'image/svg+xml'; break;
+
+          case '.mp4': type = 'video/mp4'; break;
+          case '.avi': type = 'video/x-msvideo'; break;
+          case '.mov': type = 'video/quicktime'; break;
+          case '.wmv': type = 'video/x-ms-wmv'; break;
+          case '.flv': type = 'video/x-flv'; break;
+          case '.mkv': type = 'video/x-matroska'; break;
+
+          case '.zip': type = 'application/zip'; break;
+          case '.rar': type = 'application/vnd.rar'; break;
+          case '.tar': type = 'application/x-tar'; break;
+          case '.7z': type = 'application/x-7z-compressed'; break;
+
+          case '.txt': type = 'text/plain'; break;
+          case '.csv': type = 'text/csv'; break;
+          case '.json': type = 'application/json'; break;
+          case '.xml': type = 'application/xml'; break;
+          case '.html': type = 'text/html'; break;
+          case '.css': type = 'text/css'; break;
+          case '.js': type = 'application/javascript'; break;
+
+          case '.ppt': type = 'application/vnd.ms-powerpoint'; break;
+          case '.pptx': type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'; break;
+          case '.xls': type = 'application/vnd.ms-excel'; break;
+          case '.xlsx': type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; break;
+
+          case '.rtf': type = 'application/rtf'; break;
           default: type = 'none'; break;
         }
         const stream = filesystem.createReadStream(path.resolve(BONUS_FILE_PATH + filename));
