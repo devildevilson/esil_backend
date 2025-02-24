@@ -20,7 +20,7 @@ const cant_upload_unique_activity = "Этот показатель уже заг
 const cant_upload_photo_exists = "Фото уже существует";
 const cant_upload_photo = "Невозможно загрузить фото";
 const cant_upload_pdf = "Ошибка загрузки";
-const successful_upload = "Файл был загружен";
+const successful_upload = "Файл был успешно загружен";
 const successful_photo_upload = "Фото было загружено";
 const successful_pdf_upload = "Книга успешно загружена";
 const request_already_exists = "Для этого студента уже есть заявка";
@@ -225,12 +225,14 @@ module.exports = [
   },
   {
     method: 'POST',
-    url: '/courserafile', 
+    url: '/upload/courserafile', 
     preHandler: uploadCourseraPDF.single('file'),
     handler: async function (req, reply) {
       const payload = req.file;
       let cleared_filename = payload.filename;
       const userid = req.body.userid;
+      const files = await db.get_coursera_docs_by_user_id(userid);
+      if (files) if (files.length >= 2) return { message: 'Файлы уже загружены' };
       const link = req.body.link;
       const plt_id = await db.get_user_roles(userid);
       const cafedraid = await plt.get_student_cafedra_id(plt_id[0].assotiated_id);
@@ -383,6 +385,15 @@ module.exports = [
       };
       await db.create_row("notifications", notification_data);
       return { message: `Denied category ${category} for userid ${denied_for} by ${denied_by}` };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getcourserafiles',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      return await db.get_coursera_docs_by_user_id(userid);
     },
   },
   {

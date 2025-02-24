@@ -210,6 +210,11 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_coursera_docs_by_user_id: async (userid) => {
+    const query_str = `select * from courseradocs where userid = ${userid};`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_all_dorm_requests: async (iin) => {
     const query_str = `select dr.*, dd.statementdata, dd.carddata, dd.parentsdata from dormrequests dr
     left join users u on dr.iin = u.iin
