@@ -11,6 +11,7 @@ const FILE_PATH = process.env.ROOT_PATH;
 const BONUS_FILE_PATH = process.env.ROOT_BONUSSYSTEM_PATH;
 const PHOTO_FILE_PATH = process.env.ROOT_PHOTO_PATH;
 const PDF_FILE_PATH = process.env.ROOT_PDF_PATH;
+const COURSERA_PDF_FILE_PATH = process.env.ROOT_COURSERA_PDF_PATH;
 
 const kpi_internal_error = "Internal KPI counter error";
 const file_id_not_found_msg = "Could not find file with this id";
@@ -69,6 +70,16 @@ var storagePDF = Multer.diskStorage({
   },
 });
 
+var storageCourseraPDF = Multer.diskStorage({
+  destination: async function (req, file, cb) {
+    cb(null, COURSERA_PDF_FILE_PATH)
+  },
+  filename: async function (req, file, cb) {
+    const redactedFilename = sanitizeFilename(file.originalname.split('.')[0]);
+    cb(null, `${redactedFilename}${Date.now()}.pdf`);
+  },
+});
+
 var upload = Multer({
   storage: storage,
   limits: { fileSize: 20000000 }
@@ -101,6 +112,18 @@ var uploadPDF = Multer({
     callback(null, true)
   },
   limits: { fileSize: 300000000 } //300 mb
+});
+
+var uploadCourseraPDF = Multer({
+  storage: storageCourseraPDF,
+  fileFilter: function (req, file, callback) {
+    let ext = file.originalname.split('.')[file.originalname.split('.').length - 1];
+    if (ext !== 'PDF' && ext !== 'pdf') {
+      return callback(new Error('Допущены только PDF'));
+    }
+    callback(null, true)
+  },
+  limits: { fileSize: 10000000 } //10 mb
 });
 
 
@@ -197,6 +220,40 @@ module.exports = [
       await db.create_row("bonussystem_files", file_data);
       const fileid = await db.get_fileid_by_filename(cleared_filename);
       await db.update_bonussystem_data(for_userid, filetype, fileid * -1);
+      return { message: successful_upload };
+    },
+  },
+  {
+    method: 'POST',
+    url: '/courserafile', 
+    preHandler: uploadCourseraPDF.single('file'),
+    handler: async function (req, reply) {
+      const payload = req.file;
+      let cleared_filename = payload.filename;
+      const userid = req.body.userid;
+      const link = req.body.link;
+      const plt_id = await db.get_user_roles(userid);
+      const cafedraid = await plt.get_student_cafedra_id(plt_id[0].assotiated_id);
+      const iin = await db.get_iin_by_user_id(userid);
+      const filetype = req.body.filetype;
+      cleared_filename = cleared_filename.replace(/\s+/g, '-');
+      const file_data = {
+        filename: cleared_filename,
+        filepath: COURSERA_PDF_FILE_PATH + cleared_filename,
+        upload_date: common.human_date(new Date()),
+        uploaded_by: userid,
+      };
+      await db.create_row("courserafiles", file_data);
+      const fileid = await db.get_coursera_fileid_by_filename(cleared_filename);
+      const row_data = {
+        userid: userid,
+        iin: iin.iin,
+        cafedraid: cafedraid,
+        fileid: fileid,
+        filetype: filetype,
+        link: link,
+      };
+      await db.create_row("courseradocs", row_data);
       return { message: successful_upload };
     },
   },
@@ -345,6 +402,7 @@ module.exports = [
     path: '/checkphotoeligibility/:user_id',
     handler: async function (request, reply) {
       let user = await db.find_user_by_id(request.params.user_id)
+      if (!user.iin) 'false';
       const data = await db.check_photo_upload_eligibility(user.iin);
       if (data) return 'true';
       return 'false';

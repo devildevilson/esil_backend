@@ -349,6 +349,11 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length === 0 ? undefined : res[0].id;
   },
+  get_coursera_fileid_by_filename: async (filename) => {
+    const query_str = `SELECT id from courserafiles where filename='${filename}';`;
+    const [res] = await query_f(query_str);
+    return res.length === 0 ? undefined : res[0].id;
+  },
   get_bonus_points_by_id: async (userid) => {
     const d = new Date();
     const current_month = d.getMonth()+1;

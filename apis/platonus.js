@@ -833,6 +833,17 @@ const db = {
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res : undefined;
   },
+  get_student_cafedra_id: async (studentid) => {
+    const query_str = `select c.cafedraID from students s
+    LEFT JOIN specializations AS spec
+    ON s.specializationID = spec.id
+    LEFT JOIN profession_cafedra pc 
+    ON pc.id = spec.prof_caf_id
+    LEFT JOIN cafedras c ON pc.cafedraID = c.cafedraID
+    where StudentID=${studentid};`;
+    const [res] = await query_f(query_str);
+    return res.length !== 0 ? res[0].cafedraID : undefined;
+  },
   find_student_by_iin: async (inn) => {
     const query_str = `SELECT StudentID AS plt_id, firstname AS name, lastname, patronymic AS middlename FROM students WHERE iinplt = '${inn}' AND isStudent = 1;`;
     const [res] = await query_f(query_str);
