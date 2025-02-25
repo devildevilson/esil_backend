@@ -87,6 +87,28 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: '/gettutoracademicstatus',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const tutor = await plt.get_tutor_academic_degree_by_iin(iin.iin);
+      return tutor ? tutor.AcademicStatusID : 0;
+    },
+  },
+  {
+    method: 'GET',
+    path: '/getpubsinfotutor',
+    handler: async function (request, reply) {
+      const params = request.query;
+      const userid = params.userid;
+      const iin = await db.get_iin_by_user_id(userid);
+      const info = await plt.get_tutorpubs_help(iin.iin);
+      return info;
+    },
+  },
+  {
+    method: 'GET',
     path: '/getmoodleinfotutor',
     handler: async function (request, reply) {
       const params = request.query;

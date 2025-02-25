@@ -986,6 +986,24 @@ ORDER BY
     const [res] = await query_f(query_str);
     return res.length !== 0 ? res[0] : undefined;
   },
+  get_tutorpubs_help: async (iin) => {
+    const today = new Date();
+    const current_year = today.getFullYear()
+    const query_str = `select * from (select tp.pubID, tp.theme, tp.edition_year, pt.nameru AS 'pubtype', tp.edition_index_db, tp.refDBID from internal_pubcoauthorships ip
+    join tutors t on t.tutorid=ip.tutorID
+    join tutorpubs tp on ip.pubID = tp.pubID
+    join publication_type pt ON tp.publication_type = pt.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.edition_year>=${current_year-3} 
+    UNION ALL
+    select tp.pubID, tp.theme, tp.edition_year, pt.nameru AS 'pubtype', tp.edition_index_db,  tp.refDBID from tutorpubs tp
+    join tutors t on t.tutorid=tp.tutorID
+    join publication_type pt ON tp.publication_type = pt.id
+    where t.iinplt = '${iin}' and t.deleted = 0
+    and tp.edition_year>=${current_year-3}) as tem order by edition_year desc;`;
+    const [res] = await query_f(query_str);
+    return res;
+  },
   get_pub_count_by_iin_and_edition_index: async (inn, edition_index_db) => {
     const max_year_gap = 5;
     const max_year_gap_base = 1;

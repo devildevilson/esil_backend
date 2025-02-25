@@ -81,7 +81,7 @@ module.exports = [
           'firstname': jsonData[i][0],
           'lastname': jsonData[i][1],
           'iin': jsonData[i][2],
-          'department': jsonData[i][3].substring(jsonData[i][3].lastIndexOf(">") + 1).trim(),
+          'department': jsonData[i][3].indexOf('>') > -1 ? jsonData[i][3].substring(jsonData[i][3].lastIndexOf(">") + 1).trim() : jsonData[i][3],
           'date': jsonData[i][5],
           'checkin': jsonData[i][12],
           'checkout': jsonData[i][13]
