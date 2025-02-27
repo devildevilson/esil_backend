@@ -15,27 +15,27 @@ module.exports = [
     method: 'POST',
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.body.token);
-      if (token_data.error) return reply.forbidden(token_data.error);
+      if (token_data.error) return reply.status(401).send({ error: "Unauthorized", message: 'Token data error' });
 
       let requested_by = request.body.requested_by ? request.body.requested_by : request.body.user_id;
       let plt_user_id = 0;
       if (token_data.id === request.body.user_id) {
         const role = await db.find_user_role(request.body.user_id, "plt_student");
-        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        if (!role || role.assotiated_id === 0) reply.status(401).send({ error: "Unauthorized", message: 'Incorrect role' });
         plt_user_id = role.assotiated_id;
       } else {
         // должна быть роль создателя справок
         const adm_role = await db.find_user_role(token_data.id, "admissionadmin");
-        if (!adm_role) return reply.forbidden(role_not_found_msg);
+        if (!adm_role) reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
         // по приоритету берем requested_by из тела сообщения
         requested_by = requested_by === request.body.user_id ? token_data.id : requested_by;
 
         const role = await db.find_user_role(request.body.user_id, "plt_student");
-        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        if (!role || role.assotiated_id === 0) reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
         plt_user_id = role.assotiated_id;
       }
 
-      if (plt_user_id === 0) return reply.forbidden(role_not_found_msg);
+      if (plt_user_id === 0) reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
 
       //const cert_type = request.body.cert_type;
       

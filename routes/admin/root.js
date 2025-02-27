@@ -7,18 +7,6 @@ const fs = require('fs').promises;
 const successful_photo_deletion = "Фото успешно удалено";
 const user_already_exists = "Пользователь уже существует";
 const user_created = "Пользователь успешно добавлен";
-// async function deleteFile(filename) {
-//   if (filename != '') {
-//     try {
-//       console.log(`File ${filename} has been deleted.`);
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   }
-//   else {
-//     return 'failed';
-//   }
-// }
 
 module.exports = [
   {

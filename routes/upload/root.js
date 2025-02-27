@@ -5,7 +5,6 @@ const plt = require('@apis/platonus');
 const fs = require('fs').promises;
 const filesystem = require('fs');
 const path = require('path');
-const fastifyStatic = require('fastify-static');
 
 const FILE_PATH = process.env.ROOT_PATH;
 const BONUS_FILE_PATH = process.env.ROOT_BONUSSYSTEM_PATH;

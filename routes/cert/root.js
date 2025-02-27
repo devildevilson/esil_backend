@@ -33,18 +33,18 @@ module.exports = [
     path: '/list/:user_id', 
     handler: async function (request, reply) {
       const token_data = await common.decode_token(request.query.token);
-      if (token_data.error) return reply.forbidden(token_data.error);
+      if (token_data.error) return reply.status(401).send({ error: "Unauthorized", message: 'Token data error' });
 
       if (token_data.id === request.params.user_id) {
         const role = await db.find_user_role(request.params.user_id, "plt_student");
-        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        if (!role || role.assotiated_id === 0) return reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
       } else {
         // должна быть роль просмотра справок
         const adm_role = await db.find_user_role(token_data.id, "admissionadmin");
-        if (!adm_role) return reply.forbidden(role_not_found_msg);
+        if (!adm_role) return reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
 
         const role = await db.find_user_role(request.params.user_id, "plt_student");
-        if (!role || role.assotiated_id === 0) return reply.forbidden(role_not_found_msg);
+        if (!role || role.assotiated_id === 0) return reply.status(401).send({ error: "Unauthorized", message: 'Role not found' });
       }
 
       const cert_datas = await db.get_cert_records_by_user_id(request.params.user_id);

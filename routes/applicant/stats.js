@@ -15,8 +15,8 @@ module.exports = [
     {
         method: 'GET',
         handler: async function (request, reply) {
-            //const token_data = await common.decode_token(request.query.token);
-            //if (token_data.error) return reply.forbidden(token_data.error);
+            // const token_data = await common.decode_token(request.query.token);
+            // if (token_data.error) return reply.forbidden(token_data.error);
 
             //const adm_role = await db.find_user_role(token_data.id, "admissionstats");
             //if (!adm_role) return reply.forbidden(role_not_found_msg);
